@@ -34,11 +34,11 @@ public partial class SolutionScanner
         // Consumer: parse and yield
         await foreach (var file in channel.Reader.ReadAllAsync(ct))
         {
-            yield return ParseCSharpSolution(file);
+            yield return await ParseCSharpSolutionAsync(file, ct);
         }
     }
 
-    private static CSharpSolution ParseCSharpSolution(string slnPath)
+    private static async Task<CSharpSolution> ParseCSharpSolutionAsync(string slnPath, CancellationToken ct = default)
     {
         var dependencies = new List<CSharpSolutionDependency>();
         var slnDir = Path.GetDirectoryName(slnPath);
@@ -53,8 +53,12 @@ public partial class SolutionScanner
 
         var solution = new CSharpSolution
         {
-            Name = "",
-            Path = slnPath
+            Name = slnDir.Split(Path.DirectorySeparatorChar).Last(),
+            Path = slnPath,
+            Type = GitlabConfigHelper.GetProjectType(Path.Combine(slnDir, ".gitlab-ci.yml")),
+            ChangelogVersionNumber =
+                await ChangelogHelper.GetLatestVersionNumberAsync(Path.Combine(slnDir, "CHANGELOG.md"), ct),
+            LatestSyncDate = GitHelper.GetLastGitSyncDate(slnDir),
         };
         solution.AddDependencyRange([.. dependencies.Distinct().OrderBy(d => d.Name)]);
 

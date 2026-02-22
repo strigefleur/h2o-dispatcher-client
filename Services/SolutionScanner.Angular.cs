@@ -35,27 +35,32 @@ public partial class SolutionScanner
         // Consumer: parse and yield
         await foreach (var path in channel.Reader.ReadAllAsync(ct))
         {
-            yield return ParseAngularSolution(path);
+            yield return await ParseAngularSolutionAsync(path, ct);
         }
     }
-    
-    private static AngularSolution ParseAngularSolution(string angularDir)
+
+    private static async Task<AngularSolution> ParseAngularSolutionAsync(string angularDir,
+        CancellationToken ct = default)
     {
         var packageJson = Path.Combine(angularDir, "package.json");
-        var dependencies = File.Exists(packageJson) 
-            ? ParsePackageJson(packageJson) 
+        var dependencies = File.Exists(packageJson)
+            ? ParsePackageJson(packageJson)
             : [];
 
         var solution = new AngularSolution
         {
-            Name = "",
-            Path = angularDir
+            Name = angularDir.Split(Path.DirectorySeparatorChar).Last(),
+            Path = angularDir,
+            Type = GitlabConfigHelper.GetProjectType(Path.Combine(angularDir, ".gitlab-ci.yml")),
+            ChangelogVersionNumber =
+                await ChangelogHelper.GetLatestVersionNumberAsync(Path.Combine(angularDir, "CHANGELOG.md"), ct),
+            LatestSyncDate = GitHelper.GetLastGitSyncDate(angularDir),
         };
         solution.AddDependencyRange(dependencies.ToArray());
 
         return solution;
     }
-    
+
     private static List<AngularSolutionDependency> ParsePackageJson(string path)
     {
         try
