@@ -1,6 +1,6 @@
 ﻿namespace Felweed.Models.Enumerators;
 
-public enum ProjectKind
+public enum SolutionKind
 {
     CSharp,
     Angular

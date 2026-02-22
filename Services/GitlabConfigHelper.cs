@@ -5,7 +5,7 @@ namespace Felweed.Services;
 
 public static class GitlabConfigHelper
 {
-    public static ProjectType? GetProjectType(string filePath)
+    public static SolutionType? GetProjectType(string filePath)
     {
         if (!File.Exists(filePath))
             return null;
@@ -18,10 +18,10 @@ public static class GitlabConfigHelper
         if (fileLine != null)
         {
             if (fileLine.Contains("ci-cdl/lib"))
-                return ProjectType.Library;
+                return SolutionType.Library;
             
             if (fileLine.Contains("ci-cdp/svc"))
-                return ProjectType.Service;
+                return SolutionType.Service;
         }
 
         return null;

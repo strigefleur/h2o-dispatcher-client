@@ -1,8 +1,6 @@
-﻿using Felweed.Models.Enumerators;
+﻿namespace Felweed.Models;
 
-namespace Felweed.Models;
-
-public record CSharpSolutionDependency : ProjectDependency
+public record CSharpSolutionDependency : SolutionDependency
 {
     public CSharpSolutionDependency(string name, string version) : base(name, version)
     {

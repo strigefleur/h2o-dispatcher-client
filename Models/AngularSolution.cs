@@ -2,9 +2,9 @@
 
 namespace Felweed.Models;
 
-public record AngularSolution : Project
+public record AngularSolution : Solution
 {
-    public override ProjectKind Kind => ProjectKind.Angular;
+    public override SolutionKind Kind => SolutionKind.Angular;
     
     private List<AngularSolutionDependency> _dependencies = [];
     public IReadOnlyCollection<AngularSolutionDependency> Dependencies => _dependencies.AsReadOnly();

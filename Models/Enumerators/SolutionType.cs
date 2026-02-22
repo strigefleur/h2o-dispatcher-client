@@ -1,6 +1,6 @@
 ﻿namespace Felweed.Models.Enumerators;
 
-public enum ProjectType
+public enum SolutionType
 {
     Library,
     Service
