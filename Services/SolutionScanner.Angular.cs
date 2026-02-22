@@ -1,0 +1,88 @@
+﻿using System.IO;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Threading.Channels;
+using Ardalis.GuardClauses;
+using Felweed.Models;
+using Felweed.Models.Enumerators;
+
+namespace Felweed.Services;
+
+public partial class SolutionScanner
+{
+    private static async IAsyncEnumerable<AngularSolution> ScanAngularSolutionsAsync(
+        IEnumerable<string> directories,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var channel = Channel.CreateUnbounded<string>();
+    
+        // Producer: find all angular.json files
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                foreach (var dir in directories)
+                {
+                    foreach (var file in dir.EnumerateFilesWithExclusions("angular.json"))
+                    {
+                        await channel.Writer.WriteAsync(Guard.Against.Null(Path.GetDirectoryName(file)), ct);
+                    }
+                }
+            }
+            finally { channel.Writer.Complete(); }
+        }, ct);
+
+        // Consumer: parse and yield
+        await foreach (var path in channel.Reader.ReadAllAsync(ct))
+        {
+            yield return ParseAngularSolution(path);
+        }
+    }
+    
+    private static AngularSolution ParseAngularSolution(string angularDir)
+    {
+        var packageJson = Path.Combine(angularDir, "package.json");
+        var dependencies = File.Exists(packageJson) 
+            ? ParsePackageJson(packageJson) 
+            : [];
+
+        var solution = new AngularSolution
+        {
+            Name = "",
+            Path = angularDir
+        };
+        solution.AddDependencyRange(dependencies.ToArray());
+
+        return solution;
+    }
+    
+    private static List<AngularSolutionDependency> ParsePackageJson(string path)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            var root = doc.RootElement;
+            
+            var name = root.TryGetProperty("name", out var nameEl) ? nameEl.GetString() : "Unknown";
+            var version = root.TryGetProperty("version", out var versionEl) ? versionEl.GetString() : "?.?.?";
+            
+            var deps = new List<AngularSolutionDependency>();
+
+            deps.AddRange(ExtractDeps(root, "dependencies", AngularDependencyType.Runtime));
+            deps.AddRange(ExtractDeps(root, "devDependencies", AngularDependencyType.Dev));
+            deps.AddRange(ExtractDeps(root, "peerDependencies", AngularDependencyType.Peer));
+
+            return [.. deps.OrderBy(d => d.Name)];
+        }
+        catch { return []; }
+    }
+    
+    private static IEnumerable<AngularSolutionDependency> ExtractDeps(JsonElement root, string section, AngularDependencyType type)
+    {
+        if (!root.TryGetProperty(section, out var element)) 
+            yield break;
+
+        foreach (var prop in element.EnumerateObject())
+            yield return new AngularSolutionDependency(prop.Name, prop.Value.GetString() ?? "*", type);
+    }
+}
