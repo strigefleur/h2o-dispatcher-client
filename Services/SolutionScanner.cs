@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.IO.Enumeration;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -36,14 +37,6 @@ public partial class SolutionScanner
     }
     
     #region C# Scanning
-
-    private static List<CSharpSolution> ScanCSharpSolutions(IEnumerable<string> directories)
-    {
-        return directories
-            .SelectMany(d => Directory.EnumerateFiles(d, "*.sln", ScanOptions))
-            .Select(ParseCSharpSolution)
-            .ToList();
-    }
     
     private static async IAsyncEnumerable<CSharpSolution> ScanCSharpSolutionsAsync(
         IEnumerable<string> directories,
@@ -58,7 +51,7 @@ public partial class SolutionScanner
             {
                 foreach (var dir in directories)
                 {
-                    foreach (var file in Directory.EnumerateFiles(dir, "*.sln", ScanOptions))
+                    foreach (var file in EnumerateFilesWithExclusions(dir, "*.sln"))
                     {
                         await channel.Writer.WriteAsync(file, ct);
                     }
@@ -135,15 +128,6 @@ public partial class SolutionScanner
     
     #region Angular Scanning
     
-    private static List<AngularSolution> ScanAngularSolutions(IEnumerable<string> directories)
-    {
-        return directories
-            .SelectMany(d => Directory.EnumerateFiles(d, "angular.json", ScanOptions))
-            .Select(f => Path.GetDirectoryName(f)!)
-            .Select(ParseAngularSolution)
-            .ToList();
-    }
-    
     private static async IAsyncEnumerable<AngularSolution> ScanAngularSolutionsAsync(
         IEnumerable<string> directories,
         [EnumeratorCancellation] CancellationToken ct = default)
@@ -157,7 +141,7 @@ public partial class SolutionScanner
             {
                 foreach (var dir in directories)
                 {
-                    foreach (var file in Directory.EnumerateFiles(dir, "angular.json", ScanOptions))
+                    foreach (var file in EnumerateFilesWithExclusions(dir, "angular.json"))
                     {
                         await channel.Writer.WriteAsync(Guard.Against.Null(Path.GetDirectoryName(file)), ct);
                     }
@@ -217,6 +201,40 @@ public partial class SolutionScanner
     }
     
     #endregion Angular Scanning
+
+    public static IEnumerable<string> EnumerateFilesWithExclusions(string rootPath, string searchPattern = "*")
+    {
+        return new FileSystemEnumerable<string>(
+            rootPath,
+            (ref FileSystemEntry entry) => entry.ToFullPath(),
+            ScanOptions)
+        {
+            ShouldIncludePredicate = (ref FileSystemEntry entry) => !entry.IsDirectory &&
+                                                                    FileSystemName.MatchesWin32Expression(searchPattern,
+                                                                        entry.FileName),
+            // Don't recurse into excluded directories
+            ShouldRecursePredicate = (ref FileSystemEntry entry) =>
+            {
+                foreach (var excluded in DirectoriesToSkip)
+                {
+                    if (entry.FileName.Equals(excluded.AsSpan(), StringComparison.OrdinalIgnoreCase))
+                        return false;
+                }
+
+                return true;
+            }
+        };
+    }
+
+    private static readonly HashSet<string> DirectoriesToSkip = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "node_modules",
+        "bin",
+        "obj",
+        ".git",
+        ".vs",
+        "packages"
+    };
 
     private static readonly EnumerationOptions ScanOptions = new()
     {
