@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Felweed.Services;
 
 namespace Felweed;
 
@@ -19,5 +20,17 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+    }
+
+    private async void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var scaner = await SolutionScanner.ScanAsync([@"D:\dev\rshb\h2o"]);
+        }
+        catch (Exception ex)
+        {
+            throw; // TODO handle exception
+        }
     }
 }

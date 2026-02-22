@@ -1,6 +1,8 @@
 ﻿using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Channels;
 using System.Xml.Linq;
 using Ardalis.GuardClauses;
 using Felweed.Models;
@@ -10,37 +12,27 @@ namespace Felweed.Services;
 
 public partial class SolutionScanner
 {
-    private SolutionScanner(params string[] scanPaths)
+    private SolutionScanner(List<CSharpSolution> csharpSolutions, List<AngularSolution> angularSolutions)
     {
-        foreach (var root in scanPaths.Where(Directory.Exists))
-        {
-            // 1. Detect C# Solutions (.sln files)
-            _csharpSolutionPaths.AddRange(Directory.EnumerateFiles(root, "*.sln", ScanOptions));
-    
-            // 2. Detect Angular Solutions (Folders with package.json containing @angular/core)
-            _angularSolutionPaths.AddRange(Directory.EnumerateFiles(root, "package.json", ScanOptions)
-                .Where(file => File.ReadAllText(file).Contains("\"@angular/core\""))
-                .Select(x => Guard.Against.Null(Path.GetDirectoryName(x))));
-        }
+        _csharpSolutions = csharpSolutions;
+        _angularSolutions = angularSolutions;
     }
-
-    private readonly List<string> _csharpSolutionPaths = [];
-    private readonly List<string> _angularSolutionPaths = [];
     
-    private List<CSharpSolution> _csharpSolutions = [];
+    private readonly List<CSharpSolution> _csharpSolutions;
     public IReadOnlyCollection<CSharpSolution> CsharpSolutions => _csharpSolutions.AsReadOnly();
     
-    private List<AngularSolution> _angularSolutions = [];
+    private readonly List<AngularSolution> _angularSolutions;
     public IReadOnlyCollection<AngularSolution> AngularSolutions => _angularSolutions.AsReadOnly();
 
-    public async Task<SolutionScanner> ScanAsync(string[] scanPaths, CancellationToken cancellationToken = default)
+    public static async Task<SolutionScanner> ScanAsync(string[] scanPaths, CancellationToken cancellationToken = default)
     {
-        var scanner = new SolutionScanner(scanPaths);
+        var csharpSolutions = await ScanCSharpSolutionsAsync(scanPaths, cancellationToken)
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        var angularSolutions = await ScanAngularSolutionsAsync(scanPaths, cancellationToken)
+            .ToListAsync(cancellationToken: cancellationToken);
         
-        _csharpSolutions = await Task.Run(() => ScanCSharpSolutions(_csharpSolutionPaths), cancellationToken);
-        _angularSolutions = await Task.Run(() => ScanAngularSolutions(_angularSolutionPaths), cancellationToken);
-        
-        return scanner;
+        return new SolutionScanner(csharpSolutions, angularSolutions);
     }
     
     #region C# Scanning
@@ -51,6 +43,35 @@ public partial class SolutionScanner
             .SelectMany(d => Directory.EnumerateFiles(d, "*.sln", ScanOptions))
             .Select(ParseCSharpSolution)
             .ToList();
+    }
+    
+    private static async IAsyncEnumerable<CSharpSolution> ScanCSharpSolutionsAsync(
+        IEnumerable<string> directories,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var channel = Channel.CreateUnbounded<string>();
+    
+        // Producer: find all .sln files
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                foreach (var dir in directories)
+                {
+                    foreach (var file in Directory.EnumerateFiles(dir, "*.sln", ScanOptions))
+                    {
+                        await channel.Writer.WriteAsync(file, ct);
+                    }
+                }
+            }
+            finally { channel.Writer.Complete(); }
+        }, ct);
+
+        // Consumer: parse and yield
+        await foreach (var file in channel.Reader.ReadAllAsync(ct))
+        {
+            yield return ParseCSharpSolution(file);
+        }
     }
 
     private static CSharpSolution ParseCSharpSolution(string slnPath)
@@ -121,6 +142,35 @@ public partial class SolutionScanner
             .Select(f => Path.GetDirectoryName(f)!)
             .Select(ParseAngularSolution)
             .ToList();
+    }
+    
+    private static async IAsyncEnumerable<AngularSolution> ScanAngularSolutionsAsync(
+        IEnumerable<string> directories,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var channel = Channel.CreateUnbounded<string>();
+    
+        // Producer: find all angular.json files
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                foreach (var dir in directories)
+                {
+                    foreach (var file in Directory.EnumerateFiles(dir, "angular.json", ScanOptions))
+                    {
+                        await channel.Writer.WriteAsync(Guard.Against.Null(Path.GetDirectoryName(file)), ct);
+                    }
+                }
+            }
+            finally { channel.Writer.Complete(); }
+        }, ct);
+
+        // Consumer: parse and yield
+        await foreach (var path in channel.Reader.ReadAllAsync(ct))
+        {
+            yield return ParseAngularSolution(path);
+        }
     }
     
     private static AngularSolution ParseAngularSolution(string angularDir)
