@@ -1,4 +1,5 @@
 ﻿using Felweed.Models.Enumerators;
+using Felweed.Services;
 
 namespace Felweed.Models;
 
@@ -19,6 +20,6 @@ public record AngularSolution : Solution
         if (Type == SolutionType.Library)
             throw new NotImplementedException();
         
-        
+        TerminalHelper.Run(Path, "yarn start", Name);
     }
 }
