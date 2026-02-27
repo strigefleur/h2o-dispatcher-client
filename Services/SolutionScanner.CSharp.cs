@@ -11,6 +11,7 @@ public partial class SolutionScanner
 {
     private static async IAsyncEnumerable<CSharpSolution> ScanCSharpSolutionsAsync(
         IEnumerable<string> directories,
+        ICollection<string>? allowedPrefixes,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         var channel = Channel.CreateUnbounded<string>();
@@ -22,7 +23,7 @@ public partial class SolutionScanner
             {
                 foreach (var dir in directories)
                 {
-                    foreach (var file in dir.EnumerateFilesWithExclusions("*.sln"))
+                    foreach (var file in dir.EnumerateFilesWithExclusions(allowedPrefixes, "*.sln"))
                     {
                         await channel.Writer.WriteAsync(file, ct);
                     }

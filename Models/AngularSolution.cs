@@ -15,7 +15,7 @@ public record AngularSolution : Solution
         _dependencies.AddRange(dependencies);
     }
     
-    public override void Run()
+    public override void Run(params string[] args)
     {
         if (Type == SolutionType.Library)
             throw new NotImplementedException();

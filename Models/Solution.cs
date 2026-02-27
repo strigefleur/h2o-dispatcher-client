@@ -12,5 +12,5 @@ public abstract record Solution
     public required SolutionType? Type { get; init; }
     public required DateTime? LatestSyncDate { get; init; }
 
-    public abstract void Run();
+    public abstract void Run(params string[] args);
 }

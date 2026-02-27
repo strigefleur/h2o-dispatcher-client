@@ -23,9 +23,10 @@ public partial class SolutionScanner
     private readonly List<AngularSolutionDependency> _angularSolutionDeps;
     public IReadOnlyCollection<AngularSolutionDependency> AngularSolutionDeps => _angularSolutionDeps.AsReadOnly();
 
-    public static async Task<SolutionScanner> ScanAsync(ICollection<string> scanPaths, CancellationToken cancellationToken = default)
+    public static async Task<SolutionScanner> ScanAsync(ICollection<string> scanPaths,
+        ICollection<string>? cSharpAllowedPrefixes, CancellationToken cancellationToken = default)
     {
-        var csharpSolutions = await ScanCSharpSolutionsAsync(scanPaths, cancellationToken)
+        var csharpSolutions = await ScanCSharpSolutionsAsync(scanPaths, cSharpAllowedPrefixes, cancellationToken)
             .ToListAsync(cancellationToken: cancellationToken);
 
         // после сканирования всех проектов собираем список уникальных наименований, дополняя перечнем версий
@@ -37,7 +38,7 @@ public partial class SolutionScanner
                 var uniqueDep = uniqueCsharpDeps.SingleOrDefault(x => x.Name == dep.Name);
                 if (uniqueDep == null)
                 {
-                    uniqueCsharpDeps.Add(dep with {});
+                    uniqueCsharpDeps.Add(dep with { });
                 }
                 else
                 {
@@ -45,7 +46,7 @@ public partial class SolutionScanner
                 }
             }
         }
-        
+
         // на базе уникального набора зависимостей переназначаем исходный набор
         foreach (var csharpSolution in csharpSolutions)
         {
@@ -53,26 +54,26 @@ public partial class SolutionScanner
             foreach (var dep in csharpSolution.Dependencies)
             {
                 var uniqueDep = uniqueCsharpDeps.Single(x => x.Name == dep.Name);
-                
+
                 uniqueDep.AddConsumer(new DependencyConsumer
                 {
                     Version = dep.Versions.Single(),
                     Solution = csharpSolution
                 });
-                
+
                 // в проекте может быть несколько упоминаний одной зависимости
                 if (!unifiedDeps.Contains(uniqueDep))
                 {
                     unifiedDeps.Add(uniqueDep);
                 }
             }
-            
+
             csharpSolution.ReplaceDependencies(unifiedDeps);
         }
 
         var angularSolutions = await ScanAngularSolutionsAsync(scanPaths, cancellationToken)
             .ToListAsync(cancellationToken: cancellationToken);
-        
+
         return new SolutionScanner(csharpSolutions, angularSolutions);
     }
 }

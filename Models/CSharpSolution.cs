@@ -21,32 +21,36 @@ public record CSharpSolution : Solution
         _dependencies = dependencies;
     }
     
-    public override void Run()
+    public override void Run(params string[] args)
     {
         if (Type == SolutionType.Library)
             throw new NotImplementedException();
         
-        var workingDirectory = GetWorkingDirectory();
+        var workingDirectory = GetWorkingDirectory(args);
         
         TerminalHelper.Run(workingDirectory, "dotnet run", Name);
     }
 
-    private string GetWorkingDirectory()
+    private string GetWorkingDirectory(ICollection<string> prefixes)
     {
         var solutionDir = System.IO.Path.GetDirectoryName(Path);
         var srcPath = System.IO.Path.Combine(solutionDir, "src");
         var escapedName = Name.Replace("-", "");
-        var oldRunPath = System.IO.Path.Combine(srcPath, $"CFO.Services.{escapedName}");
-        var newRunPath = System.IO.Path.Combine(srcPath, $"CFO.Services.{escapedName}.Web");
 
-        if (Directory.Exists(oldRunPath))
+        foreach (var prefix in prefixes)
         {
-            return oldRunPath;
-        }
+            var oldRunPath = System.IO.Path.Combine(srcPath, $"{prefix}.Services.{escapedName}");
+            var newRunPath = System.IO.Path.Combine(srcPath, $"{prefix}.Services.{escapedName}.Web");
 
-        if (Directory.Exists(newRunPath))
-        {
-            return newRunPath;
+            if (Directory.Exists(oldRunPath))
+            {
+                return oldRunPath;
+            }
+
+            if (Directory.Exists(newRunPath))
+            {
+                return newRunPath;
+            }
         }
 
         throw new InvalidOperationException();

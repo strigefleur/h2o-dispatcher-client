@@ -31,7 +31,9 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void RunSolution(Solution? solution)
     {
-        solution?.Run();
+        var config = _configService.LoadConfig();
+        
+        solution?.Run([..config.CSharpSolutionPrefixes]);
     }
     
     [RelayCommand]
@@ -94,7 +96,9 @@ public partial class MainViewModel : ObservableObject
         var validPaths = paths.Where(Directory.Exists).ToList();
         if (!validPaths.Any()) return;
         
-        var scanner = await SolutionScanner.ScanAsync(validPaths, ct);
+        var config = _configService.LoadConfig();
+        
+        var scanner = await SolutionScanner.ScanAsync(validPaths, config.CSharpSolutionPrefixes, ct);
 
         List<Solution> solutions = [..scanner.CsharpSolutions, ..scanner.AngularSolutions];
 

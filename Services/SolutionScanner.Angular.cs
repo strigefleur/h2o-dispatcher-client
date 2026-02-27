@@ -23,7 +23,7 @@ public partial class SolutionScanner
             {
                 foreach (var dir in directories)
                 {
-                    foreach (var file in dir.EnumerateFilesWithExclusions("angular.json"))
+                    foreach (var file in dir.EnumerateFilesWithExclusions(null, "angular.json"))
                     {
                         await channel.Writer.WriteAsync(Guard.Against.Null(Path.GetDirectoryName(file)), ct);
                     }
