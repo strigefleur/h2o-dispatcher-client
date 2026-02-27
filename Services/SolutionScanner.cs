@@ -23,7 +23,7 @@ public partial class SolutionScanner
     private readonly List<AngularSolutionDependency> _angularSolutionDeps;
     public IReadOnlyCollection<AngularSolutionDependency> AngularSolutionDeps => _angularSolutionDeps.AsReadOnly();
 
-    public static async Task<SolutionScanner> ScanAsync(string[] scanPaths, CancellationToken cancellationToken = default)
+    public static async Task<SolutionScanner> ScanAsync(ICollection<string> scanPaths, CancellationToken cancellationToken = default)
     {
         var csharpSolutions = await ScanCSharpSolutionsAsync(scanPaths, cancellationToken)
             .ToListAsync(cancellationToken: cancellationToken);

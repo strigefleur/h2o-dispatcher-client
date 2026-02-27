@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Felweed.Models;
@@ -8,14 +9,23 @@ namespace Felweed.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
+    private readonly ConfigurationService _configService;
+
+    public SetupDialogViewModel SetupDialogViewModel { get; } = new();
+    
     [ObservableProperty]
     private ObservableCollection<Solution> _solutions = [];
     
     [ObservableProperty] private bool _isLoading;
+    [ObservableProperty] private bool _isSelector;
+    [ObservableProperty] private bool _isLoaded;
+    
+    [Obsolete("DesignTime Only")]
+    public MainViewModel() {}
 
-    public MainViewModel()
+    public MainViewModel(ConfigurationService configurationService)
     {
-        _ = InitializeAsync();
+        _configService = configurationService;
     }
 
     [RelayCommand]
@@ -24,19 +34,70 @@ public partial class MainViewModel : ObservableObject
         solution?.Run();
     }
     
-    private async Task InitializeAsync()
+    [RelayCommand]
+    private async Task ConfirmSelector()
+    {
+        await InitializeAsync();
+    }
+
+    private void ValidateDirectories()
+    {
+        var config = _configService.LoadConfig();
+        
+        if (!_configService.ValidateDirectories(config))
+        {
+            IsSelector = true;
+            
+            var selectedDirs = SetupDialogViewModel.SelectedPaths.ToList();
+            if (selectedDirs.Count == 0)
+            {
+                return;
+            }
+
+            // Save new config
+            config.SolutionDirectories = selectedDirs.ToList();
+            _configService.SaveConfig(config);
+        }
+
+        IsSelector = false;
+    }
+
+    private async Task RunScanner()
     {
         IsLoading = true;
+        
         try
         {
-            var scanner = await SolutionScanner.ScanAsync([@"D:\dev\rshb\h2o"]);
-            List<Solution> solutions = [..scanner.CsharpSolutions, ..scanner.AngularSolutions];
-            
-            Solutions = new ObservableCollection<Solution>(solutions.OrderByDescending(x => x.Type));
+            var config = _configService.LoadConfig();
+            await ScanDirectoriesAsync(config.SolutionDirectories);
+
+            IsLoaded = true;
         }
         finally
         {
             IsLoading = false;
         }
+    }
+    
+    public async Task InitializeAsync()
+    {
+        ValidateDirectories();
+
+        if (IsSelector)
+            return;
+
+        await RunScanner();
+    }
+
+    private async Task ScanDirectoriesAsync(List<string> paths, CancellationToken ct = default)
+    {
+        var validPaths = paths.Where(Directory.Exists).ToList();
+        if (!validPaths.Any()) return;
+        
+        var scanner = await SolutionScanner.ScanAsync(validPaths, ct);
+
+        List<Solution> solutions = [..scanner.CsharpSolutions, ..scanner.AngularSolutions];
+
+        Solutions = new ObservableCollection<Solution>(solutions.OrderByDescending(x => x.Type));
     }
 }
