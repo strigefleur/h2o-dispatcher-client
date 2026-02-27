@@ -35,8 +35,9 @@ public record CSharpSolution : Solution
     {
         var solutionDir = System.IO.Path.GetDirectoryName(Path);
         var srcPath = System.IO.Path.Combine(solutionDir, "src");
-        var oldRunPath = System.IO.Path.Combine(srcPath, $"CFO.Services.{Name}");
-        var newRunPath = System.IO.Path.Combine(srcPath, $"CFO.Services.{Name}.Web");
+        var escapedName = Name.Replace("-", "");
+        var oldRunPath = System.IO.Path.Combine(srcPath, $"CFO.Services.{escapedName}");
+        var newRunPath = System.IO.Path.Combine(srcPath, $"CFO.Services.{escapedName}.Web");
 
         if (Directory.Exists(oldRunPath))
         {
