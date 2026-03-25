@@ -23,7 +23,7 @@ jobs:
 
       # 1) Build/publish your app (adjust project path + runtime)
       - name: Publish
-        run: dotnet publish .\Felweed\Felweed.csproj -c Release -r win-x64 --self-contained true -o .\publish
+        run: dotnet publish .\Felweed.csproj -c Release -r win-x64 --self-contained true -o .\publish
 
       # 2) Install Velopack packer (vpk)
       - name: Install vpk
