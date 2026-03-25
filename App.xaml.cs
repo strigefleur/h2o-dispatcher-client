@@ -3,6 +3,7 @@ using Felweed.Services;
 using Felweed.ViewModels;
 using Felweed.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Velopack;
 
 namespace Felweed;
 
@@ -26,9 +27,11 @@ public partial class App : Application
         _serviceProvider = services.BuildServiceProvider();
     }
 
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        
+        await Updater.UpdateAsync();
         
         var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
         
@@ -36,5 +39,14 @@ public partial class App : Application
         ShutdownMode = ShutdownMode.OnMainWindowClose;
         
         mainWindow.Show();
+    }
+    
+    [STAThread]
+    private static void Main(string[] args)
+    {
+        VelopackApp.Build().Run();
+        App app = new();
+        app.InitializeComponent();
+        app.Run();
     }
 }
