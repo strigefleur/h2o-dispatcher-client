@@ -1,5 +1,4 @@
-﻿using System.Windows.Documents;
-using Felweed.Models.Enumerators;
+﻿using Felweed.Models.Enumerators;
 
 namespace Felweed.Models;
 
@@ -11,6 +10,8 @@ public abstract record Solution
     public required string? ChangelogVersionNumber { get; init; }
     public required SolutionType? Type { get; init; }
     public required DateTime? LatestSyncDate { get; init; }
+
+    public bool IsRunnable => Type == SolutionType.Service;
 
     public abstract void Run(params string[] args);
 }

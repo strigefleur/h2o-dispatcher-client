@@ -103,7 +103,7 @@
                     <DataGridTextColumn Header="Last Sync" Binding="{Binding LatestSyncDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="120" />
 
                     <!-- Action Button -->
-                    <DataGridTemplateColumn Width="100">
+                    <DataGridTemplateColumn Width="100" Header="Run" SortMemberPath="IsRunnable">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <ui:Button Content="Run" 
