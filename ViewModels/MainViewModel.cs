@@ -4,6 +4,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Felweed.Models;
 using Felweed.Services;
+using Wpf.Ui.Appearance;
+using Wpf.Ui.Controls;
 
 namespace Felweed.ViewModels;
 
@@ -19,6 +21,8 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private bool _isLoading;
     [ObservableProperty] private bool _isSelector;
     [ObservableProperty] private bool _isLoaded;
+    
+    [ObservableProperty] private SymbolRegular _themeSwitchIcon = SymbolRegular.WeatherMoon24;
     
     [Obsolete("DesignTime Only")]
     public MainViewModel() {}
@@ -40,6 +44,23 @@ public partial class MainViewModel : ObservableObject
     private async Task ConfirmSelector()
     {
         await InitializeAsync();
+    }
+    
+    [RelayCommand]
+    private void SwitchTheme()
+    {
+        var currentTheme = ApplicationThemeManager.GetAppTheme();
+    
+        if (currentTheme == ApplicationTheme.Dark)
+        {
+            ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+            ThemeSwitchIcon = SymbolRegular.WeatherMoon24;
+        }
+        else
+        {
+            ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
+            ThemeSwitchIcon = SymbolRegular.WeatherSunny24;
+        }
     }
 
     private void ValidateDirectories()

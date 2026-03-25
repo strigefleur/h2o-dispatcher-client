@@ -46,6 +46,18 @@
                     </StackPanel>
                 </Grid>
             </ui:TitleBar.Header>
+            
+            <ui:TitleBar.TrailingContent>
+                <StackPanel VerticalAlignment="Center" 
+                            WindowChrome.IsHitTestVisibleInChrome="True" 
+                            Margin="0,0,10,0">
+                    <ui:Button x:Name="ThemeToggleButton"
+                               Appearance="Transparent"
+                               Icon="{Binding ThemeSwitchIcon}"
+                               Command="{Binding SwitchThemeCommand}"
+                               ToolTip="Переключить тему" />
+                </StackPanel>
+            </ui:TitleBar.TrailingContent>
         </ui:TitleBar>
         
         <!-- Solution Path Selector -->
