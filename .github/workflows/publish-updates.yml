@@ -1,0 +1,63 @@
+name: Build and publish update feed (Velopack)
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      # 1) Build/publish your app (adjust project path + runtime)
+      - name: Publish
+        run: dotnet publish .\Felweed\Felweed.csproj -c Release -r win-x64 --self-contained true -o .\publish
+
+      # 2) Install Velopack packer (vpk)
+      - name: Install vpk
+        run: dotnet tool install -g vpk
+
+      # 3) Pack updates into a static "feed" folder
+      - name: Pack Velopack feed
+        shell: pwsh
+        run: |
+          $ver = "${{ github.ref_name }}".TrimStart("v")
+          vpk pack `
+            --packId "Felweed" `
+            --packTitle "Felweed" `
+            --packVersion $ver `
+            --packDir ".\publish" `
+            --outputDir ".\site\felweed"
+
+      # Upload the site folder for the deploy job
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pages-site
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pages-site
+          path: site
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4
