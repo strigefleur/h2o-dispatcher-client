@@ -6,6 +6,7 @@ public static class Updater
 {
     public static async Task UpdateAsync()
     {
+#if !DEBUG
         var mgr = new UpdateManager("https://strigefleur.github.io//h2o-dispatcher-client/felweed/");
 
         // check for new version
@@ -18,5 +19,6 @@ public static class Updater
 
         // install new version and restart app
         mgr.ApplyUpdatesAndRestart(newVersion);
+#endif
     }
 }
