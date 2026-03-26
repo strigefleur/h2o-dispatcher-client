@@ -41,15 +41,15 @@ public record CSharpSolution : Solution
         {
             var oldRunPath = System.IO.Path.Combine(srcPath, $"{prefix}.Services.{escapedName}");
             var newRunPath = System.IO.Path.Combine(srcPath, $"{prefix}.Services.{escapedName}.Web");
+            
+            if (Directory.Exists(newRunPath))
+            {
+                return newRunPath;
+            }
 
             if (Directory.Exists(oldRunPath))
             {
                 return oldRunPath;
-            }
-
-            if (Directory.Exists(newRunPath))
-            {
-                return newRunPath;
             }
         }
 
