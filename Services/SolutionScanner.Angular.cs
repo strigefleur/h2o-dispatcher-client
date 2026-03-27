@@ -8,7 +8,7 @@ using Felweed.Models.Enumerators;
 
 namespace Felweed.Services;
 
-public partial class SolutionScanner
+public static partial class SolutionScanner
 {
     private static async IAsyncEnumerable<AngularSolution> ScanAngularSolutionsAsync(
         IEnumerable<string> directories,

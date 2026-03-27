@@ -1,47 +1,59 @@
 ﻿using System.IO;
 using System.Text.Json;
+using Ardalis.GuardClauses;
 using Felweed.Models;
 
 namespace Felweed.Services;
 
-public class ConfigurationService
+public static class ConfigurationService
 {
-    private readonly string _configPath;
     private const string ConfigFileName = "appconfig.json";
 
-    public ConfigurationService()
-    {
-        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        _configPath = Path.Combine(appData, "Felweed", ConfigFileName);
-    }
+    private static readonly string ConfigPath =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Felweed", ConfigFileName);
+    
+    private static AppConfig? _appConfig;
 
-    public AppConfig LoadConfig()
+    public static AppConfig LoadConfig()
     {
-        try
+        if (_appConfig == null)
         {
-            if (File.Exists(_configPath))
+            try
             {
-                var json = File.ReadAllText(_configPath);
-                return JsonSerializer.Deserialize<AppConfig>(json) ?? new AppConfig();
+                if (File.Exists(ConfigPath))
+                {
+                    var json = File.ReadAllText(ConfigPath);
+                    _appConfig = JsonSerializer.Deserialize<AppConfig>(json) ?? new AppConfig();
+                }
+                else
+                {
+                    _appConfig = new AppConfig();
+                }
+            }
+            catch
+            {
+                // Log error if needed
+                _appConfig = new AppConfig();
             }
         }
-        catch
-        {
-            // Log error if needed
-        }
-        return new AppConfig();
+        
+        return _appConfig;
     }
 
-    public void SaveConfig(AppConfig config)
+    public static void SaveConfig()
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_configPath)!);
-        var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(_configPath, json);
+        Guard.Against.Null(_appConfig);
+        
+        Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath)!);
+        var json = JsonSerializer.Serialize(_appConfig, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(ConfigPath, json);
     }
 
-    public bool ValidateDirectories(AppConfig config)
+    public static bool ValidateDirectories()
     {
-        return config.SolutionDirectories.Any(dir => 
+        Guard.Against.Null(_appConfig);
+        
+        return _appConfig.SolutionDirectories.Any(dir => 
             !string.IsNullOrWhiteSpace(dir) && 
             Directory.Exists(dir));
     }

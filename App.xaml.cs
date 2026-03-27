@@ -14,9 +14,6 @@ public partial class App : Application
     public App()
     {
         var services = new ServiceCollection();
-
-        // Register services
-        services.AddSingleton<ConfigurationService>();
         
         // Register ViewModels
         services.AddTransient<MainViewModel>();

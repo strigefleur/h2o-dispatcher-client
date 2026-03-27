@@ -1,8 +1,6 @@
-﻿using System.Collections.ObjectModel;
-using System.IO;
+﻿using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Felweed.Models;
 using Felweed.Services;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
@@ -11,12 +9,7 @@ namespace Felweed.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    private readonly ConfigurationService _configService;
-
     public SetupDialogViewModel SetupDialogViewModel { get; } = new();
-    
-    [ObservableProperty]
-    private ObservableCollection<Solution> _solutions = [];
     
     [ObservableProperty] private bool _isLoading;
     [ObservableProperty] private bool _isSelector;
@@ -26,22 +19,6 @@ public partial class MainViewModel : ObservableObject
     
     // TODO
     [ObservableProperty] private bool _showPublicDependencies;
-    
-    [Obsolete("DesignTime Only")]
-    public MainViewModel() {}
-
-    public MainViewModel(ConfigurationService configurationService)
-    {
-        _configService = configurationService;
-    }
-
-    [RelayCommand]
-    private void RunSolution(Solution? solution)
-    {
-        var config = _configService.LoadConfig();
-        
-        solution?.Run([..config.CSharpSolutionPrefixes]);
-    }
     
     [RelayCommand]
     private async Task ConfirmSelector()
@@ -68,9 +45,9 @@ public partial class MainViewModel : ObservableObject
 
     private void ValidateDirectories()
     {
-        var config = _configService.LoadConfig();
+        var config = ConfigurationService.LoadConfig();
         
-        if (!_configService.ValidateDirectories(config))
+        if (!ConfigurationService.ValidateDirectories())
         {
             IsSelector = true;
             
@@ -82,7 +59,7 @@ public partial class MainViewModel : ObservableObject
 
             // Save new config
             config.SolutionDirectories = selectedDirs.ToList();
-            _configService.SaveConfig(config);
+            ConfigurationService.SaveConfig();
         }
 
         IsSelector = false;
@@ -94,8 +71,7 @@ public partial class MainViewModel : ObservableObject
         
         try
         {
-            var config = _configService.LoadConfig();
-            await ScanDirectoriesAsync(config.SolutionDirectories);
+            await ScanDirectoriesAsync();
 
             IsLoaded = true;
         }
@@ -115,17 +91,13 @@ public partial class MainViewModel : ObservableObject
         await RunScanner();
     }
 
-    private async Task ScanDirectoriesAsync(List<string> paths, CancellationToken ct = default)
+    private static async Task ScanDirectoriesAsync(CancellationToken ct = default)
     {
-        var validPaths = paths.Where(Directory.Exists).ToList();
+        var config = ConfigurationService.LoadConfig();
+        
+        var validPaths = config.SolutionDirectories.Where(Directory.Exists).ToList();
         if (!validPaths.Any()) return;
         
-        var config = _configService.LoadConfig();
-        
-        var scanner = await SolutionScanner.ScanAsync(validPaths, config.CSharpSolutionPrefixes, ct);
-
-        List<Solution> solutions = [..scanner.CsharpSolutions, ..scanner.AngularSolutions];
-
-        Solutions = new ObservableCollection<Solution>(solutions.OrderByDescending(x => x.Type));
+        await SolutionScanner.ScanAsync(validPaths, config.CSharpSolutionPrefixes, ct);
     }
 }

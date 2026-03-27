@@ -7,7 +7,7 @@ using Felweed.Models;
 
 namespace Felweed.Services;
 
-public partial class SolutionScanner
+public static partial class SolutionScanner
 {
     private static async IAsyncEnumerable<CSharpSolution> ScanCSharpSolutionsAsync(
         IEnumerable<string> directories,

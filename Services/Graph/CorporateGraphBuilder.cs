@@ -10,10 +10,10 @@ namespace Felweed.Services.Graph;
 
 public static partial class CorporateGraphBuilder
 {
-    public static CorporateGraph Build(SolutionScanner scanner)
+    public static CorporateGraph Build()
     {
-        var allSolutions = scanner.CsharpSolutions.Cast<Solution>()
-            .Concat(scanner.AngularSolutions)
+        var allSolutions = SolutionScanner.CsharpSolutions.Cast<Solution>()
+            .Concat(SolutionScanner.AngularSolutions)
             .ToList();
 
         // Build "package name -> producing solutions" index

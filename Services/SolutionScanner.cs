@@ -2,33 +2,21 @@
 
 namespace Felweed.Services;
 
-public partial class SolutionScanner
+public static partial class SolutionScanner
 {
-    private SolutionScanner(
-        List<CSharpSolution> csharpSolutions,
-        List<AngularSolution> angularSolutions,
-        List<CSharpSolutionDependency> csharpSolutionDeps,
-        List<AngularSolutionDependency> angularSolutionDeps)
-    {
-        _csharpSolutions = csharpSolutions;
-        _angularSolutions = angularSolutions;
-        _csharpSolutionDeps = csharpSolutionDeps;
-        _angularSolutionDeps = angularSolutionDeps;
-    }
+    private static List<CSharpSolution>? _csharpSolutions;
+    public static IReadOnlyCollection<CSharpSolution> CsharpSolutions => _csharpSolutions.AsReadOnly();
 
-    private readonly List<CSharpSolution> _csharpSolutions;
-    public IReadOnlyCollection<CSharpSolution> CsharpSolutions => _csharpSolutions.AsReadOnly();
+    private static List<AngularSolution>? _angularSolutions;
+    public static IReadOnlyCollection<AngularSolution> AngularSolutions => _angularSolutions.AsReadOnly();
 
-    private readonly List<AngularSolution> _angularSolutions;
-    public IReadOnlyCollection<AngularSolution> AngularSolutions => _angularSolutions.AsReadOnly();
+    private static List<CSharpSolutionDependency>? _csharpSolutionDeps;
+    public static IReadOnlyCollection<CSharpSolutionDependency> CsharpSolutionDeps => _csharpSolutionDeps.AsReadOnly();
 
-    private readonly List<CSharpSolutionDependency> _csharpSolutionDeps;
-    public IReadOnlyCollection<CSharpSolutionDependency> CsharpSolutionDeps => _csharpSolutionDeps.AsReadOnly();
+    private static List<AngularSolutionDependency>? _angularSolutionDeps;
+    public static IReadOnlyCollection<AngularSolutionDependency> AngularSolutionDeps => _angularSolutionDeps.AsReadOnly();
 
-    private readonly List<AngularSolutionDependency> _angularSolutionDeps;
-    public IReadOnlyCollection<AngularSolutionDependency> AngularSolutionDeps => _angularSolutionDeps.AsReadOnly();
-
-    public static async Task<SolutionScanner> ScanAsync(
+    public static async Task ScanAsync(
         ICollection<string> scanPaths,
         ICollection<string>? cSharpAllowedPrefixes,
         CancellationToken cancellationToken = default)
@@ -105,6 +93,9 @@ public partial class SolutionScanner
             s.ReplaceDependencies(unified);
         }
 
-        return new SolutionScanner(csharpSolutions, angularSolutions, uniqueCsharpDeps, uniqueAngularDeps);
+        _csharpSolutions = csharpSolutions;
+        _csharpSolutionDeps = uniqueCsharpDeps;
+        _angularSolutions = angularSolutions;
+        _angularSolutionDeps = uniqueAngularDeps;
     }
 }
