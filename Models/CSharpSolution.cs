@@ -9,7 +9,9 @@ public record CSharpSolution : Solution
     public override SolutionKind Kind => SolutionKind.CSharp;
 
     private List<CSharpSolutionDependency> _dependencies = [];
-    public IReadOnlyCollection<CSharpSolutionDependency> Dependencies => _dependencies.AsReadOnly();
+
+    public override IReadOnlyCollection<CSharpSolutionDependency> Dependencies => _dependencies
+        .Where(x => x.Type == SolutionDependencyType.Corporate).ToArray().AsReadOnly();
 
     public void AddDependencyRange(params CSharpSolutionDependency[] dependencies)
     {

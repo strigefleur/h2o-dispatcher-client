@@ -33,6 +33,8 @@ public abstract record SolutionDependency
     
     private readonly HashSet<DependencyConsumer> _consumers = [];
     public IReadOnlyCollection<DependencyConsumer> Consumers => _consumers;
+
+    public string? SolutionVersion => Versions.FirstOrDefault();
     
     public abstract string CorporateDepPrefix { get; }
 

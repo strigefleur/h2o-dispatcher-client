@@ -5,17 +5,17 @@ using Wpf.Ui.Controls;
 
 namespace Felweed.ViewModels.Converters;
 
-public class KindToIconConverter : IValueConverter
+public class SolutionTypeToIconConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is SolutionKind kind)
+        if (value is SolutionType type)
         {
-            return kind switch
+            return type switch
             {
-                SolutionKind.Angular => SymbolRegular.Globe24,
-                SolutionKind.CSharp => SymbolRegular.Desktop24,
-                _ => SymbolRegular.Box24
+                SolutionType.Service => SymbolRegular.Settings24,
+                SolutionType.Library => SymbolRegular.Library24,
+                _ => SymbolRegular.Question24
             };
         }
 

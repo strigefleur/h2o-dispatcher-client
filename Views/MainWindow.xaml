@@ -18,7 +18,11 @@
                  Height="808"
                  Width="880">
     <Window.Resources>
-        <localConverters:KindToIconConverter x:Key="KindToIconConverter"/>
+        <localConverters:SolutionKindToIconConverter x:Key="SolutionKindToIconConverter"/>
+        <localConverters:SolutionTypeToIconConverter x:Key="SolutionTypeToIconConverter"/>
+        <localConverters:SolutionTypeToTooltipConverter x:Key="SolutionTypeToTooltipConverter"/>
+        <localConverters:SolutionKindToTooltipConverter x:Key="SolutionKindToTooltipConverter"/>
+        <localConverters:DependencyTypeToIconConverter x:Key="DependencyTypeToIconConverter"/>
         <localConverters:SolutionTypeToVisibilityConverter x:Key="SolutionTypeToVisibilityConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Window.Resources>
@@ -94,6 +98,7 @@
             </Grid.RowDefinitions>
 
             <ui:DataGrid Grid.Row="1" 
+                         RowDetailsVisibilityMode="VisibleWhenSelected"
                          ItemsSource="{Binding Solutions}" 
                          AutoGenerateColumns="False"
                          CanUserAddRows="False"
@@ -103,16 +108,27 @@
                     <DataGridTemplateColumn Header="Kind" Width="80" SortMemberPath="Kind">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <ui:SymbolIcon Symbol="{Binding Kind, Converter={StaticResource KindToIconConverter}}" 
+                                <ui:SymbolIcon Symbol="{Binding Kind, Converter={StaticResource SolutionKindToIconConverter}}" 
+                                               ToolTip="{Binding Kind, Converter={StaticResource SolutionKindToTooltipConverter}}"
                                                FontSize="18" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" FontWeight="SemiBold" Width="*" />
-                    <DataGridTextColumn Header="Version" Binding="{Binding ChangelogVersionNumber}" Width="100" />
-                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="100" />
-                    <DataGridTextColumn Header="Last Sync" Binding="{Binding LatestSyncDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="120" />
+                    <DataGridTextColumn Header="Name" IsReadOnly="True" Binding="{Binding Name}" FontWeight="SemiBold" Width="*" />
+                    <DataGridTextColumn Header="Version" IsReadOnly="True" Binding="{Binding ChangelogVersionNumber}" Width="100" />
+                    
+                    <DataGridTemplateColumn Header="Type" Width="80" SortMemberPath="Type">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ui:SymbolIcon Symbol="{Binding Type, Converter={StaticResource SolutionTypeToIconConverter}}" 
+                                               ToolTip="{Binding Type, Converter={StaticResource SolutionTypeToTooltipConverter}}"
+                                               FontSize="18" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    
+                    <DataGridTextColumn Header="Last Sync" IsReadOnly="True" Binding="{Binding LatestSyncDate, StringFormat=\{0:yyyy-MM-dd HH:mm:ss\}}" Width="160" />
 
                     <!-- Action Button -->
                     <DataGridTemplateColumn Width="100" Header="Run" SortMemberPath="IsRunnable">
@@ -131,6 +147,49 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                 </ui:DataGrid.Columns>
+                
+                <ui:DataGrid.RowDetailsTemplate>
+                    <DataTemplate>
+                        <ui:DataGrid ItemsSource="{Binding Dependencies}"
+                                     AutoGenerateColumns="False"
+                                     CanUserAddRows="False"
+                                     IsReadOnly="True"
+                                     MaxHeight="320"
+                                     RowHeight="24"
+                                     Margin="32,4,0,8">
+                            <ui:DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="FontSize" Value="8" />
+                                    <Setter Property="MinHeight" Value="24" />
+                                    <Setter Property="Opacity" Value="0.7" />
+                                </Style>
+                            </ui:DataGrid.RowStyle>
+                            
+                            <ui:DataGrid.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="Padding" Value="4,0" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                </Style>
+                            </ui:DataGrid.CellStyle>
+                            
+                            <ui:DataGrid.Columns>
+                                <DataGridTemplateColumn Header="Type" Width="80" SortMemberPath="Type" >
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ui:SymbolIcon Symbol="{Binding Type, Converter={StaticResource DependencyTypeToIconConverter}}" 
+                                                           FontSize="18" 
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Name" IsReadOnly="True" Binding="{Binding Name}" />
+                                <DataGridTextColumn Header="Version" IsReadOnly="True" Binding="{Binding SolutionVersion}" />
+                            </ui:DataGrid.Columns>
+                        </ui:DataGrid>
+                    </DataTemplate>
+                </ui:DataGrid.RowDetailsTemplate>
             </ui:DataGrid>
         </Grid>
     </Grid>

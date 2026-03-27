@@ -1,4 +1,5 @@
-﻿using Felweed.Models.Enumerators;
+﻿using Felweed.Constants;
+using Felweed.Models.Enumerators;
 
 namespace Felweed.Models;
 
@@ -10,5 +11,5 @@ public record AngularSolutionDependency : SolutionDependency
     }
 
     public AngularDependencyType AngularDependencyType { get; }
-    public override string CorporateDepPrefix => "@rshbintech";
+    public override string CorporateDepPrefix => PrefixConst.AngularCorporateDepPrefix;
 }

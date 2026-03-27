@@ -24,6 +24,9 @@ public partial class MainViewModel : ObservableObject
     
     [ObservableProperty] private SymbolRegular _themeSwitchIcon = SymbolRegular.WeatherMoon24;
     
+    // TODO
+    [ObservableProperty] private bool _showPublicDependencies;
+    
     [Obsolete("DesignTime Only")]
     public MainViewModel() {}
 

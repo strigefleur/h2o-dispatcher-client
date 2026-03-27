@@ -1,4 +1,6 @@
-﻿namespace Felweed.Models;
+﻿using Felweed.Constants;
+
+namespace Felweed.Models;
 
 public record CSharpSolutionDependency : SolutionDependency
 {
@@ -6,5 +8,5 @@ public record CSharpSolutionDependency : SolutionDependency
     {
     }
 
-    public override string CorporateDepPrefix => "RSHBIntech";
+    public override string CorporateDepPrefix => PrefixConst.CSharpCorporateDepPrefix;
 }

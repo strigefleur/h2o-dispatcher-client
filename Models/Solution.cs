@@ -12,6 +12,8 @@ public abstract record Solution
     public required DateTime? LatestSyncDate { get; init; }
 
     public bool IsRunnable => Type == SolutionType.Service;
+    
+    public abstract IReadOnlyCollection<SolutionDependency> Dependencies { get; }
 
     public abstract void Run(params string[] args);
 }
