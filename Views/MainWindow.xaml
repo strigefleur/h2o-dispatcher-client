@@ -109,9 +109,27 @@
                         Icon="{ui:SymbolIcon AppsListDetail24}"
                         TargetPageType="{x:Type v:SolutionGridPage}" />
                     <ui:NavigationViewItem
-                        Content="Диаграмма"
-                        Icon="{ui:SymbolIcon DataUsage24}"
-                        TargetPageType="{x:Type v:GraphPage}" />
+                        Content="Зависимости (DAG)"
+                        IsExpanded="True"
+                        Icon="{ui:SymbolIcon Link24}">
+                        <ui:NavigationViewItem.MenuItems>
+                            <ui:NavigationViewItem
+                                Content="Backend"
+                                x:Name="BackendGraphPage"
+                                Icon="{ui:SymbolIcon Settings24}"
+                                PreviewMouseUp="BackendGraphPage_OnPreviewMouseUp"
+                                TargetPageType="{x:Type v:GraphPage}"
+                                />
+                            
+                            <ui:NavigationViewItem
+                                Content="Frontend"
+                                x:Name="FrontendGraphPage"
+                                Icon="{ui:SymbolIcon Library24}"
+                                PreviewMouseUp="FrontendGraphPage_OnPreviewMouseUp"
+                                TargetPageType="{x:Type v:GraphPage}"
+                                />
+                        </ui:NavigationViewItem.MenuItems>
+                    </ui:NavigationViewItem>
                     <ui:NavigationViewItem
                         Content="Настройки"
                         Icon="{ui:SymbolIcon Settings24}"

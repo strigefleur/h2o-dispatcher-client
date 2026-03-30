@@ -30,8 +30,8 @@ public partial class GraphPage : Page
         if (e.AddedItems.Count > 0)
         {
             Vm.ApplyFilter((e.AddedItems[0] as LevelNodeVm).Id);
-            SetExpansionStatus(MainTree, true);
             ScrollToTop_Click(sender, null);
+            SetExpansionStatus(MainTree, true);
         }
     }
 

@@ -17,7 +17,9 @@ public partial class GraphPageViewModel : ObservableObject
 
     public void Load()
     {
-        _graph = DependencyGraphBuilder.Build(SolutionScanner.CsharpSolutions);
+        _graph = DependencyGraphBuilder.Build(MainViewModel.GraphPageSelector == SolutionKind.CSharp
+            ? SolutionScanner.CsharpSolutions
+            : SolutionScanner.AngularSolutions);
         var layers = GraphLayering.BuildLayers(_graph);
 
         AllLevels.Clear();

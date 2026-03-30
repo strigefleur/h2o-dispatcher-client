@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Felweed.Models.Enumerators;
 using Felweed.Services;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
@@ -19,6 +20,8 @@ public partial class MainViewModel : ObservableObject
     
     // TODO
     [ObservableProperty] private bool _showPublicDependencies;
+
+    public static SolutionKind GraphPageSelector { get; set; } = SolutionKind.CSharp;
     
     [RelayCommand]
     private async Task ConfirmSelector()
