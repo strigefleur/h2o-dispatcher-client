@@ -56,7 +56,12 @@ public static partial class SolutionScanner
             
             dependencies.AddRange(deps);
             if (packable)
-                produces.Add(csproj);
+            {
+                var doc = XDocument.Load(csproj);
+                var packageId = GetPackageId(doc);
+                
+                produces.Add(packageId);
+            }
 
             if (isCorporate == null && !csproj.EndsWith("Tests.csproj"))
             {

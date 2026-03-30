@@ -6,11 +6,92 @@
       xmlns:local="clr-namespace:Felweed.Views"
       xmlns:vm="clr-namespace:Felweed.ViewModels"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:graph="clr-namespace:Felweed.Models.Graph"
+      xmlns:localConverters="clr-namespace:Felweed.ViewModels.Converters"
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance Type=vm:GraphPageViewModel, IsDesignTimeCreatable=True}"
       d:DesignHeight="808"
-      d:DesignWidth="880">
-    <Grid>
-        
-    </Grid>
+      d:DesignWidth="880"
+      ScrollViewer.CanContentScroll="False">
+    <Page.Resources>
+        <localConverters:SolutionTypeToIconConverter x:Key="SolutionTypeToIconConverter"/>
+        <localConverters:SolutionTypeToTooltipConverter x:Key="SolutionTypeToTooltipConverter"/>
+    </Page.Resources>
+    
+    <DockPanel Margin="12">
+
+        <!-- Filter row -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+            <TextBlock VerticalAlignment="Center" Text="Фильтр:" Margin="0,0,8,0"/>
+
+            <ComboBox x:Name="LibFilter"
+                      Width="320"
+                      ItemsSource="{Binding FilterListLibraries}"
+                      SelectionChanged="LibFilter_OnSelectionChanged"
+                      DisplayMemberPath="Title"
+                      IsEditable="True"
+                      IsTextSearchEnabled="True"
+                      TextSearch.TextPath="Title"
+                      StaysOpenOnEdit="True"
+                      SelectedValuePath="Id" />
+
+            <Button Content="Сбросить" Margin="8,0,0,0" Padding="10,4"
+                    Click="ClearFilter_Click"/>
+            
+            <Separator Margin="8,4" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}"/>
+            
+            <Button Margin="0,0,4,0" Padding="8,4" Click="ScrollToTop_Click" ToolTip="Наверх">
+                <ui:SymbolIcon Symbol="ArrowUp24" FontSize="16"/>
+            </Button>
+            
+            <Button Content="Развернуть все" Margin="0,0,4,0" Padding="10,4" Click="ExpandAll_Click"/>
+            
+            <Button Content="Свернуть все" Padding="10,4" Click="CollapseAll_Click"/>
+        </StackPanel>
+
+        <!-- Levels Tree -->
+        <TreeView x:Name="MainTree" VirtualizingStackPanel.IsVirtualizing="True" ItemsSource="{Binding FilteredLevels}">
+            <TreeView.Resources>
+
+                <HierarchicalDataTemplate DataType="{x:Type vm:LevelVm}"
+                                          ItemsSource="{Binding Nodes}">
+                    <TextBlock Text="{Binding Header}" FontWeight="SemiBold"/>
+                </HierarchicalDataTemplate>
+
+                <DataTemplate DataType="{x:Type vm:LevelNodeVm}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" /> <!-- Icon -->
+                            <ColumnDefinition Width="8" />    <!-- Spacing -->
+                            <ColumnDefinition Width="200" />  <!-- Title -->
+                            <ColumnDefinition Width="8" />    <!-- Spacing -->
+                            <ColumnDefinition Width="*" />    <!-- Path (fills remaining space) -->
+                        </Grid.ColumnDefinitions>
+
+                        <ui:SymbolIcon Grid.Column="0"
+                                       Symbol="{Binding SolutionType, Converter={StaticResource SolutionTypeToIconConverter}}" 
+                                       ToolTip="{Binding SolutionType, Converter={StaticResource SolutionTypeToTooltipConverter}}"
+                                       FontSize="18" 
+                                       VerticalAlignment="Center" />
+
+                        <TextBlock Grid.Column="2" 
+                                   Text="{Binding Title}" 
+                                   TextTrimming="CharacterEllipsis"
+                                   TextWrapping="NoWrap"
+                                   VerticalAlignment="Center" />
+
+                        <TextBlock Grid.Column="4" 
+                                   Text="{Binding Path}" 
+                                   Foreground="Gray" 
+                                   FontSize="11" 
+                                   TextTrimming="CharacterEllipsis"
+                                   TextWrapping="NoWrap"
+                                   VerticalAlignment="Center" />
+                    </Grid>
+                </DataTemplate>
+
+            </TreeView.Resources>
+        </TreeView>
+
+    </DockPanel>
 </Page>
