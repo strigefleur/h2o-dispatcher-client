@@ -1,6 +1,4 @@
-﻿using Velopack;
-
-namespace Felweed.Services;
+﻿namespace Felweed.Services;
 
 public static class Updater
 {

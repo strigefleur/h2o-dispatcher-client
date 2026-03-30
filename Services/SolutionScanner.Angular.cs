@@ -43,9 +43,9 @@ public static partial class SolutionScanner
         CancellationToken ct = default)
     {
         var packageJson = Path.Combine(angularDir, "package.json");
-        var dependencies = File.Exists(packageJson)
+        var (name, dependencies) = File.Exists(packageJson)
             ? ParsePackageJson(packageJson)
-            : [];
+            : ("NotExists", []);
 
         var solution = new AngularSolution
         {
@@ -55,39 +55,44 @@ public static partial class SolutionScanner
             ChangelogVersionNumber =
                 await ChangelogHelper.GetLatestVersionNumberAsync(Path.Combine(angularDir, "CHANGELOG.md"), ct),
             LatestSyncDate = GitHelper.GetLastGitSyncDate(angularDir),
+            IsCorporate = name.StartsWith(Constants.PrefixConst.AngularCorporateDepPrefix)
         };
-        solution.AddDependencyRange(dependencies.ToArray());
+        
+        solution.AddConsumedDependencies(dependencies.ToArray());
+        
+        if (solution.Type == SolutionType.Library)
+            solution.AddProducedDependencies(name);
 
         return solution;
     }
 
-    private static List<AngularSolutionDependency> ParsePackageJson(string path)
+    private static (string Name, List<ConsumedDependency> Deps) ParsePackageJson(string path)
     {
         try
         {
             using var doc = JsonDocument.Parse(File.ReadAllText(path));
             var root = doc.RootElement;
             
-            var name = root.TryGetProperty("name", out var nameEl) ? nameEl.GetString() : "Unknown";
+            var name = root.TryGetProperty("name", out var nameEl) ? nameEl.GetString() ?? "Unknown" : "Unknown";
             var version = root.TryGetProperty("version", out var versionEl) ? versionEl.GetString() : "?.?.?";
             
-            var deps = new List<AngularSolutionDependency>();
+            var deps = new List<ConsumedDependency>();
 
             deps.AddRange(ExtractDeps(root, "dependencies", AngularDependencyType.Runtime));
             deps.AddRange(ExtractDeps(root, "devDependencies", AngularDependencyType.Dev));
             deps.AddRange(ExtractDeps(root, "peerDependencies", AngularDependencyType.Peer));
 
-            return [.. deps.OrderBy(d => d.Name)];
+            return (name, [.. deps.OrderBy(d => d.Name).ThenBy(x => x.Version)]);
         }
-        catch { return []; }
+        catch { return ("Error", []); }
     }
     
-    private static IEnumerable<AngularSolutionDependency> ExtractDeps(JsonElement root, string section, AngularDependencyType type)
+    private static IEnumerable<ConsumedDependency> ExtractDeps(JsonElement root, string section, AngularDependencyType type)
     {
         if (!root.TryGetProperty(section, out var element)) 
             yield break;
 
         foreach (var prop in element.EnumerateObject())
-            yield return new AngularSolutionDependency(prop.Name, prop.Value.GetString() ?? "*", type);
+            yield return new ConsumedDependency(Name: prop.Name, Version: prop.Value.GetString() ?? "*");
     }
 }

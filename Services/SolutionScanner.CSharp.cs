@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using System.Xml.Linq;
+using Ardalis.GuardClauses;
 using Felweed.Models;
 
 namespace Felweed.Services;
@@ -41,15 +42,29 @@ public static partial class SolutionScanner
 
     private static async Task<CSharpSolution> ParseCSharpSolutionAsync(string slnPath, CancellationToken ct = default)
     {
-        var dependencies = new List<CSharpSolutionDependency>();
+        var produces = new List<string>();
+        var dependencies = new List<ConsumedDependency>();
         var slnDir = Path.GetDirectoryName(slnPath);
 
         // Find all .csproj files referenced in solution
         var projects = GetProjectsFromSolution(slnPath, slnDir);
-
+            
+        bool? isCorporate = null;
         foreach (var csproj in projects.Where(File.Exists))
         {
-            dependencies.AddRange(ParseCsprojDependencies(csproj));
+            var (packable, deps) = ParseCsprojDependencies(csproj);
+            
+            dependencies.AddRange(deps);
+            if (packable)
+                produces.Add(csproj);
+
+            if (isCorporate == null && !csproj.EndsWith("Tests.csproj"))
+            {
+                var doc = XDocument.Load(csproj);
+                var packageId = GetPackageId(doc);
+
+                isCorporate = packageId.StartsWith(Constants.PrefixConst.CSharpCorporateDepPrefix);
+            }
         }
 
         var solution = new CSharpSolution
@@ -60,8 +75,12 @@ public static partial class SolutionScanner
             ChangelogVersionNumber =
                 await ChangelogHelper.GetLatestVersionNumberAsync(Path.Combine(slnDir, "CHANGELOG.md"), ct),
             LatestSyncDate = GitHelper.GetLastGitSyncDate(slnDir),
+            IsCorporate = isCorporate
         };
-        solution.AddDependencyRange([.. dependencies.Distinct().OrderBy(d => d.Name)]);
+        
+        solution.AddConsumedDependencies([..dependencies.OrderBy(d => d.Name).ThenBy(x => x.Version)]);
+        
+        solution.AddProducedDependencies([..produces]);
 
         return solution;
     }
@@ -76,26 +95,43 @@ public static partial class SolutionScanner
             .ToList();
     }
 
-    private static List<CSharpSolutionDependency> ParseCsprojDependencies(string csprojPath)
+    private static (bool Packable, List<ConsumedDependency> Deps) ParseCsprojDependencies(string csprojPath)
     {
         try
         {
             var doc = XDocument.Load(csprojPath);
             var ns = doc.Root?.GetDefaultNamespace() ?? XNamespace.None;
 
-            return doc.Descendants()
-                .Where(e => e.Name.LocalName == "PackageReference")
-                .Select(e =>
-                {
-                    var name = e.Attribute("Include")?.Value ?? "Unknown";
-                    var version = e.Attribute("Version")?.Value ?? e.Element(ns + "Version")?.Value ?? "*";
+            return (IsPackable(doc),
+                    doc.Descendants()
+                        .Where(e => e.Name.LocalName == "PackageReference")
+                        .Select(e =>
+                        {
+                            var name = e.Attribute("Include")?.Value ?? "Unknown";
+                            var version = e.Attribute("Version")?.Value ?? e.Element(ns + "Version")?.Value ?? "*";
 
-                    return new CSharpSolutionDependency(name, version);
-                })
-                .ToList();
+                            return new ConsumedDependency(name, version);
+                        })
+                        .ToList()
+                );
         }
-        catch { return []; }
+        catch { return (false, []); }
     }
+    
+    private static string GetPackageId(XDocument xdoc)
+    {
+        return Guard.Against.NullOrWhiteSpace(ReadFirstProperty(xdoc, "PackageId"));
+    }
+    
+    private static bool IsPackable(XDocument xdoc)
+    {
+        var isPackable = ReadFirstProperty(xdoc, "IsPackable");
+
+        return string.Equals(isPackable, "true", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string? ReadFirstProperty(XDocument xdoc, string name) =>
+        xdoc.Descendants().FirstOrDefault(e => e.Name.LocalName == name)?.Value?.Trim();
 
     [GeneratedRegex(@"Project\([^)]+\)\s*=\s*""[^""]*""\s*,\s*""([^""]+)""")]
     private static partial Regex ProjectRegex();

@@ -9,13 +9,12 @@ public class DependencyTypeToIconConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is SolutionDependencyType type)
+        if (value is bool isCorporate)
         {
-            return type switch
+            return isCorporate switch
             {
-                SolutionDependencyType.Public => SymbolRegular.Globe24,
-                SolutionDependencyType.Corporate => SymbolRegular.Building24,
-                _ => SymbolRegular.Globe24
+                false => SymbolRegular.Globe24,
+                true => SymbolRegular.Building24,
             };
         }
 

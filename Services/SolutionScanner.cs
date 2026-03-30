@@ -4,98 +4,51 @@ namespace Felweed.Services;
 
 public static partial class SolutionScanner
 {
-    private static List<CSharpSolution>? _csharpSolutions;
+    private static List<CSharpSolution> _csharpSolutions = [];
     public static IReadOnlyCollection<CSharpSolution> CsharpSolutions => _csharpSolutions.AsReadOnly();
 
-    private static List<AngularSolution>? _angularSolutions;
+    private static List<AngularSolution> _angularSolutions = [];
     public static IReadOnlyCollection<AngularSolution> AngularSolutions => _angularSolutions.AsReadOnly();
-
-    private static List<CSharpSolutionDependency>? _csharpSolutionDeps;
-    public static IReadOnlyCollection<CSharpSolutionDependency> CsharpSolutionDeps => _csharpSolutionDeps.AsReadOnly();
-
-    private static List<AngularSolutionDependency>? _angularSolutionDeps;
-    public static IReadOnlyCollection<AngularSolutionDependency> AngularSolutionDeps => _angularSolutionDeps.AsReadOnly();
 
     public static async Task ScanAsync(
         ICollection<string> scanPaths,
         ICollection<string>? cSharpAllowedPrefixes,
         CancellationToken cancellationToken = default)
     {
-        var csharpSolutions = await ScanCSharpSolutionsAsync(scanPaths, cSharpAllowedPrefixes, cancellationToken)
+        _csharpSolutions = await ScanCSharpSolutionsAsync(scanPaths, cSharpAllowedPrefixes, cancellationToken)
             .ToListAsync(cancellationToken: cancellationToken);
 
-        // Unify C# deps + attach consumers
-        List<CSharpSolutionDependency> uniqueCsharpDeps = [];
-        foreach (var s in csharpSolutions)
-        {
-            foreach (var dep in s.Dependencies)
-            {
-                var unique = uniqueCsharpDeps.SingleOrDefault(x => x.Name == dep.Name);
-                if (unique is null) uniqueCsharpDeps.Add(dep with { });
-                else unique.AddVersion(dep.Versions.Single());
-            }
-        }
-
-        foreach (var s in csharpSolutions)
-        {
-            List<CSharpSolutionDependency> unified = [];
-            foreach (var dep in s.Dependencies)
-            {
-                var unique = uniqueCsharpDeps.Single(x => x.Name == dep.Name);
-
-                unique.AddConsumer(new DependencyConsumer
-                {
-                    Version = dep.Versions.Single(),
-                    Solution = s
-                });
-
-                // в проекте может быть несколько упоминаний одной зависимости
-                if (!unified.Contains(unique))
-                    unified.Add(unique);
-            }
-
-            s.ReplaceDependencies(unified);
-        }
-
-        var angularSolutions = await ScanAngularSolutionsAsync(scanPaths, cancellationToken)
+        _angularSolutions = await ScanAngularSolutionsAsync(scanPaths, cancellationToken)
             .ToListAsync(cancellationToken: cancellationToken);
+        
+        MapDependencies(_csharpSolutions);
+        MapDependencies(_angularSolutions);
+    }
 
-        // Unify Angular deps + attach consumers (same approach)
-        List<AngularSolutionDependency> uniqueAngularDeps = [];
-        foreach (var s in angularSolutions)
+    private static void MapDependencies(IReadOnlyCollection<Solution> solutions)
+    {
+        foreach (var solution in solutions)
         {
-            foreach (var dep in s.Dependencies)
+            var relatableSolutions = solutions
+                .Where(x => x.Id != solution.Id && x.ProducesDependencies.Count > 0)
+                .Where(x => x.IsCorporate == true)
+                .ToArray();
+            
+            foreach (var consumedDependency in solution.ConsumesDependencies.Where(x => x.IsCorporate))
             {
-                var unique = uniqueAngularDeps.SingleOrDefault(x => x.Name == dep.Name);
-                if (unique is null) uniqueAngularDeps.Add(dep with { });
-                else unique.AddVersion(dep.Versions.Single());
-            }
-        }
-
-        foreach (var s in angularSolutions)
-        {
-            List<AngularSolutionDependency> unified = [];
-            foreach (var dep in s.Dependencies)
-            {
-                var unique = uniqueAngularDeps.Single(x => x.Name == dep.Name);
-
-                unique.AddConsumer(new DependencyConsumer
+                // среди других решений (без текущего), у которых есть производимые зависимости, ищем нашу
+                foreach (var otherSolution in relatableSolutions)
                 {
-                    Version = dep.Versions.Single(),
-                    Solution = s
-                });
-
-                // в проекте может быть несколько упоминаний одной зависимости
-                if (!unified.Contains(unique))
-                    unified.Add(unique);
+                    foreach (var producedDependency in otherSolution.ProducesDependencies)
+                    {
+                        if (producedDependency.Equals(consumedDependency.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            consumedDependency.Solution = otherSolution;
+                            consumedDependency.Solution.AddConsumedBy(solution);
+                        }
+                    }
+                }
             }
-
-            s.ReplaceDependencies(unified);
         }
-
-        _csharpSolutions = csharpSolutions;
-        _csharpSolutionDeps = uniqueCsharpDeps;
-        _angularSolutions = angularSolutions;
-        _angularSolutionDeps = uniqueAngularDeps;
     }
 }

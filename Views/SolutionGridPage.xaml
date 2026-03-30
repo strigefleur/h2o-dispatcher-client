@@ -8,6 +8,7 @@
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
       xmlns:vm="clr-namespace:Felweed.ViewModels"
+      xmlns:m="clr-namespace:Felweed.Models"
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance Type=vm:SolutionGridPageViewModel, IsDesignTimeCreatable=True}"
       d:DesignHeight="808"
@@ -82,7 +83,7 @@
                 
                 <ui:DataGrid.RowDetailsTemplate>
                     <DataTemplate>
-                        <ui:DataGrid ItemsSource="{Binding Dependencies}"
+                        <ui:DataGrid ItemsSource="{Binding ConsumesCorpDependencies}"
                                      AutoGenerateColumns="False"
                                      CanUserAddRows="False"
                                      IsReadOnly="True"
@@ -105,10 +106,10 @@
                             </ui:DataGrid.CellStyle>
                             
                             <ui:DataGrid.Columns>
-                                <DataGridTemplateColumn Header="Type" Width="80" SortMemberPath="Type" >
+                                <DataGridTemplateColumn Header="Type" Width="80" SortMemberPath="IsCorporate">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <ui:SymbolIcon Symbol="{Binding Type, Converter={StaticResource DependencyTypeToIconConverter}}" 
+                                            <ui:SymbolIcon Symbol="{Binding IsCorporate, Converter={StaticResource DependencyTypeToIconConverter}}" 
                                                            FontSize="18" 
                                                            HorizontalAlignment="Center"
                                                            VerticalAlignment="Center"
@@ -117,7 +118,7 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Name" IsReadOnly="True" Binding="{Binding Name}" />
-                                <DataGridTextColumn Header="Version" IsReadOnly="True" Binding="{Binding SolutionVersion}" />
+                                <DataGridTextColumn Header="Version" IsReadOnly="True" Binding="{Binding Version}" />
                             </ui:DataGrid.Columns>
                         </ui:DataGrid>
                     </DataTemplate>

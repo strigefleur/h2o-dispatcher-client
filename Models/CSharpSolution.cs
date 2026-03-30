@@ -7,21 +7,6 @@ namespace Felweed.Models;
 public record CSharpSolution : Solution
 {
     public override SolutionKind Kind => SolutionKind.CSharp;
-
-    private List<CSharpSolutionDependency> _dependencies = [];
-
-    public override IReadOnlyCollection<CSharpSolutionDependency> Dependencies => _dependencies
-        .Where(x => x.Type == SolutionDependencyType.Corporate).ToArray().AsReadOnly();
-
-    public void AddDependencyRange(params CSharpSolutionDependency[] dependencies)
-    {
-        _dependencies.AddRange(dependencies);
-    }
-
-    public void ReplaceDependencies(List<CSharpSolutionDependency> dependencies)
-    {
-        _dependencies = dependencies;
-    }
     
     public override void Run(params string[] args)
     {
