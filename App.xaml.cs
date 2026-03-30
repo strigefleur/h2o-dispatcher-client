@@ -4,6 +4,8 @@ using Felweed.ViewModels;
 using Felweed.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Velopack;
+using Wpf.Ui.Appearance;
+using Wpf.Ui.Controls;
 
 namespace Felweed;
 
@@ -34,8 +36,27 @@ public partial class App : Application
         
         MainWindow = mainWindow;
         ShutdownMode = ShutdownMode.OnMainWindowClose;
+
+        ApplyThemeFromConfig();
         
         mainWindow.Show();
+    }
+
+    private void ApplyThemeFromConfig()
+    {
+        var currentTheme = ApplicationThemeManager.GetAppTheme();
+        var config = ConfigurationService.LoadConfig();
+
+        var configTheme = config.ThemeSwitchIcon == SymbolRegular.WeatherMoon24
+            ? ApplicationTheme.Light
+            : ApplicationTheme.Dark;
+
+        if (configTheme == currentTheme)
+            return;
+
+        ApplicationThemeManager.Apply(
+            currentTheme == ApplicationTheme.Dark ? ApplicationTheme.Light : ApplicationTheme.Dark,
+            WindowBackdropType.None);
     }
     
     [STAThread]
