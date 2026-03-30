@@ -5,7 +5,7 @@ public static class Updater
     public static async Task UpdateAsync()
     {
 #if !DEBUG
-        var mgr = new UpdateManager("https://strigefleur.github.io//h2o-dispatcher-client/felweed/");
+        var mgr = new Velopack.UpdateManager("https://strigefleur.github.io//h2o-dispatcher-client/felweed/");
 
         // check for new version
         var newVersion = await mgr.CheckForUpdatesAsync();
