@@ -15,6 +15,7 @@
                  ExtendsContentIntoTitleBar="True"
                  ContentRendered="MainWindow_OnContentRendered"
                  Title="H2.0: Диспетчер"
+                 Icon="/Assets/Icons/h2o_logo.ico"
                  Height="808"
                  Width="1200">
     <Window.Resources>
@@ -141,13 +142,21 @@
                         IsEnabled="False"
                         TargetPageType="{x:Type v:AboutPage}" />
                 </ui:NavigationView.MenuItems>
+                <ui:NavigationView.Header>
+                    <ui:HyperlinkButton
+                        HorizontalAlignment="Stretch" 
+                        VerticalAlignment="Stretch"
+                        Content="Зависимости (Google Table)"
+                        Icon="{ui:SymbolIcon Link24}"
+                        NavigateUri="https://docs.google.com/spreadsheets/d/1qGU-xha3lHp07vbx6qH-VSikyNL4yQ8LLCzqpGbWOtw" />
+                </ui:NavigationView.Header>
                 <ui:NavigationView.PaneFooter>
                     <TextBlock
                         Margin="0,0"
                         VerticalAlignment="Center"
                         FontWeight="Medium"
                         Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
-                        Text="0.4.0" />
+                        Text="0.4.2" />
                 </ui:NavigationView.PaneFooter>
             </ui:NavigationView>
         </Grid>

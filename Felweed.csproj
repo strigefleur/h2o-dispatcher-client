@@ -40,6 +40,8 @@
     <ItemGroup>
       <None Remove="Assets\Icons\h2o_logo.svg" />
       <Resource Include="Assets\Icons\h2o_logo.svg" />
+      <None Remove="Assets\Icons\h2o_logo.ico" />
+      <Resource Include="Assets\Icons\h2o_logo.ico" />
     </ItemGroup>
 
 </Project>

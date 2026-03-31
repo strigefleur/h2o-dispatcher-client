@@ -12,7 +12,8 @@
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance Type=vm:SolutionGridPageViewModel, IsDesignTimeCreatable=True}"
       d:DesignHeight="808"
-      d:DesignWidth="880">
+      d:DesignWidth="880"
+      ScrollViewer.CanContentScroll="False">
     <Page.Resources>
         <localConverters:SolutionKindToIconConverter x:Key="SolutionKindToIconConverter"/>
         <localConverters:SolutionTypeToIconConverter x:Key="SolutionTypeToIconConverter"/>
@@ -71,6 +72,7 @@
                                            Visibility="{Binding Type, Converter={StaticResource SolutionTypeToVisibilityConverter}}"
                                            Command="{Binding DataContext.RunSolutionCommand, RelativeSource={RelativeSource AncestorType=ui:DataGrid}}"
                                            CommandParameter="{Binding}"
+                                           Cursor="Hand"
                                            PreviewMouseLeftButtonDown="Button_PreviewMouseLeftButtonDown">
                                     <ui:Button.Icon>
                                         <ui:SymbolIcon Symbol="Play24" />
