@@ -51,6 +51,7 @@ public static partial class SolutionScanner
         {
             Name = angularDir.Split(Path.DirectorySeparatorChar).Last(),
             Path = angularDir,
+            PackageId = name,
             Type = GitlabConfigHelper.GetProjectType(Path.Combine(angularDir, ".gitlab-ci.yml")),
             ChangelogVersionNumber =
                 await ChangelogHelper.GetLatestVersionNumberAsync(Path.Combine(angularDir, "CHANGELOG.md"), ct),

@@ -6,5 +6,5 @@ public record ConsumedDependency(string Name, string Version)
 
     public bool IsCorporate =>
         Name.StartsWith(Constants.PrefixConst.AngularCorporateDepPrefix, StringComparison.OrdinalIgnoreCase) ||
-        Name.StartsWith(Constants.PrefixConst.CSharpCorporateDepPrefix, StringComparison.OrdinalIgnoreCase);
+        Name.StartsWith(Constants.PrefixConst.CSharpCorporateL0Prefix, StringComparison.OrdinalIgnoreCase);
 }

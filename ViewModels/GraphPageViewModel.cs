@@ -1,5 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Felweed.Models;
 using Felweed.Models.Enumerators;
 using Felweed.Models.Graph;
 using Felweed.Services;
@@ -13,7 +15,19 @@ public partial class GraphPageViewModel : ObservableObject
     
     [ObservableProperty] private ObservableCollection<LevelVm> _allLevels = [];
     [ObservableProperty] private ObservableCollection<LevelVm> _filteredLevels = [];
-    [ObservableProperty] private ObservableCollection<LevelNodeVm> _filterListLibraries = [];
+    [ObservableProperty] private ObservableCollection<Solution> _filterListLibraries = [];
+    
+    [RelayCommand]
+    private void PackSolution(Solution? solution)
+    {
+        solution?.Pack();
+    }
+    
+    [RelayCommand]
+    private void InvalidateLibraryCache(Solution? solution)
+    {
+        solution?.InvalidateCache();
+    }
 
     public void Load()
     {
@@ -25,26 +39,18 @@ public partial class GraphPageViewModel : ObservableObject
         AllLevels.Clear();
         FilterListLibraries.Clear();
 
-        for (int i = 0; i < layers.Count; i++)
+        for (var i = 0; i < layers.Count; i++)
         {
             var level = new LevelVm { Level = i };
 
             foreach (var id in layers[i])
             {
-                var s = _graph.Nodes[id].Solution;
+                var solution = _graph.Nodes[id].Solution;
 
-                var node = new LevelNodeVm
-                {
-                    Id = s.Id,
-                    Title = s.Name,
-                    SolutionType = s.Type.Value,
-                    Path = s.Path
-                };
+                level.Nodes.Add(solution);
 
-                level.Nodes.Add(node);
-
-                if (node.SolutionType == SolutionType.Library)
-                    FilterListLibraries.Add(node);
+                if (solution.Type == SolutionType.Library)
+                    FilterListLibraries.Add(solution);
             }
 
             AllLevels.Add(level);
@@ -60,7 +66,7 @@ public partial class GraphPageViewModel : ObservableObject
         if (_graph is null)
             return;
 
-        HashSet<Guid>? visible = libraryId is null
+        var visible = libraryId is null
             ? null
             : GraphQueries.GetDownstreamInclusive(_graph, libraryId.Value);
 

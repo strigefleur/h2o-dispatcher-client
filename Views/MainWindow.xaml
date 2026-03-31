@@ -62,6 +62,7 @@
                                HorizontalContentAlignment="Center"
                                VerticalContentAlignment="Center"
                                VerticalAlignment="Stretch"
+                               Cursor="Hand"
 
                                Width="46"
                                Height="32">

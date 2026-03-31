@@ -68,7 +68,6 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <ui:Button Content="Run" 
-                                           Appearance="Primary"
                                            Visibility="{Binding Type, Converter={StaticResource SolutionTypeToVisibilityConverter}}"
                                            Command="{Binding DataContext.RunSolutionCommand, RelativeSource={RelativeSource AncestorType=ui:DataGrid}}"
                                            CommandParameter="{Binding}"

@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Felweed.Models;
 using Felweed.ViewModels;
 
 namespace Felweed.Views;
@@ -29,7 +30,7 @@ public partial class GraphPage : Page
     {
         if (e.AddedItems.Count > 0)
         {
-            Vm.ApplyFilter((e.AddedItems[0] as LevelNodeVm).Id);
+            Vm.ApplyFilter((e.AddedItems[0] as Solution).Id);
             ScrollToTop_Click(sender, null);
             SetExpansionStatus(MainTree, true);
         }

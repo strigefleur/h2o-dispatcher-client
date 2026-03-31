@@ -68,14 +68,21 @@ public static partial class SolutionScanner
                 var doc = XDocument.Load(csproj);
                 var packageId = GetPackageId(doc);
 
-                isCorporate = packageId.StartsWith(Constants.PrefixConst.CSharpCorporateDepPrefix);
+                isCorporate = packageId.StartsWith(Constants.PrefixConst.CSharpCorporateL0Prefix);
             }
         }
-
+        
+        var nugetPackageNamePart = Path.GetFileName(slnPath)
+            .Replace(".sln", string.Empty)
+            .Replace("-", string.Empty);
+        
         var solution = new CSharpSolution
         {
             Name = slnDir.Split(Path.DirectorySeparatorChar).Last(),
             Path = slnPath,
+            PackageId = $"{Constants.PrefixConst.CSharpCorporateL0Prefix}." +
+                        $"{Constants.PrefixConst.CSharpCorporateL1Prefix}." +
+                        $"{nugetPackageNamePart}",
             Type = GitlabConfigHelper.GetProjectType(Path.Combine(slnDir, ".gitlab-ci.yml")),
             ChangelogVersionNumber =
                 await ChangelogHelper.GetLatestVersionNumberAsync(Path.Combine(slnDir, "CHANGELOG.md"), ct),

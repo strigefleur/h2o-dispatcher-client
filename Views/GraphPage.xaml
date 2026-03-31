@@ -8,6 +8,7 @@
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:graph="clr-namespace:Felweed.Models.Graph"
       xmlns:localConverters="clr-namespace:Felweed.ViewModels.Converters"
+      xmlns:models="clr-namespace:Felweed.Models"
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance Type=vm:GraphPageViewModel, IsDesignTimeCreatable=True}"
       d:DesignHeight="808"
@@ -16,6 +17,9 @@
     <Page.Resources>
         <localConverters:SolutionTypeToIconConverter x:Key="SolutionTypeToIconConverter"/>
         <localConverters:SolutionTypeToTooltipConverter x:Key="SolutionTypeToTooltipConverter"/>
+        <localConverters:InverseSolutionTypeToVisibilityConverter x:Key="InverseSolutionTypeToVisibilityConverter"/>
+        <localConverters:SolutionKindToPackInvalidateTooltipConverter x:Key="SolutionKindToPackInvalidateTooltipConverter"/>
+        <localConverters:SolutionKindToPackTooltipConverter x:Key="SolutionKindToPackTooltipConverter"/>
     </Page.Resources>
     
     <DockPanel Margin="12">
@@ -28,10 +32,10 @@
                       Width="320"
                       ItemsSource="{Binding FilterListLibraries}"
                       SelectionChanged="LibFilter_OnSelectionChanged"
-                      DisplayMemberPath="Title"
+                      DisplayMemberPath="Name"
                       IsEditable="True"
                       IsTextSearchEnabled="True"
-                      TextSearch.TextPath="Title"
+                      TextSearch.TextPath="Name"
                       StaysOpenOnEdit="True"
                       SelectedValuePath="Id" />
 
@@ -51,6 +55,11 @@
 
         <!-- Levels Tree -->
         <TreeView x:Name="MainTree" VirtualizingStackPanel.IsVirtualizing="True" ItemsSource="{Binding FilteredLevels}">
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+            </TreeView.ItemContainerStyle>
             <TreeView.Resources>
 
                 <HierarchicalDataTemplate DataType="{x:Type vm:LevelVm}"
@@ -58,7 +67,7 @@
                     <TextBlock Text="{Binding Header}" FontWeight="SemiBold"/>
                 </HierarchicalDataTemplate>
 
-                <DataTemplate DataType="{x:Type vm:LevelNodeVm}">
+                <DataTemplate DataType="{x:Type models:Solution}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" /> <!-- Icon -->
@@ -66,16 +75,18 @@
                             <ColumnDefinition Width="200" />  <!-- Title -->
                             <ColumnDefinition Width="8" />    <!-- Spacing -->
                             <ColumnDefinition Width="*" />    <!-- Path (fills remaining space) -->
+                            <ColumnDefinition Width="40" />   <!-- Buttons -->
+                            <ColumnDefinition Width="40" />   <!-- Buttons -->
                         </Grid.ColumnDefinitions>
 
                         <ui:SymbolIcon Grid.Column="0"
-                                       Symbol="{Binding SolutionType, Converter={StaticResource SolutionTypeToIconConverter}}" 
-                                       ToolTip="{Binding SolutionType, Converter={StaticResource SolutionTypeToTooltipConverter}}"
+                                       Symbol="{Binding Type, Converter={StaticResource SolutionTypeToIconConverter}}" 
+                                       ToolTip="{Binding Type, Converter={StaticResource SolutionTypeToTooltipConverter}}"
                                        FontSize="18" 
                                        VerticalAlignment="Center" />
 
                         <TextBlock Grid.Column="2" 
-                                   Text="{Binding Title}" 
+                                   Text="{Binding Name}" 
                                    TextTrimming="CharacterEllipsis"
                                    TextWrapping="NoWrap"
                                    VerticalAlignment="Center" />
@@ -87,6 +98,30 @@
                                    TextTrimming="CharacterEllipsis"
                                    TextWrapping="NoWrap"
                                    VerticalAlignment="Center" />
+                        
+                        <ui:Button Grid.Column="5"
+                                   Padding="8, 2"
+                                   ToolTip="{Binding Kind, Converter={StaticResource SolutionKindToPackTooltipConverter}}"
+                                   Visibility="{Binding Type, Converter={StaticResource InverseSolutionTypeToVisibilityConverter}}"
+                                   Command="{Binding DataContext.PackSolutionCommand, RelativeSource={RelativeSource AncestorType=DockPanel}}"
+                                   CommandParameter="{Binding}"
+                                   Cursor="Hand">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="FolderZip24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        
+                        <ui:Button Grid.Column="6"
+                                   Padding="8, 2"
+                                   ToolTip="{Binding Kind, Converter={StaticResource SolutionKindToPackInvalidateTooltipConverter}}"
+                                   Visibility="{Binding Type, Converter={StaticResource InverseSolutionTypeToVisibilityConverter}}"
+                                   Command="{Binding DataContext.InvalidateLibraryCacheCommand, RelativeSource={RelativeSource AncestorType=DockPanel}}"
+                                   CommandParameter="{Binding}"
+                                   Cursor="Hand">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Delete24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
                     </Grid>
                 </DataTemplate>
 

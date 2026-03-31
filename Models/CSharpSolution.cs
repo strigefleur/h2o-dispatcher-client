@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Ardalis.GuardClauses;
 using Felweed.Models.Enumerators;
 using Felweed.Services;
 
@@ -11,11 +12,42 @@ public record CSharpSolution : Solution
     public override void Run(params string[] args)
     {
         if (Type == SolutionType.Library)
-            throw new NotImplementedException();
+            throw new InvalidOperationException();
         
         var workingDirectory = GetWorkingDirectory(args);
         
         TerminalHelper.Run(workingDirectory, "dotnet run", Name);
+    }
+    
+    public override void Pack()
+    {
+        if (Type == SolutionType.Service)
+            throw new InvalidOperationException();
+        
+        var solutionDir = Guard.Against.Null(System.IO.Path.GetDirectoryName(Path));
+        
+        TerminalHelper.Run(solutionDir, @".\pack.cmd", $"{Name}: pack");
+    }
+
+    public override void InvalidateCache()
+    {
+        if (Type == SolutionType.Service)
+            throw new InvalidOperationException();
+
+        try
+        {
+            var userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            var nugetCachePath = System.IO.Path.Combine(userFolder, @".nuget\packages");
+            var packagePath = System.IO.Path.Combine(nugetCachePath, PackageId);
+            if (Directory.Exists(packagePath))
+            {
+                Directory.Delete(packagePath, true);
+            }
+        }
+        catch (Exception ex)
+        {
+            // TODO - обработка ошибок приклада
+        }
     }
 
     private string GetWorkingDirectory(ICollection<string> prefixes)

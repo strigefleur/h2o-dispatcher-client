@@ -32,7 +32,7 @@ public static class DependencyGraphBuilder
         bool IsInternalCorporate(string depName)
             => depName is not null
                && (depName.StartsWith(Constants.PrefixConst.AngularCorporateDepPrefix, StringComparison.OrdinalIgnoreCase)
-                   || depName.StartsWith(Constants.PrefixConst.CSharpCorporateDepPrefix, StringComparison.OrdinalIgnoreCase))
+                   || depName.StartsWith(Constants.PrefixConst.CSharpCorporateL0Prefix, StringComparison.OrdinalIgnoreCase))
                && producedBy.ContainsKey(depName);
 
         var edges = new List<Edge>();
