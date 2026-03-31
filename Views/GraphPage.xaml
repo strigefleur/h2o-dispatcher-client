@@ -75,8 +75,6 @@
                             <ColumnDefinition Width="200" />  <!-- Title -->
                             <ColumnDefinition Width="8" />    <!-- Spacing -->
                             <ColumnDefinition Width="*" />    <!-- Path (fills remaining space) -->
-                            <ColumnDefinition Width="40" />   <!-- Buttons -->
-                            <ColumnDefinition Width="40" />   <!-- Buttons -->
                         </Grid.ColumnDefinitions>
 
                         <ui:SymbolIcon Grid.Column="0"
@@ -99,29 +97,26 @@
                                    TextWrapping="NoWrap"
                                    VerticalAlignment="Center" />
                         
-                        <ui:Button Grid.Column="5"
-                                   Padding="8, 2"
-                                   ToolTip="{Binding Kind, Converter={StaticResource SolutionKindToPackTooltipConverter}}"
-                                   Visibility="{Binding Type, Converter={StaticResource InverseSolutionTypeToVisibilityConverter}}"
-                                   Command="{Binding DataContext.PackSolutionCommand, RelativeSource={RelativeSource AncestorType=DockPanel}}"
-                                   CommandParameter="{Binding}"
-                                   Cursor="Hand">
-                            <ui:Button.Icon>
-                                <ui:SymbolIcon Symbol="FolderZip24" />
-                            </ui:Button.Icon>
-                        </ui:Button>
-                        
-                        <ui:Button Grid.Column="6"
-                                   Padding="8, 2"
-                                   ToolTip="{Binding Kind, Converter={StaticResource SolutionKindToPackInvalidateTooltipConverter}}"
-                                   Visibility="{Binding Type, Converter={StaticResource InverseSolutionTypeToVisibilityConverter}}"
-                                   Command="{Binding DataContext.InvalidateLibraryCacheCommand, RelativeSource={RelativeSource AncestorType=DockPanel}}"
-                                   CommandParameter="{Binding}"
-                                   Cursor="Hand">
-                            <ui:Button.Icon>
-                                <ui:SymbolIcon Symbol="Delete24" />
-                            </ui:Button.Icon>
-                        </ui:Button>
+                        <Grid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="{Binding Name}" />
+                                <Separator/>
+                                <MenuItem Header="Упаковать"
+                                          Icon="{ui:SymbolIcon Apps24}"
+                                          ToolTip="{Binding Kind, Converter={StaticResource SolutionKindToPackTooltipConverter}}"
+                                          Visibility="{Binding Type, Converter={StaticResource InverseSolutionTypeToVisibilityConverter}}"
+                                          Command="{Binding DataContext.PackSolutionCommand, RelativeSource={RelativeSource AncestorType=DockPanel}}"
+                                          CommandParameter="{Binding}"
+                                          Cursor="Hand"/>
+                                <MenuItem Header="Отменить упаковку"
+                                          Icon="{ui:SymbolIcon UninstallApp24}"
+                                          ToolTip="{Binding Kind, Converter={StaticResource SolutionKindToPackInvalidateTooltipConverter}}"
+                                          Visibility="{Binding Type, Converter={StaticResource InverseSolutionTypeToVisibilityConverter}}"
+                                          Command="{Binding DataContext.InvalidateLibraryCacheCommand, RelativeSource={RelativeSource AncestorType=DockPanel}}"
+                                          CommandParameter="{Binding}"
+                                          Cursor="Hand"/>
+                            </ContextMenu>
+                        </Grid.ContextMenu>
                     </Grid>
                 </DataTemplate>
 
