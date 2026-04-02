@@ -134,9 +134,17 @@
                     </ui:NavigationViewItem>
                     <ui:NavigationViewItem
                         Content="Настройки"
-                        Icon="{ui:SymbolIcon Settings24}"
-                        IsEnabled="False"
-                        TargetPageType="{x:Type v:SettingsPage}" />
+                        IsExpanded="True"
+                        Icon="{ui:SymbolIcon Settings24}">
+                        <ui:NavigationViewItem.MenuItems>
+                            <ui:NavigationViewItem
+                                Content="Переменные окружения"
+                                x:Name="EnvVariablesPage"
+                                Icon="{ui:SymbolIcon Layer24}"
+                                TargetPageType="{x:Type v:EnvVariablesPage}"
+                            />
+                        </ui:NavigationViewItem.MenuItems>
+                    </ui:NavigationViewItem>
                     <ui:NavigationViewItem
                         Content="О программе"
                         Icon="{ui:SymbolIcon Info24}"
