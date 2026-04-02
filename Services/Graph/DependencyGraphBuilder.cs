@@ -26,15 +26,6 @@ public static class DependencyGraphBuilder
             }
         }
 
-        // 2) Внутренние корпоративные пакеты = те, что:
-        //   - корпоративные по имени
-        //   - и реально "производятся" в текущем каталоге
-        bool IsInternalCorporate(string depName)
-            => depName is not null
-               && (depName.StartsWith(Constants.PrefixConst.AngularCorporateDepPrefix, StringComparison.OrdinalIgnoreCase)
-                   || depName.StartsWith(Constants.PrefixConst.CSharpCorporateL0Prefix, StringComparison.OrdinalIgnoreCase))
-               && producedBy.ContainsKey(depName);
-
         var edges = new List<Edge>();
         var issues = new List<GraphIssue>();
 
@@ -75,5 +66,13 @@ public static class DependencyGraphBuilder
             Incoming = incoming,
             Issues = issues
         };
+
+        // 2) Внутренние корпоративные пакеты = те, что:
+        //   - корпоративные по имени
+        //   - и реально "производятся" в текущем каталоге
+        bool IsInternalCorporate(string depName)
+            => (depName.StartsWith(Constants.PrefixConst.AngularCorporateDepPrefix, StringComparison.OrdinalIgnoreCase)
+                || depName.StartsWith(Constants.PrefixConst.CSharpCorporateL0Prefix, StringComparison.OrdinalIgnoreCase))
+               && producedBy.ContainsKey(depName);
     }
 }
