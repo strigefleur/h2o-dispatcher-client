@@ -33,7 +33,7 @@ public sealed record AppConfig
         if (serverUri is null)
             return null;
         
-        return new Uri($"{serverUri}/hubs/state");
+        return new Uri($"{serverUri}hubs/state");
     }
     
     public object? this[string propertyName]

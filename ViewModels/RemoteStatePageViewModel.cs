@@ -5,15 +5,15 @@ using Felweed.Services;
 
 namespace Felweed.ViewModels;
 
-public partial class RemoteStatePageViewModel : ObservableObject
+public partial class RemoteStatePageViewModel : ObservableObject, IAsyncDisposable
 {
     [ObservableProperty] private bool _isConnecting = true;
     [ObservableProperty] private bool _isConnected;
     [ObservableProperty] private bool _isError;
     [ObservableProperty] private string? _error;
+    [ObservableProperty] private CobwebState? _state;
     
-    private static HubConnector? _connector;
-    private CobwebState? _state;
+    private HubConnector? _connector;
 
     public async Task ConnectAsync()
     {
@@ -34,6 +34,14 @@ public partial class RemoteStatePageViewModel : ObservableObject
 
     private void OnFullState(byte[] data)
     {
-        _state = data.CobwebDecompress<CobwebState>();
+        State = data.CobwebDecompress<CobwebState>();
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        if (_connector != null)
+        {
+            await _connector.CleanupConnection();
+        }
     }
 }

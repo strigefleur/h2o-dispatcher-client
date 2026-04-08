@@ -5,6 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:local="clr-namespace:Felweed.Views"
+      xmlns:localConverters="clr-namespace:Felweed.ViewModels.Converters"
       xmlns:vm="clr-namespace:Felweed.ViewModels"
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance Type=vm:RemoteStatePageViewModel, IsDesignTimeCreatable=True}"
@@ -13,6 +14,8 @@
       Title="RemoteStatePage">
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <localConverters:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter" />
+        <localConverters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
     </Page.Resources>
     
     <Grid>
@@ -35,7 +38,11 @@
         </Grid>
         
         <Grid Margin="20,0,20,20" Visibility="{Binding IsConnected, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <ui:TextBlock>Ok</ui:TextBlock>
+            <ui:TextBlock Visibility="{Binding State, Converter={StaticResource InverseNullToVisibilityConverter}}"
+                          Foreground="{DynamicResource TextFillColorPrimaryBrush}">Ожидание данных...</ui:TextBlock>
+            
+            <ui:TextBlock Visibility="{Binding State, Converter={StaticResource NullToVisibilityConverter}}"
+                          Foreground="{DynamicResource TextFillColorPrimaryBrush}">Ok</ui:TextBlock>
         </Grid>
     </Grid>
 </Page>

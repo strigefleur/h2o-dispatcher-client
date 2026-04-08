@@ -1,8 +1,7 @@
 ﻿using Felweed.Constants;
-using Felweed.Extensions;
-using Felweed.Models.Digestion;
 using MessagePack;
 using MessagePack.Resolvers;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,7 +24,10 @@ public class HubConnector
             if (_connection == null)
             {
                 _connection = new HubConnectionBuilder()
-                    .WithUrl(hubUrl)
+                    .WithUrl(hubUrl, o =>
+                    {
+                        o.Transports = HttpTransportType.WebSockets;
+                    })
                     .AddMessagePackProtocol(options =>
                     {
                         var resolver = CompositeResolver.Create(
@@ -38,10 +40,6 @@ public class HubConnector
                     .Build();
                 
                 _connection.On(SignalrConst.Events.OnFullState, onFullState);
-                _connection.On<byte[]>(SignalrConst.Events.OnFullState, data =>
-                {
-                    var state = data.CobwebDecompress<CobwebState>();
-                });
             }
 
             if (_connection.State == HubConnectionState.Disconnected)
@@ -57,4 +55,26 @@ public class HubConnector
 
         return null;
     }
+    
+    public async Task CleanupConnection()
+    {
+        if (_connection != null)
+        {
+            try
+            {
+                // Explicitly stop the network traffic first
+                await _connection.StopAsync(); 
+            }
+            catch (Exception ex)
+            {
+                // Log issues like network timeout during closure
+            }
+            finally
+            {
+                // Always dispose to free up the object's resources
+                await _connection.DisposeAsync();
+            }
+        }
+    }
+
 }

@@ -1,6 +1,4 @@
-﻿using NGitLab;
-
-namespace Felweed.Models.Digestion;
+﻿namespace Felweed.Models.Digestion;
 
 public sealed record CobwebTag
 {
