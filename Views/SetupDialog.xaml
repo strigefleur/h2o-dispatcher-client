@@ -15,7 +15,8 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Select directories to scan:" FontWeight="Bold" Margin="0,0,0,10"/>
+        <TextBlock Text="Укажите каталоги с репозиториями:" FontWeight="Bold" Margin="0,0,0,10"
+                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
 
         <ListBox Grid.Row="1" ItemsSource="{Binding SelectedPaths}" Margin="0,0,0,10">
             <ListBox.ItemTemplate>

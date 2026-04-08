@@ -14,7 +14,7 @@ public partial class MiscSettingsPageViewModel : ObservableObject
 
         MiscSettings.Add(new()
         {
-            Name = "Адрес Gitlab",
+            Name = "Адрес сервера",
             Value = config.ServerUrl,
             AppConfigPropName = nameof(config.ServerUrl),
         });

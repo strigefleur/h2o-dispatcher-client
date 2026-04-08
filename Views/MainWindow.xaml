@@ -95,6 +95,7 @@
             
             <TextBlock Text="Scanning for solutions..." 
                        Margin="0,10,0,0" 
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                        HorizontalAlignment="Center" />
         </StackPanel>
         
@@ -110,6 +111,10 @@
                         Content="Список решений"
                         Icon="{ui:SymbolIcon AppsListDetail24}"
                         TargetPageType="{x:Type v:SolutionGridPage}" />
+                    <ui:NavigationViewItem
+                        Content="Gitlab"
+                        Icon="{ui:SymbolIcon PlugConnected24}"
+                        TargetPageType="{x:Type v:RemoteStatePage}" />
                     <ui:NavigationViewItem
                         Content="Зависимости (DAG)"
                         IsExpanded="True"
