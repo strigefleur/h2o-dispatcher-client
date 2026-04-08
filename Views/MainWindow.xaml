@@ -143,6 +143,12 @@
                                 Icon="{ui:SymbolIcon Layer24}"
                                 TargetPageType="{x:Type v:EnvVariablesPage}"
                             />
+                            <ui:NavigationViewItem
+                                Content="Прочее"
+                                x:Name="MiscConfigPage"
+                                Icon="{ui:SymbolIcon SettingsChat24}"
+                                TargetPageType="{x:Type v:MiscConfigPage}"
+                            />
                         </ui:NavigationViewItem.MenuItems>
                     </ui:NavigationViewItem>
                     <ui:NavigationViewItem

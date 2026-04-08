@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net9.0-windows</TargetFramework>
+        <TargetFramework>net10.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
@@ -11,7 +11,12 @@
     <ItemGroup>
       <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
       <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.13" />
+      <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.5" />
+      <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.5" />
+      <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.5" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
+      <PackageReference Include="NGitLab" Version="11.7.0" />
       <PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
       <PackageReference Include="System.Linq.Async" Version="7.0.0" />
       <PackageReference Include="Velopack" Version="0.0.1298" />

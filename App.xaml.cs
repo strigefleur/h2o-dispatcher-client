@@ -22,6 +22,8 @@ public partial class App : Application
 
         // Register Windows
         services.AddTransient<MainWindow>();
+        
+        services.AddHttpClient();
 
         _serviceProvider = services.BuildServiceProvider();
     }

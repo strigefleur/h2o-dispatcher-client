@@ -1,0 +1,72 @@
+﻿<Page x:Class="Felweed.Views.MiscConfigPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:local="clr-namespace:Felweed.Views"
+      xmlns:vm="clr-namespace:Felweed.ViewModels"
+      mc:Ignorable="d"
+      d:DataContext="{d:DesignInstance Type=vm:MiscSettingsPageViewModel, IsDesignTimeCreatable=True}"
+      d:DesignHeight="808"
+      d:DesignWidth="880"
+      Title="MiscConfigPage">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        
+        <!-- Table Section -->
+        <ui:DataGrid ItemsSource="{Binding MiscSettings}"
+                     AutoGenerateColumns="False"
+                     CanUserAddRows="False"
+                     RowEditEnding="DataGrid_OnRowEditEnding"
+                     VerticalAlignment="Top">
+            <ui:DataGrid.Columns>
+                <DataGridTemplateColumn Header="" IsReadOnly="True" Width="1*" >
+                    <!-- VIEW MODE -->
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" 
+                                       TextTrimming="CharacterEllipsis" 
+                                       VerticalAlignment="Center" 
+                                       HorizontalAlignment="Right"
+                                       ToolTip="{Binding Name}"
+                                       Margin="5,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+
+                    <!-- EDIT MODE -->
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <ui:TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        TextWrapping="Wrap"
+                                        FocusManager.FocusedElement="{Binding RelativeSource={RelativeSource Self}}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+                
+                <DataGridTemplateColumn Header="Значение" Width="3*">
+                    <!-- VIEW MODE -->
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Value}" 
+                                       TextTrimming="CharacterEllipsis" 
+                                       VerticalAlignment="Center" 
+                                       Margin="5,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+
+                    <!-- EDIT MODE -->
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <ui:TextBox Text="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        TextWrapping="Wrap"
+                                        FocusManager.FocusedElement="{Binding RelativeSource={RelativeSource Self}}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+            </ui:DataGrid.Columns>
+        </ui:DataGrid>
+    </Grid>
+</Page>
