@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Felweed.Models.Digestion;
+namespace Felweed.Models.Enumerators;
 
 /// <summary>
 /// NGitLab copypasta to avoid referencing whole lib

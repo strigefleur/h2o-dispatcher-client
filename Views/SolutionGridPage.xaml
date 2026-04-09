@@ -49,7 +49,7 @@
                     </DataGridTemplateColumn>
 
                     <DataGridTextColumn Header="Name" IsReadOnly="True" Binding="{Binding Name}" FontWeight="SemiBold" Width="*" />
-                    <DataGridTextColumn Header="Version" IsReadOnly="True" Binding="{Binding ChangelogVersionNumber}" Width="100" />
+                    <DataGridTextColumn Header="Version" IsReadOnly="True" Binding="{Binding TagVersionNumber}" Width="100" />
                     
                     <DataGridTemplateColumn Header="Type" Width="80" SortMemberPath="Type">
                         <DataGridTemplateColumn.CellTemplate>

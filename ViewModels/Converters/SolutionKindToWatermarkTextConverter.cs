@@ -1,23 +1,24 @@
 ﻿using System.Globalization;
 using System.Windows.Data;
-using Wpf.Ui.Controls;
+using Felweed.Models.Enumerators;
 
 namespace Felweed.ViewModels.Converters;
 
-public class DependencyTypeToIconConverter : IValueConverter
+public class SolutionKindToWatermarkTextConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is bool isCorporate)
+        if (value is SolutionKind kind)
         {
-            return isCorporate switch
+            return kind switch
             {
-                false => SymbolRegular.Globe24,
-                true => SymbolRegular.Building24,
+                SolutionKind.Angular => "TS",
+                SolutionKind.CSharp => "C#",
+                _ => "???"
             };
         }
 
-        return SymbolRegular.Question24;
+        return "???";
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>

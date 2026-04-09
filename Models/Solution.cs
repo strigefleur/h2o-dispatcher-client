@@ -1,4 +1,6 @@
-﻿using Felweed.Models.Enumerators;
+﻿using System.Globalization;
+using Felweed.Models.Digestion;
+using Felweed.Models.Enumerators;
 
 namespace Felweed.Models;
 
@@ -9,12 +11,21 @@ public abstract record Solution
     public required string Path { get; init; }
     public required string Name { get; init; }
     public required string PackageId { get; init; }
-    public required string? ChangelogVersionNumber { get; init; }
+    public required string? TagVersionNumber { get; init; }
+    public required string? GitOriginUrl { get; init; }
     public required SolutionType? Type { get; init; }
     public required DateTime? LatestSyncDate { get; init; }
+    
+    public CobwebProject? CobwebProject { get; private set; }
 
     public bool IsRunnable => Type == SolutionType.Service;
     public bool IsPackable => Type == SolutionType.Library;
+
+    public bool IsOutdated => CobwebProject is not null && CobwebProject.Tags.Count > 0 &&
+                                       CobwebProject.Tags.Any(x => string.Compare(x.Name, TagVersionNumber,
+                                           CultureInfo.InvariantCulture, CompareOptions.NumericOrdering) > 0);
+
+    public string? PipelineUrl => CobwebProject == null ? null : $"{CobwebProject?.WebUrl}/-/pipelines";
 
     public bool? IsCorporate { get; init; }
     
@@ -57,6 +68,14 @@ public abstract record Solution
     public void AddConsumedBy(Solution solution)
     {
         _consumedBy.Add(solution);
+    }
+
+    public void BindToCobwebProject(CobwebProject? cobwebProject)
+    {
+        if (CobwebProject != null)
+            throw new InvalidOperationException();
+        
+        CobwebProject = cobwebProject;
     }
 
     public abstract void Run(params string[] args);

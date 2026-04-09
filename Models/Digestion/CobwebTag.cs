@@ -1,4 +1,6 @@
-﻿namespace Felweed.Models.Digestion;
+﻿using Felweed.Models.Enumerators;
+
+namespace Felweed.Models.Digestion;
 
 public sealed record CobwebTag
 {

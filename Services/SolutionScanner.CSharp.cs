@@ -76,6 +76,8 @@ public static partial class SolutionScanner
             .Replace(".sln", string.Empty)
             .Replace("-", string.Empty);
         
+        var (originUrl, tagVersion) = GitHelper.GetRepoInfo(slnDir);
+        
         var solution = new CSharpSolution
         {
             Name = slnDir.Split(Path.DirectorySeparatorChar).Last(),
@@ -84,8 +86,8 @@ public static partial class SolutionScanner
                         $"{Constants.PrefixConst.CSharpCorporateL1Prefix}." +
                         $"{nugetPackageNamePart}",
             Type = GitlabConfigHelper.GetProjectType(Path.Combine(slnDir, ".gitlab-ci.yml")),
-            ChangelogVersionNumber =
-                await ChangelogHelper.GetLatestVersionNumberAsync(Path.Combine(slnDir, "CHANGELOG.md"), ct),
+            TagVersionNumber = tagVersion,
+            GitOriginUrl = originUrl,
             LatestSyncDate = GitHelper.GetLastGitSyncDate(slnDir),
             IsCorporate = isCorporate
         };

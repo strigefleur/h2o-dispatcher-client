@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Felweed.Models;
 using Felweed.Models.Enumerators;
 using Felweed.Services;
 using Wpf.Ui.Appearance;

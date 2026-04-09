@@ -46,6 +46,8 @@ public static partial class SolutionScanner
         var (name, dependencies) = File.Exists(packageJson)
             ? ParsePackageJson(packageJson)
             : ("NotExists", []);
+        
+        var (originUrl, tagVersion) = GitHelper.GetRepoInfo(angularDir);
 
         var solution = new AngularSolution
         {
@@ -53,8 +55,8 @@ public static partial class SolutionScanner
             Path = angularDir,
             PackageId = name,
             Type = GitlabConfigHelper.GetProjectType(Path.Combine(angularDir, ".gitlab-ci.yml")),
-            ChangelogVersionNumber =
-                await ChangelogHelper.GetLatestVersionNumberAsync(Path.Combine(angularDir, "CHANGELOG.md"), ct),
+            TagVersionNumber = tagVersion,
+            GitOriginUrl = originUrl,
             LatestSyncDate = GitHelper.GetLastGitSyncDate(angularDir),
             IsCorporate = name.StartsWith(Constants.PrefixConst.AngularCorporateDepPrefix)
         };
