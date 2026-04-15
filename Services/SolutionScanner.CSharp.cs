@@ -82,9 +82,7 @@ public static partial class SolutionScanner
         {
             Name = slnDir.Split(Path.DirectorySeparatorChar).Last(),
             Path = slnPath,
-            PackageId = $"{Constants.PrefixConst.CSharpCorporateL0Prefix}." +
-                        $"{Constants.PrefixConst.CSharpCorporateL1Prefix}." +
-                        $"{nugetPackageNamePart}",
+            PackageId = $"{Constants.PrefixConst.CSharpCorporateL0Prefix}.{nugetPackageNamePart}",
             Type = GitlabConfigHelper.GetProjectType(Path.Combine(slnDir, ".gitlab-ci.yml")),
             TagVersionNumber = tagVersion,
             GitOriginUrl = originUrl,

@@ -1,0 +1,89 @@
+﻿<Page x:Class="Felweed.Views.ScriptPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:local="clr-namespace:Felweed.Views"
+      xmlns:vm="clr-namespace:Felweed.ViewModels"
+      mc:Ignorable="d"
+      d:DataContext="{d:DesignInstance Type=vm:ScriptPageViewModel, IsDesignTimeCreatable=True}"
+      d:DesignHeight="808"
+      d:DesignWidth="880"
+      Title="ScriptPage">
+    <Grid>
+        <TabControl Margin="8">
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="Document24" />
+                        <TextBlock Text="Для каждого репозитория" />
+                    </StackPanel>
+                </TabItem.Header>
+                
+                <StackPanel Orientation="Vertical" Margin="8">
+                    <StackPanel Margin="8" Orientation="Horizontal">
+                        <RadioButton
+                            Content="Бэкенд и фронтенд"
+                            GroupName="radio_group_one"
+                            IsChecked="{Binding Both}" />
+                        <RadioButton
+                            Content="Только бэкенд"
+                            Margin="16, 0, 0, 0"
+                            GroupName="radio_group_one"
+                            IsChecked="{Binding BackendOnly}" />
+                        <RadioButton
+                            Content="Только фронтенд"
+                            Margin="16, 0, 0, 0"
+                            GroupName="radio_group_one"
+                            IsChecked="{Binding FrontendOnly}" />
+                    </StackPanel>
+                
+                    <ui:TextBox Text="{Binding Filename}"
+                                PlaceholderText="Название файла с расширением, например: package.json"/>
+                    
+                    <Grid Margin="0, 8, 0, 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <CheckBox Content="Сделать комит" IsChecked="{Binding WithCommit}"/>
+                    
+                        <ui:TextBox Grid.Column="1" Text="{Binding CommitMessage}"
+                                    IsEnabled="{Binding WithCommit}"
+                                    PlaceholderText="Сообщение коммита"/>
+                    </Grid>
+                    
+                    <ui:TextBox Text="{Binding LookupText}" PlaceholderText="Что заменить"
+                                Margin="0, 8, 0, 0"/>
+                    
+                    <ui:TextBox Text="{Binding ReplaceText}" PlaceholderText="На что заменить"
+                                Margin="0, 8, 0, 0"/>
+                    
+                    <StackPanel Orientation="Horizontal" Margin="0, 8, 0, 0">
+                        <ui:Button Content="Выполнить замену" 
+                                   Command="{Binding ReplaceCommand}"
+                                   Cursor="Hand">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Play24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        
+                        <ui:Button Content="Предсказать изменения (без записи)" 
+                                   Command="{Binding ReplaceDryRunCommand}"
+                                   Margin="8, 0, 0, 0"
+                                   Cursor="Hand">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Play24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                    </StackPanel>
+                
+                    <ui:TextBlock Text="{Binding ReplaceResult}"
+                                  Margin="0, 8, 0, 0"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Page>
