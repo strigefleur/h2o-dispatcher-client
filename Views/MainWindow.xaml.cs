@@ -16,6 +16,8 @@ public partial class MainWindow
     private async void MainWindow_OnContentRendered(object? sender, EventArgs e)
     {
         await (DataContext as MainViewModel).InitializeAsync();
+        
+        RootNavigation.Navigate(typeof(AboutPage));
     }
 
     private void BackendGraphPage_OnPreviewMouseUp(object sender, MouseButtonEventArgs e)

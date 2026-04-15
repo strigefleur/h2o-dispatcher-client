@@ -101,6 +101,7 @@
         
         <Grid Grid.Row="1" Margin="20,0,20,20" Visibility="{Binding IsLoaded, Converter={StaticResource BooleanToVisibilityConverter}}">
             <ui:NavigationView
+                x:Name="RootNavigation"
                 MinHeight="300"
                 Margin="0"
                 IsBackButtonVisible="Collapsed"
@@ -165,7 +166,6 @@
                     <ui:NavigationViewItem
                         Content="О программе"
                         Icon="{ui:SymbolIcon Info24}"
-                        IsEnabled="False"
                         TargetPageType="{x:Type v:AboutPage}" />
                 </ui:NavigationView.MenuItems>
                 <ui:NavigationView.Header>

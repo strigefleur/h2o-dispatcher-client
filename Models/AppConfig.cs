@@ -1,4 +1,5 @@
 ﻿using Felweed.Constants;
+using Felweed.Services;
 using Wpf.Ui.Controls;
 
 namespace Felweed.Models;
@@ -12,24 +13,13 @@ public sealed record AppConfig
 
     public SymbolRegular ThemeSwitchIcon { get; set; } = SymbolRegular.WeatherMoon24;
     public string? ServerUrl { get; set; }
+    public string AnecdoteUrl { get; set; } = "https://shortiki.com/export/api.php?format=json&type=random&amount=1";
 
     public List<EnvVariable> EnvVariables { get; set; } = [..EnvVariableConst.DefaultEnvVariables];
-    
-    public Uri? GetServerUrl()
-    {
-        if (ServerUrl is null)
-            return null;
-
-        if (!Uri.TryCreate(ServerUrl, UriKind.Absolute, out var uriResult) ||
-            (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))
-            return null;
-        
-        return uriResult;
-    }
 
     public Uri? GetHubUrl()
     {
-        var serverUri = GetServerUrl();
+        var serverUri = UrlHelper.GetSafeUrl(ServerUrl);
         if (serverUri is null)
             return null;
         

@@ -219,6 +219,7 @@
                 
                     <ui:TextBlock Text="{Binding ReplaceResult}"
                                   Height="300"
+                                  Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                   Margin="0, 8, 0, 0"/>
                 </StackPanel>
             </TabItem>
