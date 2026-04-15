@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Text.Json.Nodes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Felweed.Models;
@@ -9,9 +12,12 @@ namespace Felweed.ViewModels;
 
 public partial class ScriptPageViewModel : ObservableObject
 {
-    [ObservableProperty] private bool _backendOnly ;
+    #region ReplaceText
+    
+    [ObservableProperty] private bool _backendOnly;
     [ObservableProperty] private bool _frontendOnly;
     [ObservableProperty] private bool _both = true;
+    [ObservableProperty] private bool _serviceOnly;
     
     [ObservableProperty] private bool _withCommit;
     
@@ -21,6 +27,25 @@ public partial class ScriptPageViewModel : ObservableObject
     [ObservableProperty] private string _lookupText = "";
     [ObservableProperty] private string _replaceText = "";
     [ObservableProperty] private string _replaceResult = "";
+    
+    #endregion Replace
+    
+    #region ActualizeVersion
+    
+    [ObservableProperty] private ObservableCollection<Solution> _frontendServices = [];
+    [ObservableProperty] private bool _skipBuild;
+    [ObservableProperty] private string _actualizeResult = "";
+    
+    #endregion
+
+    public ScriptPageViewModel()
+    {
+        foreach (var angularSolution in SolutionScanner.AngularSolutions
+                     .Where(x => x is { IsCorporate: true, IsRunnable: true }))
+        {
+            FrontendServices.Add(angularSolution);
+        }
+    }
 
     private bool CanReplace()
     {
@@ -55,12 +80,27 @@ public partial class ScriptPageViewModel : ObservableObject
     {
         if (BackendOnly)
         {
-            return SolutionScanner.CsharpSolutions;
+            return ServiceOnly
+                ? SolutionScanner.CsharpSolutions.Where(x => x.IsRunnable).ToArray()
+                : SolutionScanner.CsharpSolutions;
         }
 
         if (FrontendOnly)
         {
-            return SolutionScanner.AngularSolutions;
+            return ServiceOnly
+                ? SolutionScanner.AngularSolutions.Where(x => x.IsRunnable).ToArray()
+                : SolutionScanner.AngularSolutions;
+        }
+
+        if (ServiceOnly)
+        {
+            return
+            [
+                ..SolutionScanner.AngularSolutions
+                    .Where(x => x.IsRunnable).ToArray(),
+                ..SolutionScanner.CsharpSolutions
+                    .Where(x => x.IsRunnable).ToArray()
+            ];
         }
 
         return [..SolutionScanner.AngularSolutions, ..SolutionScanner.CsharpSolutions];
@@ -147,6 +187,85 @@ public partial class ScriptPageViewModel : ObservableObject
             {
                 ReplaceResult += $"\n{++replaceCount}: выполнилась бы замена в {checkInfo.Value.Filename}";
             }
+        }
+    }
+
+    [RelayCommand]
+    private async Task ActualizeFrontendDeps(AngularSolution? solution)
+    {
+        ActualizeResult = string.Empty;
+
+        if (solution == null)
+        {
+            ActualizeResult = $"{DateTime.Now}: Не выбран проект";
+            return;
+        }
+
+        ActualizeResult = $"{DateTime.Now}: Начало актуализации {solution.Name}...";
+        
+        ActualizeResult += $"\n{DateTime.Now}: Выполнение [npm-check-updates]...";
+        if (!await RunCmd("npx", @"--strict-ssl=false npm-check-updates -p yarn -f /^@rshbgroup\.cfo\// -u --install always", solution.Path))
+        {
+            ActualizeResult += $"\n{DateTime.Now}: Ошибка при выполнении [npm-check-updates]";
+            return;
+        }
+
+        if (!SkipBuild)
+        {
+            ActualizeResult += $"\n{DateTime.Now}: Выполнение [yarn build]...";
+            if (!await RunCmd("yarn", "build", solution.Path))
+            {
+                ActualizeResult += $"\n{DateTime.Now}: Ошибка при выполнении [yarn build]";
+                return;
+            }
+        }
+        else
+        {
+            ActualizeResult += $"\n{DateTime.Now}: Выполнение [yarn build] пропускается...";
+        }
+        
+        ActualizeResult += $"\n{DateTime.Now}: Создание комита...";
+        if (!await RunCmd("git", "add .", solution.Path))
+        {
+            ActualizeResult += $"\n{DateTime.Now}: Ошибка stage комита";
+            return;
+        }
+
+        if (!await RunCmd("git", "commit -m \"chore: bump deps\"", solution.Path))
+        {
+            ActualizeResult += $"\n{DateTime.Now}: Ошибка при создании комита";
+            return;
+        }
+        
+        ActualizeResult += $"\n{DateTime.Now}: Готово!";
+    }
+
+    private static async Task<bool> RunCmd(string cmd, string args, string workDir)
+    {
+        try
+        {
+            var info = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c {cmd} {args}",
+                WorkingDirectory = workDir,
+                CreateNoWindow = true,
+                UseShellExecute = false
+            };
+
+            using var proc = Process.Start(info);
+            if (proc == null)
+                return false;
+
+            await proc.WaitForExitAsync();
+            if (proc.ExitCode != 0)
+                return false;
+
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 }

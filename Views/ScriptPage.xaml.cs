@@ -13,4 +13,9 @@ public partial class ScriptPage : Page
 
         DataContext = new ScriptPageViewModel();
     }
+
+    private void FrontendServiceCb_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        Vm.ActualizeResult = string.Empty;
+    }
 }

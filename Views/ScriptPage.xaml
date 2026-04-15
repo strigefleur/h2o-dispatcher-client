@@ -17,6 +17,40 @@
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Margin="0,0,6,0" Symbol="Document24" />
+                        <TextBlock Text="Актуализировать зависимости (фронт)" />
+                    </StackPanel>
+                </TabItem.Header>
+                
+                <StackPanel Orientation="Vertical" Margin="8">
+                    <ComboBox ItemsSource="{Binding FrontendServices}"
+                              x:Name="FrontendServiceCb"
+                              DisplayMemberPath="Name"
+                              SelectionChanged="FrontendServiceCb_OnSelectionChanged"
+                              SelectedValuePath="Id" />
+                    
+                    <CheckBox Content="Пропустить проверку сборки (yarn build)"
+                              IsChecked="{Binding SkipBuild}"
+                              Margin="0, 8, 0, 0"/>
+                    
+                    <ui:Button Content="Запустить актуализацию" 
+                               Command="{Binding ActualizeFrontendDepsCommand}"
+                               CommandParameter="{Binding ElementName=FrontendServiceCb, Path=SelectedItem}"
+                               Margin="0, 8, 0, 0"
+                               Cursor="Hand">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Play24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    
+                    <ui:TextBlock Text="{Binding ActualizeResult}"
+                                  Margin="0, 8, 0, 0"/>
+                </StackPanel>
+            </TabItem>
+            
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="Document24" />
                         <TextBlock Text="Для каждого репозитория" />
                     </StackPanel>
                 </TabItem.Header>
@@ -38,6 +72,10 @@
                             GroupName="radio_group_one"
                             IsChecked="{Binding FrontendOnly}" />
                     </StackPanel>
+                    
+                    <CheckBox Content="Только сервисы"
+                              IsChecked="{Binding ServiceOnly}"
+                              Margin="0, 8, 0, 0"/>
                 
                     <ui:TextBox Text="{Binding Filename}"
                                 PlaceholderText="Название файла с расширением, например: package.json"/>
