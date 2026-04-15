@@ -7,7 +7,7 @@ on:
       - "v*"
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -17,19 +17,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v4
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "9.0.x"
+          dotnet-version: "10.0.x"
+          cache: true
 
-      # 1) Build/publish your app (adjust project path + runtime)
-      - name: Publish
-        run: dotnet publish .\Felweed.csproj -c Release -r win-x64 --self-contained true -o .\publish
+      - name: Publish App
+        run: dotnet publish .\Felweed.csproj -c Release -r win-x64 --self-contained true -o .\publish /p:GITHUB_ACTIONS=true
 
-      # 2) Install Velopack packer (vpk)
-      - name: Install vpk
+      - name: Install Velopack CLI
         run: dotnet tool install -g vpk
 
-      # 3) Pack updates into a static "feed" folder
       - name: Pack Velopack feed
         shell: pwsh
         run: |
@@ -39,9 +38,9 @@ jobs:
             --packTitle "Felweed" `
             --packVersion $ver `
             --packDir ".\publish" `
-            --outputDir ".\site\felweed"
+            --outputDir ".\site\felweed" `
+            --mainExe "Felweed.exe" 
 
-      # Upload the site folder for the deploy job
       - uses: actions/upload-artifact@v4
         with:
           name: pages-site
@@ -50,8 +49,12 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Download Site
+        uses: actions/download-artifact@v4
         with:
           name: pages-site
           path: site
@@ -60,4 +63,5 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
-      - uses: actions/deploy-pages@v4
+      - id: deployment
+        uses: actions/deploy-pages@v4
