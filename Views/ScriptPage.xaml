@@ -32,7 +32,7 @@
                 <Grid Margin="8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="416" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="40" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
@@ -63,7 +63,7 @@
                                      SelectionMode="Multiple"
                                      ScrollViewer.VerticalScrollBarVisibility="Disabled"
                                      IsEnabled="{Binding ActualizeViewEnabled}"
-                                     Height="400"
+                                     Height="360"
                                      Margin="0, 8, 0, 0">
                             <ui:ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem">
@@ -73,7 +73,7 @@
                             
                             <ui:ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Vertical" Height="400" />
+                                    <WrapPanel Orientation="Vertical" Height="360" />
                                 </ItemsPanelTemplate>
                             </ui:ListView.ItemsPanel>
                             
