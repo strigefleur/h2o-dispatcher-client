@@ -155,6 +155,7 @@
                             />
                             <ui:NavigationViewItem
                                 Content="Прочее"
+                                IsEnabled="False"
                                 x:Name="MiscConfigPage"
                                 Icon="{ui:SymbolIcon SettingsChat24}"
                                 TargetPageType="{x:Type v:MiscConfigPage}"
