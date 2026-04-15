@@ -8,7 +8,7 @@ public sealed record AppConfig
     public List<string> SolutionDirectories { get; set; } = [];
 
     public List<string> CSharpSolutionPrefixes { get; set; } =
-        [Constants.PrefixConst.CSharpCorporateL2Prefix, "DataHub"];
+        [Constants.PrefixConst.CSharpCorporateL1Prefix, "DataHub"];
 
     public SymbolRegular ThemeSwitchIcon { get; set; } = SymbolRegular.WeatherMoon24;
     public string? ServerUrl { get; set; }

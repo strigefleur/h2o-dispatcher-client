@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Felweed.Constants;
 using Felweed.Models;
 using Felweed.Services;
 using LibGit2Sharp;
@@ -246,8 +247,11 @@ public partial class ScriptPageViewModel : ObservableObject
                     LogActualize($"Начало актуализации {solution.Name}...");
 
                     LogActualize("Выполнение [npm-check-updates]...");
+                    const string angularDepPrefixRegex =
+                        @$"/^{PrefixConst.AngularCorporateL0Prefix}\.{PrefixConst.AngularCorporateL1Prefix}\//";
+                    
                     if (!await TerminalHelper.RunCmd("npx",
-                            @"--strict-ssl=false npm-check-updates -p yarn -f /^@rshbgroup\.cfo\// -u --install always",
+                            @$"--strict-ssl=false npm-check-updates -p yarn -f {angularDepPrefixRegex} -u --install always",
                             solution.Path, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка при выполнении [npm-check-updates]\n\n");

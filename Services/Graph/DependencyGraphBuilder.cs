@@ -71,7 +71,7 @@ public static class DependencyGraphBuilder
         //   - корпоративные по имени
         //   - и реально "производятся" в текущем каталоге
         bool IsInternalCorporate(string depName)
-            => (depName.StartsWith(Constants.PrefixConst.AngularCorporateDepPrefix, StringComparison.OrdinalIgnoreCase)
+            => (depName.StartsWith(Constants.PrefixConst.AngularCorporateL0Prefix, StringComparison.OrdinalIgnoreCase)
                 || depName.StartsWith(Constants.PrefixConst.CSharpCorporateL0Prefix, StringComparison.OrdinalIgnoreCase))
                && producedBy.ContainsKey(depName);
     }

@@ -58,7 +58,7 @@ public static partial class SolutionScanner
             TagVersionNumber = tagVersion,
             GitOriginUrl = originUrl,
             LatestSyncDate = GitHelper.GetLastGitSyncDate(angularDir),
-            IsCorporate = name.StartsWith(Constants.PrefixConst.AngularCorporateDepPrefix)
+            IsCorporate = name.StartsWith(Constants.PrefixConst.AngularCorporateL0Prefix)
         };
         
         solution.AddConsumedDependencies(dependencies.ToArray());

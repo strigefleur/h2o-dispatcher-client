@@ -2,8 +2,9 @@
 
 public static class PrefixConst
 {
-    public const string AngularCorporateDepPrefix = "@rshbgroup";
+    public const string AngularCorporateL0Prefix = "@rshbgroup";
     public const string CSharpCorporateL0Prefix = "RSHBGroup";
     
-    public const string CSharpCorporateL2Prefix = "CFO";
+    public const string AngularCorporateL1Prefix = "cfo";
+    public const string CSharpCorporateL1Prefix = "CFO";
 }
