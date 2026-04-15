@@ -1,8 +1,6 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Felweed.Models;
@@ -14,33 +12,33 @@ namespace Felweed.ViewModels;
 public partial class ScriptPageViewModel : ObservableObject
 {
     #region ReplaceText
-    
+
     [ObservableProperty] private bool _backendOnly;
     [ObservableProperty] private bool _frontendOnly;
     [ObservableProperty] private bool _both = true;
     [ObservableProperty] private bool _serviceOnly;
-    
+
     [ObservableProperty] private bool _withCommit;
-    
+
     [ObservableProperty] private string _filename = "";
     [ObservableProperty] private string? _commitMessage;
-    
+
     [ObservableProperty] private string _lookupText = "";
     [ObservableProperty] private string _replaceText = "";
     [ObservableProperty] private string _replaceResult = "";
-    
+
     #endregion Replace
-    
+
     #region ActualizeVersion
-    
+
     [ObservableProperty] private ObservableCollection<SolutionActualizeVm> _actualizeSolutions = [];
     [ObservableProperty] private bool _skipBuild;
     [ObservableProperty] private string _actualizeResult = "";
     [ObservableProperty] private bool _actualizeViewEnabled = true;
     [ObservableProperty] private bool _canInterruptActualization;
-    
+
     private CancellationTokenSource? _actualizationCts;
-    
+
     #endregion
 
     public ScriptPageViewModel()
@@ -50,7 +48,7 @@ public partial class ScriptPageViewModel : ObservableObject
                      .OrderBy(x => x.IsRunnable)
                      .ThenBy(x => x.Name))
         {
-            ActualizeSolutions.Add(new ()
+            ActualizeSolutions.Add(new()
             {
                 Solution = angularSolution
             });
@@ -120,21 +118,21 @@ public partial class ScriptPageViewModel : ObservableObject
     {
         if (solution.IsCorporate != true)
             return null;
-            
+
         var dir = Directory.Exists(solution.Path) ? solution.Path : Path.GetDirectoryName(solution.Path);
         if (dir == null)
             return null;
-            
+
         var filename = Path.Combine(dir, Filename);
         if (!File.Exists(filename))
             return null;
-            
+
         if (!Repository.IsValid(dir))
             return null;
 
         return (dir, filename);
     }
-    
+
     [RelayCommand]
     private void Replace()
     {
@@ -149,9 +147,9 @@ public partial class ScriptPageViewModel : ObservableObject
             var checkInfo = ShouldTrySolution(solution);
             if (checkInfo == null)
                 continue;
-            
+
             var content = File.ReadAllText(checkInfo.Value.Filename);
-            
+
             if (content.Contains(LookupText))
             {
                 var updatedContent = content.Replace(LookupText, ReplaceText);
@@ -164,7 +162,7 @@ public partial class ScriptPageViewModel : ObservableObject
                     using (var repo = new Repository(checkInfo.Value.Dir))
                     {
                         var defaultSignature = repo.Config.BuildSignature(DateTimeOffset.Now);
-                        
+
                         Commands.Stage(repo, Filename);
                         if (repo.RetrieveStatus().IsDirty)
                         {
@@ -175,24 +173,24 @@ public partial class ScriptPageViewModel : ObservableObject
             }
         }
     }
-    
+
     [RelayCommand]
     private void ReplaceDryRun()
     {
         ReplaceResult = string.Empty;
-        
+
         if (!CanReplace())
             return;
-        
+
         var replaceCount = 0;
         foreach (var solution in SelectCollection())
         {
             var checkInfo = ShouldTrySolution(solution);
             if (checkInfo == null)
                 continue;
-            
+
             var content = File.ReadAllText(checkInfo.Value.Filename);
-            
+
             if (content.Contains(LookupText))
             {
                 ReplaceResult += $"\n{++replaceCount}: выполнилась бы замена в {checkInfo.Value.Filename}";
@@ -216,9 +214,9 @@ public partial class ScriptPageViewModel : ObservableObject
     {
         _actualizationCts = new CancellationTokenSource();
         CanInterruptActualization = true;
-        
+
         try
-        {   
+        {
             ActualizeResult = string.Empty;
             ActualizeViewEnabled = false;
 
@@ -229,7 +227,7 @@ public partial class ScriptPageViewModel : ObservableObject
                     LogActualize("Прервано");
                     return;
                 }
-                
+
                 try
                 {
                     solutionVm.IsProcessing = true;
@@ -248,20 +246,20 @@ public partial class ScriptPageViewModel : ObservableObject
                     LogActualize($"Начало актуализации {solution.Name}...");
 
                     LogActualize("Выполнение [npm-check-updates]...");
-                    if (!await RunCmd("npx",
+                    if (!await TerminalHelper.RunCmd("npx",
                             @"--strict-ssl=false npm-check-updates -p yarn -f /^@rshbgroup\.cfo\// -u --install always",
                             solution.Path, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка при выполнении [npm-check-updates]\n\n");
                         continue;
                     }
-                    
+
                     if (_actualizationCts.IsCancellationRequested)
                     {
                         LogActualize("Прервано");
                         return;
                     }
-                    
+
                     using (var repo = new Repository(solution.Path))
                     {
                         Commands.Stage(repo, ".");
@@ -275,7 +273,7 @@ public partial class ScriptPageViewModel : ObservableObject
                     if (!SkipBuild)
                     {
                         LogActualize("Выполнение [yarn build]...");
-                        if (!await RunCmd("yarn", "build", solution.Path, _actualizationCts.Token))
+                        if (!await TerminalHelper.RunCmd("yarn", "build", solution.Path, _actualizationCts.Token))
                         {
                             LogActualize("Ошибка при выполнении [yarn build]\n\n");
                             continue;
@@ -285,7 +283,7 @@ public partial class ScriptPageViewModel : ObservableObject
                     {
                         LogActualize("Выполнение [yarn build] пропускается...");
                     }
-                    
+
                     if (_actualizationCts.IsCancellationRequested)
                     {
                         LogActualize("Прервано");
@@ -301,16 +299,17 @@ public partial class ScriptPageViewModel : ObservableObject
                         var projectDirName = Path.GetFileName(Directory.EnumerateDirectories(projectsDir).Single());
                         var innerPath = Path.Combine(solution.Path, "projects", projectDirName, "package.json");
 
-                        var rootPkg = LoadPackageJson(rootPath);
-                        var innerPkg = LoadPackageJson(innerPath);
+                        var rootPkg = PackageJsonHelper.LoadPackageJson(rootPath);
+                        var innerPkg = PackageJsonHelper.LoadPackageJson(innerPath);
 
-                        var rootVersions = ReadVersions(rootPkg, "dependencies", "devDependencies", "peerDependencies",
-                            "optionalDependencies");
+                        var rootVersions = PackageJsonHelper.ReadVersions(rootPkg, "dependencies", "devDependencies",
+                            "peerDependencies", "optionalDependencies");
 
-                        var totalChanged1 = SyncSection(innerPkg, "dependencies", rootVersions);
-                        var totalChanged2 = SyncSection(innerPkg, "devDependencies", rootVersions);
-                        var totalChanged3 = SyncSection(innerPkg, "peerDependencies", rootVersions);
-                        var totalChanged4 = SyncSection(innerPkg, "optionalDependencies", rootVersions);
+                        var totalChanged1 = PackageJsonHelper.SyncSection(innerPkg, "dependencies", rootVersions);
+                        var totalChanged2 = PackageJsonHelper.SyncSection(innerPkg, "devDependencies", rootVersions);
+                        var totalChanged3 = PackageJsonHelper.SyncSection(innerPkg, "peerDependencies", rootVersions);
+                        var totalChanged4 =
+                            PackageJsonHelper.SyncSection(innerPkg, "optionalDependencies", rootVersions);
 
                         var options = new JsonSerializerOptions { WriteIndented = true };
                         await File.WriteAllTextAsync(innerPath, innerPkg.ToJsonString(options));
@@ -318,7 +317,7 @@ public partial class ScriptPageViewModel : ObservableObject
                         var totalChanged = totalChanged1 + totalChanged2 + totalChanged3 + totalChanged4;
                         LogActualize(
                             $"Во внутренний package.json библиотеки перенесено {totalChanged} изменений версии");
-                        
+
                         if (_actualizationCts.IsCancellationRequested)
                         {
                             LogActualize("Прервано");
@@ -331,7 +330,7 @@ public partial class ScriptPageViewModel : ObservableObject
                             VersionHelper.IncPatchVersion(solution.TagVersionNumber),
                             ["Обновление зависимостей"]);
                     }
-                    
+
                     if (_actualizationCts.IsCancellationRequested)
                     {
                         LogActualize("Прервано");
@@ -341,7 +340,7 @@ public partial class ScriptPageViewModel : ObservableObject
                     LogActualize("Создание комита...");
                     if (solution.IsPackable)
                     {
-                        if (!await RunCmd("python", "bump_version.py", solution.Path, _actualizationCts.Token))
+                        if (!await TerminalHelper.RunCmd("python", "bump_version.py", solution.Path, _actualizationCts.Token))
                         {
                             LogActualize("Ошибка при создании комита\n\n");
                             continue;
@@ -349,13 +348,14 @@ public partial class ScriptPageViewModel : ObservableObject
                     }
                     else
                     {
-                        if (!await RunCmd("git", "add .", solution.Path, _actualizationCts.Token))
+                        if (!await TerminalHelper.RunCmd("git", "add .", solution.Path, _actualizationCts.Token))
                         {
                             LogActualize("Ошибка stage комита\n\n");
                             continue;
                         }
-                        
-                        if (!await RunCmd("git", "commit -m \"chore: bump deps\"", solution.Path, _actualizationCts.Token))
+
+                        if (!await TerminalHelper.RunCmd("git", "commit -m \"chore: bump deps\"", solution.Path,
+                                _actualizationCts.Token))
                         {
                             LogActualize("Ошибка при создании комита\n\n");
                             continue;
@@ -374,88 +374,9 @@ public partial class ScriptPageViewModel : ObservableObject
         {
             ActualizeViewEnabled = true;
             CanInterruptActualization = false;
-            
+
             _actualizationCts?.Dispose();
             _actualizationCts = null;
         }
-    }
-
-    private static async Task<bool> RunCmd(string cmd, string args, string workDir, CancellationToken ct)
-    {
-        try
-        {
-            var info = new ProcessStartInfo
-            {
-                FileName = "cmd.exe",
-                Arguments = $"/c {cmd} {args}",
-                WorkingDirectory = workDir,
-                CreateNoWindow = true,
-                UseShellExecute = false
-            };
-
-            using var proc = Process.Start(info);
-            if (proc == null)
-                return false;
-
-            await proc.WaitForExitAsync(ct);
-            if (proc.ExitCode != 0)
-                return false;
-
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-    
-    private static Dictionary<string, string> ReadVersions(JsonObject pkg, params string[] sections)
-    {
-        var map = new Dictionary<string, string>(StringComparer.Ordinal);
-
-        foreach (var section in sections)
-        {
-            if (pkg[section] is JsonObject deps)
-            {
-                foreach (var kv in deps)
-                {
-                    if (kv.Value is JsonValue v && v.TryGetValue<string>(out var s) && !string.IsNullOrWhiteSpace(s))
-                        map[kv.Key] = s;
-                }
-            }
-        }
-
-        return map;
-    }
-
-    private static int SyncSection(JsonObject innerPkg, string sectionName, Dictionary<string, string> rootVersions)
-    {
-        if (innerPkg[sectionName] is not JsonObject innerDeps)
-            return 0;
-
-        int changed = 0;
-
-        foreach (var depName in innerDeps.Select(k => k.Key).ToList())
-        {
-            if (!rootVersions.TryGetValue(depName, out var rootVersion))
-                continue;
-
-            var current = innerDeps[depName]?.GetValue<string>();
-
-            if (!string.Equals(current, rootVersion, StringComparison.Ordinal))
-            {
-                innerDeps[depName] = rootVersion;
-                changed++;
-            }
-        }
-
-        return changed;
-    }
-
-    private static JsonObject LoadPackageJson(string path)
-    {
-        var text = File.ReadAllText(path);
-        var node = JsonNode.Parse(text) ?? throw new Exception($"Failed to parse {path}");
-        return node.AsObject();
     }
 }

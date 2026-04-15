@@ -87,4 +87,33 @@ public static class TerminalHelper
         }
         return null;
     }
+    
+    public static async Task<bool> RunCmd(string cmd, string args, string workDir, CancellationToken ct)
+    {
+        try
+        {
+            var info = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c {cmd} {args}",
+                WorkingDirectory = workDir,
+                CreateNoWindow = true,
+                UseShellExecute = false
+            };
+
+            using var proc = Process.Start(info);
+            if (proc == null)
+                return false;
+
+            await proc.WaitForExitAsync(ct);
+            if (proc.ExitCode != 0)
+                return false;
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }
