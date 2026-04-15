@@ -31,64 +31,88 @@
                 
                 <Grid Margin="8">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="408" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="416" />
                         <RowDefinition Height="40" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     
-                    <ui:ListView ItemsSource="{Binding ActualizeSolutions}"
-                                 SelectionMode="Multiple"
-                                 ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                                 IsEnabled="{Binding ActualizeViewEnabled}"
-                                 Height="400"
-                                 Margin="0, 8, 0, 0">
-                        <ui:ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem">
-                                <Setter Property="IsSelected" Value="{Binding IsChecked, Mode=TwoWay}" />
-                            </Style>
-                        </ui:ListView.ItemContainerStyle>
-                        
-                        <ui:ListView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Vertical" Height="400" />
-                            </ItemsPanelTemplate>
-                        </ui:ListView.ItemsPanel>
-                        
-                        <ListView.ItemTemplate>
-                            <DataTemplate DataType="{x:Type vm:SolutionActualizeVm}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="48" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    
-                                    <ui:ProgressRing Grid.Column="0" IsIndeterminate="True"
-                                                     Width="16"
-                                                     Height="16"
-                                                     Margin="8"
-                                                     HorizontalAlignment="Center"
-                                                     HorizontalContentAlignment="Center"
-                                                     VerticalAlignment="Center"
-                                                     VerticalContentAlignment="Center"
-                                                     Visibility="{Binding IsProcessing, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                    
-                                    <CheckBox Grid.Column="0" IsEnabled="False"
-                                              HorizontalAlignment="Center"
-                                              HorizontalContentAlignment="Center"
-                                              VerticalContentAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              Visibility="{Binding IsProcessing, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                                              IsChecked="{Binding IsChecked}"
-                                    />
-                                
-                                    <TextBlock Grid.Column="1" Text="{Binding Solution.Name}"
-                                               VerticalAlignment="Center"/>
-                                </Grid>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ui:ListView>
+                    <GroupBox Header="Выбор зависимостей через DAG" Padding="8">
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                            <ComboBox x:Name="ActualizeSolutionFilter"
+                                      Width="320"
+                                      ItemsSource="{Binding ActualizeSolutions}"
+                                      SelectedItem="{Binding DagFilterSolution}"
+                                      IsEnabled="{Binding ActualizeViewEnabled}"
+                                      DisplayMemberPath="Solution.Name"
+                                      IsEditable="True"
+                                      IsTextSearchEnabled="True"
+                                      TextSearch.TextPath="Solution.Name"
+                                      StaysOpenOnEdit="True"/>
+            
+                            <Button Content="Применить" Margin="16,0,0,0"
+                                    VerticalContentAlignment="Center"
+                                    VerticalAlignment="Stretch"
+                                    IsEnabled="{Binding ActualizeViewEnabled}"
+                                    Command="{Binding UseDagFilterSelectionCommand}"/>
+                        </StackPanel>
+                    </GroupBox>
                     
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0, 8, 0, 0">
+                    <GroupBox Grid.Row="1" Header="Выбор зависимостей вручную" Padding="8">
+                        <ui:ListView ItemsSource="{Binding ActualizeSolutions}"
+                                     SelectionMode="Multiple"
+                                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                     IsEnabled="{Binding ActualizeViewEnabled}"
+                                     Height="400"
+                                     Margin="0, 8, 0, 0">
+                            <ui:ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="IsSelected" Value="{Binding IsChecked, Mode=TwoWay}" />
+                                </Style>
+                            </ui:ListView.ItemContainerStyle>
+                            
+                            <ui:ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Vertical" Height="400" />
+                                </ItemsPanelTemplate>
+                            </ui:ListView.ItemsPanel>
+                            
+                            <ListView.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:SolutionActualizeVm}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="48" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <ui:ProgressRing Grid.Column="0" IsIndeterminate="True"
+                                                         Width="16"
+                                                         Height="16"
+                                                         Margin="8"
+                                                         HorizontalAlignment="Center"
+                                                         HorizontalContentAlignment="Center"
+                                                         VerticalAlignment="Center"
+                                                         VerticalContentAlignment="Center"
+                                                         Visibility="{Binding IsProcessing, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                        
+                                        <CheckBox Grid.Column="0" IsEnabled="False"
+                                                  HorizontalAlignment="Center"
+                                                  HorizontalContentAlignment="Center"
+                                                  VerticalContentAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  Visibility="{Binding IsProcessing, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                                  IsChecked="{Binding IsChecked}"
+                                        />
+                                    
+                                        <TextBlock Grid.Column="1" Text="{Binding Solution.Name}"
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ui:ListView>
+                    </GroupBox>
+                    
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0, 8, 0, 0">
                         <CheckBox Content="Пропустить проверку сборки (yarn build)"
                                   IsEnabled="{Binding ActualizeViewEnabled}"
                                   IsChecked="{Binding SkipBuild}"/>
@@ -115,7 +139,7 @@
                     
                     <ui:TextBox x:Name="ActualizeTextBox" Text="{Binding ActualizeResult}"
                                 IsReadOnly="True"
-                                Grid.Row="2"
+                                Grid.Row="3"
                                 VerticalScrollBarVisibility="Auto"
                                 TextChanged="ActualizeTextBox_OnTextChanged"
                                 Margin="0, 8, 0, 0"/>

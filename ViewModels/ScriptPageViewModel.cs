@@ -5,7 +5,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Felweed.Constants;
 using Felweed.Models;
+using Felweed.Models.Graph;
 using Felweed.Services;
+using Felweed.Services.Graph;
 using LibGit2Sharp;
 
 namespace Felweed.ViewModels;
@@ -28,7 +30,7 @@ public partial class ScriptPageViewModel : ObservableObject
     [ObservableProperty] private string _replaceText = "";
     [ObservableProperty] private string _replaceResult = "";
 
-    #endregion Replace
+    #endregion ReplaceText
 
     #region ActualizeVersion
 
@@ -37,10 +39,11 @@ public partial class ScriptPageViewModel : ObservableObject
     [ObservableProperty] private string _actualizeResult = "";
     [ObservableProperty] private bool _actualizeViewEnabled = true;
     [ObservableProperty] private bool _canInterruptActualization;
+    [ObservableProperty] private SolutionActualizeVm? _dagFilterSolution;
 
     private CancellationTokenSource? _actualizationCts;
 
-    #endregion
+    #endregion ActualizeVersion
 
     public ScriptPageViewModel()
     {
@@ -55,6 +58,8 @@ public partial class ScriptPageViewModel : ObservableObject
             });
         }
     }
+    
+    #region ReplaceTextActivity
 
     private bool CanReplace()
     {
@@ -198,10 +203,80 @@ public partial class ScriptPageViewModel : ObservableObject
             }
         }
     }
+    
+    #endregion ReplaceTextActivity
+    
+    #region ActualizeVersionActivity
 
     private void LogActualize(string message)
     {
         ActualizeResult += $"{DateTime.Now}: {message}\n";
+    }
+    
+    [RelayCommand]
+    private void UseDagFilterSelection()
+    {
+        foreach (var solution in ActualizeSolutions)
+        {
+            solution.IsChecked = false;
+        }
+        
+        if (DagFilterSolution == null)
+            return;
+        
+        var graph = DependencyGraphBuilder.Build(ActualizeSolutions.Select(x => x.Solution).ToArray());
+        var layers = GraphLayering.BuildLayers(graph);
+        var visible = GraphQueries.GetDownstreamInclusive(graph, DagFilterSolution.Solution.Id);
+
+        List<LevelVm> levels = [];
+        for (var i = 0; i < layers.Count; i++)
+        {
+            var level = new LevelVm { Level = i };
+
+            foreach (var id in layers[i])
+            {
+                var solution = graph.Nodes[id].Solution;
+
+                level.Nodes.Add(solution);
+            }
+
+            levels.Add(level);
+        }
+
+        var filteredLevels = ApplyFilter(graph, levels, DagFilterSolution.Solution.Id);
+        if (filteredLevels.Count < 2)
+            return;
+
+        foreach (var solution in filteredLevels[1].Nodes)
+        {
+            ActualizeSolutions.Single(x => x.Solution.Id == solution.Id).IsChecked = true;
+        }
+    }
+    
+    private List<LevelVm> ApplyFilter(DependencyGraph graph, ICollection<LevelVm> levels, Guid? libraryId)
+    {
+        var visible = libraryId is null
+            ? null
+            : GraphQueries.GetDownstreamInclusive(graph, libraryId.Value);
+
+        List<LevelVm> filteredLevels = [];
+        foreach (var lvl in levels)
+        {
+            var nodes = (visible is null)
+                ? lvl.Nodes.ToList()
+                : lvl.Nodes.Where(n => visible.Contains(n.Id)).ToList();
+
+            if (nodes.Count == 0)
+                continue; // hide empty levels
+
+            var copy = new LevelVm { Level = lvl.Level };
+            foreach (var n in nodes)
+                copy.Nodes.Add(n);
+
+            filteredLevels.Add(copy);
+        }
+        
+        return filteredLevels;
     }
 
     [RelayCommand]
@@ -383,4 +458,6 @@ public partial class ScriptPageViewModel : ObservableObject
             _actualizationCts = null;
         }
     }
+    
+    #endregion ActualizeVersionActivity
 }
