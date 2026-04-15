@@ -4,13 +4,21 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:localConverters="clr-namespace:Felweed.ViewModels.Converters"
       xmlns:local="clr-namespace:Felweed.Views"
+      xmlns:m="clr-namespace:Felweed.Models"
       xmlns:vm="clr-namespace:Felweed.ViewModels"
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance Type=vm:ScriptPageViewModel, IsDesignTimeCreatable=True}"
       d:DesignHeight="808"
       d:DesignWidth="880"
+      ScrollViewer.CanContentScroll="False"
       Title="ScriptPage">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <localConverters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+    </Page.Resources>
+    
     <Grid>
         <TabControl Margin="8">
             <TabItem>
@@ -21,30 +29,97 @@
                     </StackPanel>
                 </TabItem.Header>
                 
-                <StackPanel Orientation="Vertical" Margin="8">
-                    <ComboBox ItemsSource="{Binding FrontendServices}"
-                              x:Name="FrontendServiceCb"
-                              DisplayMemberPath="Name"
-                              SelectionChanged="FrontendServiceCb_OnSelectionChanged"
-                              SelectedValuePath="Id" />
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="408" />
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
                     
-                    <CheckBox Content="Пропустить проверку сборки (yarn build)"
-                              IsChecked="{Binding SkipBuild}"
-                              Margin="0, 8, 0, 0"/>
+                    <ui:ListView ItemsSource="{Binding ActualizeSolutions}"
+                                 SelectionMode="Multiple"
+                                 ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                 IsEnabled="{Binding ActualizeViewEnabled}"
+                                 Height="400"
+                                 Margin="0, 8, 0, 0">
+                        <ui:ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="IsSelected" Value="{Binding IsChecked, Mode=TwoWay}" />
+                            </Style>
+                        </ui:ListView.ItemContainerStyle>
+                        
+                        <ui:ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Vertical" Height="400" />
+                            </ItemsPanelTemplate>
+                        </ui:ListView.ItemsPanel>
+                        
+                        <ListView.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:SolutionActualizeVm}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="48" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <ui:ProgressRing Grid.Column="0" IsIndeterminate="True"
+                                                     Width="16"
+                                                     Height="16"
+                                                     Margin="8"
+                                                     HorizontalAlignment="Center"
+                                                     HorizontalContentAlignment="Center"
+                                                     VerticalAlignment="Center"
+                                                     VerticalContentAlignment="Center"
+                                                     Visibility="{Binding IsProcessing, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    
+                                    <CheckBox Grid.Column="0" IsEnabled="False"
+                                              HorizontalAlignment="Center"
+                                              HorizontalContentAlignment="Center"
+                                              VerticalContentAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Visibility="{Binding IsProcessing, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                              IsChecked="{Binding IsChecked}"
+                                    />
+                                
+                                    <TextBlock Grid.Column="1" Text="{Binding Solution.Name}"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ui:ListView>
                     
-                    <ui:Button Content="Запустить актуализацию" 
-                               Command="{Binding ActualizeFrontendDepsCommand}"
-                               CommandParameter="{Binding ElementName=FrontendServiceCb, Path=SelectedItem}"
-                               Margin="0, 8, 0, 0"
-                               Cursor="Hand">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Play24" />
-                        </ui:Button.Icon>
-                    </ui:Button>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0, 8, 0, 0">
+                        <CheckBox Content="Пропустить проверку сборки (yarn build)"
+                                  IsEnabled="{Binding ActualizeViewEnabled}"
+                                  IsChecked="{Binding SkipBuild}"/>
                     
-                    <ui:TextBlock Text="{Binding ActualizeResult}"
-                                  Margin="0, 8, 0, 0"/>
-                </StackPanel>
+                        <ui:Button Content="Запустить актуализацию" 
+                                   Command="{Binding ActualizeFrontendDepsCommand}"
+                                   Margin="16, 0, 0, 0"
+                                   Cursor="Hand">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Play24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        
+                        <ui:Button Content="Прервать актуализацию" 
+                                   Command="{Binding InterruptFrontendDepsActualizationCommand}"
+                                   IsEnabled="{Binding CanInterruptActualization}"
+                                   Margin="8, 0, 0, 0"
+                                   Cursor="Hand">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Stop24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                    </StackPanel>
+                    
+                    <ui:TextBox x:Name="ActualizeTextBox" Text="{Binding ActualizeResult}"
+                                IsReadOnly="True"
+                                Grid.Row="2"
+                                VerticalScrollBarVisibility="Auto"
+                                TextChanged="ActualizeTextBox_OnTextChanged"
+                                Margin="0, 8, 0, 0"/>
+                </Grid>
             </TabItem>
             
             <TabItem>
@@ -119,6 +194,7 @@
                     </StackPanel>
                 
                     <ui:TextBlock Text="{Binding ReplaceResult}"
+                                  Height="300"
                                   Margin="0, 8, 0, 0"/>
                 </StackPanel>
             </TabItem>

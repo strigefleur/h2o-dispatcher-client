@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -32,18 +33,27 @@ public partial class ScriptPageViewModel : ObservableObject
     
     #region ActualizeVersion
     
-    [ObservableProperty] private ObservableCollection<Solution> _frontendServices = [];
+    [ObservableProperty] private ObservableCollection<SolutionActualizeVm> _actualizeSolutions = [];
     [ObservableProperty] private bool _skipBuild;
     [ObservableProperty] private string _actualizeResult = "";
+    [ObservableProperty] private bool _actualizeViewEnabled = true;
+    [ObservableProperty] private bool _canInterruptActualization;
+    
+    private CancellationTokenSource? _actualizationCts;
     
     #endregion
 
     public ScriptPageViewModel()
     {
         foreach (var angularSolution in SolutionScanner.AngularSolutions
-                     .Where(x => x is { IsCorporate: true, IsRunnable: true }))
+                     .Where(x => x is { IsCorporate: true })
+                     .OrderBy(x => x.IsRunnable)
+                     .ThenBy(x => x.Name))
         {
-            FrontendServices.Add(angularSolution);
+            ActualizeSolutions.Add(new ()
+            {
+                Solution = angularSolution
+            });
         }
     }
 
@@ -190,57 +200,187 @@ public partial class ScriptPageViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    private async Task ActualizeFrontendDeps(AngularSolution? solution)
+    private void LogActualize(string message)
     {
-        ActualizeResult = string.Empty;
-
-        if (solution == null)
-        {
-            ActualizeResult = $"{DateTime.Now}: Не выбран проект";
-            return;
-        }
-
-        ActualizeResult = $"{DateTime.Now}: Начало актуализации {solution.Name}...";
-        
-        ActualizeResult += $"\n{DateTime.Now}: Выполнение [npm-check-updates]...";
-        if (!await RunCmd("npx", @"--strict-ssl=false npm-check-updates -p yarn -f /^@rshbgroup\.cfo\// -u --install always", solution.Path))
-        {
-            ActualizeResult += $"\n{DateTime.Now}: Ошибка при выполнении [npm-check-updates]";
-            return;
-        }
-
-        if (!SkipBuild)
-        {
-            ActualizeResult += $"\n{DateTime.Now}: Выполнение [yarn build]...";
-            if (!await RunCmd("yarn", "build", solution.Path))
-            {
-                ActualizeResult += $"\n{DateTime.Now}: Ошибка при выполнении [yarn build]";
-                return;
-            }
-        }
-        else
-        {
-            ActualizeResult += $"\n{DateTime.Now}: Выполнение [yarn build] пропускается...";
-        }
-        
-        ActualizeResult += $"\n{DateTime.Now}: Создание комита...";
-        if (!await RunCmd("git", "add .", solution.Path))
-        {
-            ActualizeResult += $"\n{DateTime.Now}: Ошибка stage комита";
-            return;
-        }
-
-        if (!await RunCmd("git", "commit -m \"chore: bump deps\"", solution.Path))
-        {
-            ActualizeResult += $"\n{DateTime.Now}: Ошибка при создании комита";
-            return;
-        }
-        
-        ActualizeResult += $"\n{DateTime.Now}: Готово!";
+        ActualizeResult += $"{DateTime.Now}: {message}\n";
     }
 
-    private static async Task<bool> RunCmd(string cmd, string args, string workDir)
+    [RelayCommand]
+    private void InterruptFrontendDepsActualization()
+    {
+        _actualizationCts?.Cancel();
+    }
+
+    [RelayCommand]
+    private async Task ActualizeFrontendDeps()
+    {
+        _actualizationCts = new CancellationTokenSource();
+        CanInterruptActualization = true;
+        
+        try
+        {   
+            ActualizeResult = string.Empty;
+            ActualizeViewEnabled = false;
+
+            foreach (var solutionVm in ActualizeSolutions.Where(x => x.IsChecked))
+            {
+                if (_actualizationCts.IsCancellationRequested)
+                {
+                    LogActualize("Прервано");
+                    return;
+                }
+                
+                try
+                {
+                    solutionVm.IsProcessing = true;
+
+                    var solution = solutionVm.Solution;
+                    switch (solution)
+                    {
+                        case null:
+                            LogActualize("Не выбран проект\n\n");
+                            continue;
+                        case { IsPackable: true, TagVersionNumber: null }:
+                            LogActualize("У библиотеки не определена текущая версия\n\n");
+                            continue;
+                    }
+
+                    LogActualize($"Начало актуализации {solution.Name}...");
+
+                    LogActualize("Выполнение [npm-check-updates]...");
+                    if (!await RunCmd("npx",
+                            @"--strict-ssl=false npm-check-updates -p yarn -f /^@rshbgroup\.cfo\// -u --install always",
+                            solution.Path, _actualizationCts.Token))
+                    {
+                        LogActualize("Ошибка при выполнении [npm-check-updates]\n\n");
+                        continue;
+                    }
+                    
+                    if (_actualizationCts.IsCancellationRequested)
+                    {
+                        LogActualize("Прервано");
+                        return;
+                    }
+                    
+                    using (var repo = new Repository(solution.Path))
+                    {
+                        Commands.Stage(repo, ".");
+                        if (!repo.RetrieveStatus().IsDirty)
+                        {
+                            LogActualize("Нечего обновлять, пропускаю\n\n");
+                            continue;
+                        }
+                    }
+
+                    if (!SkipBuild)
+                    {
+                        LogActualize("Выполнение [yarn build]...");
+                        if (!await RunCmd("yarn", "build", solution.Path, _actualizationCts.Token))
+                        {
+                            LogActualize("Ошибка при выполнении [yarn build]\n\n");
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        LogActualize("Выполнение [yarn build] пропускается...");
+                    }
+                    
+                    if (_actualizationCts.IsCancellationRequested)
+                    {
+                        LogActualize("Прервано");
+                        return;
+                    }
+
+                    if (solution.IsPackable)
+                    {
+                        LogActualize("Актуализация внутреннего package.json библиотеки...");
+
+                        var rootPath = Path.Combine(solution.Path, "package.json");
+                        var projectsDir = Path.Combine(solution.Path, "projects");
+                        var projectDirName = Path.GetFileName(Directory.EnumerateDirectories(projectsDir).Single());
+                        var innerPath = Path.Combine(solution.Path, "projects", projectDirName, "package.json");
+
+                        var rootPkg = LoadPackageJson(rootPath);
+                        var innerPkg = LoadPackageJson(innerPath);
+
+                        var rootVersions = ReadVersions(rootPkg, "dependencies", "devDependencies", "peerDependencies",
+                            "optionalDependencies");
+
+                        var totalChanged1 = SyncSection(innerPkg, "dependencies", rootVersions);
+                        var totalChanged2 = SyncSection(innerPkg, "devDependencies", rootVersions);
+                        var totalChanged3 = SyncSection(innerPkg, "peerDependencies", rootVersions);
+                        var totalChanged4 = SyncSection(innerPkg, "optionalDependencies", rootVersions);
+
+                        var options = new JsonSerializerOptions { WriteIndented = true };
+                        await File.WriteAllTextAsync(innerPath, innerPkg.ToJsonString(options));
+
+                        var totalChanged = totalChanged1 + totalChanged2 + totalChanged3 + totalChanged4;
+                        LogActualize(
+                            $"Во внутренний package.json библиотеки перенесено {totalChanged} изменений версии");
+                        
+                        if (_actualizationCts.IsCancellationRequested)
+                        {
+                            LogActualize("Прервано");
+                            return;
+                        }
+
+                        LogActualize("Создание записи для changelog...");
+                        var changelogFilename = Path.Combine(solution.Path, "changelog.md");
+                        ChangelogHelper.AddVersion(changelogFilename,
+                            VersionHelper.IncPatchVersion(solution.TagVersionNumber),
+                            ["Обновление зависимостей"]);
+                    }
+                    
+                    if (_actualizationCts.IsCancellationRequested)
+                    {
+                        LogActualize("Прервано");
+                        return;
+                    }
+
+                    LogActualize("Создание комита...");
+                    if (solution.IsPackable)
+                    {
+                        if (!await RunCmd("python", "bump_version.py", solution.Path, _actualizationCts.Token))
+                        {
+                            LogActualize("Ошибка при создании комита\n\n");
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        if (!await RunCmd("git", "add .", solution.Path, _actualizationCts.Token))
+                        {
+                            LogActualize("Ошибка stage комита\n\n");
+                            continue;
+                        }
+                        
+                        if (!await RunCmd("git", "commit -m \"chore: bump deps\"", solution.Path, _actualizationCts.Token))
+                        {
+                            LogActualize("Ошибка при создании комита\n\n");
+                            continue;
+                        }
+                    }
+
+                    LogActualize("Готово!\n\n");
+                }
+                finally
+                {
+                    solutionVm.IsProcessing = false;
+                }
+            }
+        }
+        finally
+        {
+            ActualizeViewEnabled = true;
+            CanInterruptActualization = false;
+            
+            _actualizationCts?.Dispose();
+            _actualizationCts = null;
+        }
+    }
+
+    private static async Task<bool> RunCmd(string cmd, string args, string workDir, CancellationToken ct)
     {
         try
         {
@@ -257,7 +397,7 @@ public partial class ScriptPageViewModel : ObservableObject
             if (proc == null)
                 return false;
 
-            await proc.WaitForExitAsync();
+            await proc.WaitForExitAsync(ct);
             if (proc.ExitCode != 0)
                 return false;
 
@@ -267,5 +407,55 @@ public partial class ScriptPageViewModel : ObservableObject
         {
             return false;
         }
+    }
+    
+    private static Dictionary<string, string> ReadVersions(JsonObject pkg, params string[] sections)
+    {
+        var map = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var section in sections)
+        {
+            if (pkg[section] is JsonObject deps)
+            {
+                foreach (var kv in deps)
+                {
+                    if (kv.Value is JsonValue v && v.TryGetValue<string>(out var s) && !string.IsNullOrWhiteSpace(s))
+                        map[kv.Key] = s;
+                }
+            }
+        }
+
+        return map;
+    }
+
+    private static int SyncSection(JsonObject innerPkg, string sectionName, Dictionary<string, string> rootVersions)
+    {
+        if (innerPkg[sectionName] is not JsonObject innerDeps)
+            return 0;
+
+        int changed = 0;
+
+        foreach (var depName in innerDeps.Select(k => k.Key).ToList())
+        {
+            if (!rootVersions.TryGetValue(depName, out var rootVersion))
+                continue;
+
+            var current = innerDeps[depName]?.GetValue<string>();
+
+            if (!string.Equals(current, rootVersion, StringComparison.Ordinal))
+            {
+                innerDeps[depName] = rootVersion;
+                changed++;
+            }
+        }
+
+        return changed;
+    }
+
+    private static JsonObject LoadPackageJson(string path)
+    {
+        var text = File.ReadAllText(path);
+        var node = JsonNode.Parse(text) ?? throw new Exception($"Failed to parse {path}");
+        return node.AsObject();
     }
 }

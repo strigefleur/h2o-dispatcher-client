@@ -26,4 +26,31 @@ public static class ChangelogHelper
 
         return null;
     }
+    
+    public static void AddVersion(string filePath, string version, List<string> changes)
+    {
+        // 1. Read all lines from the file
+        var lines = File.ReadAllLines(filePath).ToList();
+
+        // 2. Prepare the new block
+        var newVersionBlock = new List<string>
+        {
+            "", // Spacing before the header
+            $"## Версия {version}",
+            "",
+            "### Изменения текущей версии",
+            ""
+        };
+        
+        // Add each change as a bullet point
+        newVersionBlock.AddRange(changes.Select(c => $"- {c}"));
+
+        // 3. Find the injection point
+        // Usually, we insert after the first line (the "# История изменений" header)
+        const int insertIndex = 1; 
+
+        // 4. Insert and save
+        lines.InsertRange(insertIndex, newVersionBlock);
+        File.WriteAllLines(filePath, lines);
+    }
 }
