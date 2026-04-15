@@ -32,7 +32,7 @@
                 <Grid Margin="8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="4*" />
                         <RowDefinition Height="40" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
@@ -61,10 +61,9 @@
                     <GroupBox Grid.Row="1" Header="Выбор зависимостей вручную" Padding="8">
                         <ui:ListView ItemsSource="{Binding ActualizeSolutions}"
                                      SelectionMode="Multiple"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
                                      ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                                     IsEnabled="{Binding ActualizeViewEnabled}"
-                                     Height="360"
-                                     Margin="0, 8, 0, 0">
+                                     IsEnabled="{Binding ActualizeViewEnabled}">
                             <ui:ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem">
                                     <Setter Property="IsSelected" Value="{Binding IsChecked, Mode=TwoWay}" />
@@ -73,7 +72,8 @@
                             
                             <ui:ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Vertical" Height="360" />
+                                    <WrapPanel Orientation="Vertical" 
+                                               Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}" />
                                 </ItemsPanelTemplate>
                             </ui:ListView.ItemsPanel>
                             
