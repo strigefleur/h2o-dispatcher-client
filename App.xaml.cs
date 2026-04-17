@@ -4,14 +4,18 @@ using Felweed.ViewModels;
 using Felweed.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Velopack;
+using Wpf.Ui;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
+using Wpf.Ui.DependencyInjection;
 
 namespace Felweed;
 
 public partial class App : Application
 {
-    private readonly IServiceProvider _serviceProvider;
+    public IServiceProvider ServiceProvider { get; }
+    
+    public new static App Current => (App)Application.Current;
     
     public App()
     {
@@ -22,10 +26,40 @@ public partial class App : Application
 
         // Register Windows
         services.AddTransient<MainWindow>();
+
+        services.AddScoped<SolutionGridPageViewModel>();
+        services.AddScoped<SolutionGridPage>();
+
+        services.AddScoped<ScriptPageViewModel>();
+        services.AddScoped<ScriptPage>();
+
+        services.AddScoped<RemoteStatePageViewModel>();
+        services.AddScoped<RemoteStatePage>();
+        
+        services.AddScoped<MiscSettingsPageViewModel>();
+        services.AddScoped<MiscSettingsPage>();
+
+        services.AddScoped<GraphPageViewModel>();
+        services.AddScoped<GraphPage>();
+
+        services.AddScoped<EnvVariablesPageViewModel>();
+        services.AddScoped<EnvVariablesPage>();
+
+        services.AddScoped<BatchRepoActionViewModel>();
+        services.AddScoped<BatchRepoAction>();
+
+        services.AddScoped<AboutPageViewModel>();
+        services.AddScoped<AboutPage>();
+        
+        services.AddSingleton<DepActualizerViewModel>();
+        services.AddSingleton<DepActualizer>();
+        
+        services.AddNavigationViewPageProvider();
+        services.AddSingleton<INavigationService, NavigationService>();
         
         services.AddHttpClient();
 
-        _serviceProvider = services.BuildServiceProvider();
+        ServiceProvider = services.BuildServiceProvider();
     }
 
     protected override async void OnStartup(StartupEventArgs e)
@@ -34,7 +68,7 @@ public partial class App : Application
         
         await Updater.UpdateAsync();
         
-        var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+        var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
         
         MainWindow = mainWindow;
         ShutdownMode = ShutdownMode.OnMainWindowClose;

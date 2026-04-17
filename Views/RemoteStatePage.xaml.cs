@@ -1,24 +1,26 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using Felweed.ViewModels;
+using Wpf.Ui.Abstractions.Controls;
 
 namespace Felweed.Views;
 
-public partial class RemoteStatePage : Page
+public partial class RemoteStatePage : Page, INavigableView<RemoteStatePageViewModel>
 {
-    private RemoteStatePageViewModel Vm => (RemoteStatePageViewModel)DataContext;
+    public RemoteStatePageViewModel ViewModel { get; }
     
-    public RemoteStatePage()
+    public RemoteStatePage(RemoteStatePageViewModel viewModel)
     {
         InitializeComponent();
-
-        DataContext = new RemoteStatePageViewModel();
+        
+        ViewModel = viewModel;
+        DataContext = viewModel;
 
         Loaded += PageLoaded;
     }
     
     private async void PageLoaded(object sender, RoutedEventArgs e)
     {
-        await Vm.ConnectAsync();
+        await ViewModel.ConnectAsync();
     }
 }

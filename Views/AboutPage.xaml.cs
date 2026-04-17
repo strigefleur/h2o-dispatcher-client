@@ -1,24 +1,26 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using Felweed.ViewModels;
+using Wpf.Ui.Abstractions.Controls;
 
 namespace Felweed.Views;
 
-public partial class AboutPage : Page
+public partial class AboutPage : Page, INavigableView<AboutPageViewModel>
 {
-    private AboutPageViewModel Vm => (AboutPageViewModel)DataContext;
+    public AboutPageViewModel ViewModel { get; }
     
-    public AboutPage()
+    public AboutPage(AboutPageViewModel viewModel)
     {
         InitializeComponent();
 
-        DataContext = new AboutPageViewModel();
+        ViewModel = viewModel;
+        DataContext = ViewModel;
         
         Loaded += PageLoaded;
     }
     
     private async void PageLoaded(object sender, RoutedEventArgs e)
     {
-        await Vm.GetAnecdoteAsync();
+        await ViewModel.GetAnecdoteAsync();
     }
 }

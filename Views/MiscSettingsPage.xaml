@@ -1,4 +1,4 @@
-﻿<Page x:Class="Felweed.Views.MiscConfigPage"
+﻿<Page x:Class="Felweed.Views.MiscSettingsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -10,7 +10,7 @@
       d:DataContext="{d:DesignInstance Type=vm:MiscSettingsPageViewModel, IsDesignTimeCreatable=True}"
       d:DesignHeight="808"
       d:DesignWidth="880"
-      Title="MiscConfigPage">
+      Title="MiscSettingsPage">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />

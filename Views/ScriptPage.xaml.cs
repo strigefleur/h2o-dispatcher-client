@@ -1,16 +1,18 @@
 ﻿using System.Windows.Controls;
 using Felweed.ViewModels;
+using Wpf.Ui.Abstractions.Controls;
 
 namespace Felweed.Views;
 
-public partial class ScriptPage : Page
+public partial class ScriptPage : Page, INavigableView<ScriptPageViewModel>
 {
-    private ScriptPageViewModel Vm => (ScriptPageViewModel)DataContext;
+    public ScriptPageViewModel ViewModel { get; }
     
-    public ScriptPage()
+    public ScriptPage(ScriptPageViewModel viewModel)
     {
         InitializeComponent();
 
-        DataContext = new ScriptPageViewModel();
+        ViewModel = viewModel;
+        DataContext = viewModel;
     }
 }

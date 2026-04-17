@@ -1,16 +1,20 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Input;
 using Felweed.ViewModels;
+using Wpf.Ui.Abstractions.Controls;
 
 namespace Felweed.Views;
 
-public partial class SolutionGridPage : Page
+public partial class SolutionGridPage : Page, INavigableView<SolutionGridPageViewModel>
 {
-    public SolutionGridPage()
+    public SolutionGridPageViewModel ViewModel { get; }
+    
+    public SolutionGridPage(SolutionGridPageViewModel viewModel)
     {
         InitializeComponent();
 
-        DataContext = new SolutionGridPageViewModel();
+        ViewModel = viewModel;
+        DataContext = viewModel;
     }
     
     private void Button_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)

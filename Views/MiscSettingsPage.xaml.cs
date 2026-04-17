@@ -1,18 +1,20 @@
 ﻿using System.Windows.Controls;
 using Felweed.Services;
 using Felweed.ViewModels;
+using Wpf.Ui.Abstractions.Controls;
 
 namespace Felweed.Views;
 
-public partial class MiscConfigPage : Page
+public partial class MiscSettingsPage : Page, INavigableView<MiscSettingsPageViewModel>
 {
-    private MiscSettingsPageViewModel Vm => (MiscSettingsPageViewModel)DataContext;
+    public MiscSettingsPageViewModel ViewModel { get; }
     
-    public MiscConfigPage()
+    public MiscSettingsPage(MiscSettingsPageViewModel viewModel)
     {
         InitializeComponent();
 
-        DataContext = new MiscSettingsPageViewModel();
+        ViewModel = viewModel;
+        DataContext = viewModel;
     }
 
     private void DataGrid_OnRowEditEnding(object? sender, DataGridRowEditEndingEventArgs e)
@@ -22,7 +24,7 @@ public partial class MiscConfigPage : Page
 
         var config = ConfigurationService.LoadConfig();
 
-        foreach (var miscSetting in Vm.MiscSettings)
+        foreach (var miscSetting in ViewModel.MiscSettings)
         {
             config[miscSetting.AppConfigPropName] = miscSetting.Value;
         }

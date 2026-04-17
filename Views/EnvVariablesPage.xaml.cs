@@ -2,18 +2,20 @@
 using Felweed.Models;
 using Felweed.Services;
 using Felweed.ViewModels;
+using Wpf.Ui.Abstractions.Controls;
 
 namespace Felweed.Views;
 
-public partial class EnvVariablesPage : Page
+public partial class EnvVariablesPage : Page, INavigableView<EnvVariablesPageViewModel>
 {
-    private EnvVariablesPageViewModel Vm => (EnvVariablesPageViewModel)DataContext;
+    public EnvVariablesPageViewModel ViewModel { get; }
     
-    public EnvVariablesPage()
+    public EnvVariablesPage(EnvVariablesPageViewModel viewModel)
     {
         InitializeComponent();
-
-        DataContext = new EnvVariablesPageViewModel();
+        
+        ViewModel = viewModel;
+        DataContext = viewModel;
     }
 
     private void DataGrid_OnRowEditEnding(object? sender, DataGridRowEditEndingEventArgs e)
@@ -24,7 +26,7 @@ public partial class EnvVariablesPage : Page
         var config = ConfigurationService.LoadConfig();
         
         config.EnvVariables.Clear();
-        config.EnvVariables.AddRange(Vm.EnvVariables.Select(x => new EnvVariable(x.Name, x.Value)));
+        config.EnvVariables.AddRange(ViewModel.EnvVariables.Select(x => new EnvVariable(x.Name, x.Value)));
         
         ConfigurationService.SaveConfig();
     }

@@ -1,16 +1,21 @@
 ﻿using System.Windows.Controls;
 using Felweed.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
+using Wpf.Ui.Abstractions.Controls;
 
 namespace Felweed.Views;
 
-public partial class BatchRepoAction : UserControl
+public partial class BatchRepoAction : UserControl, INavigableView<BatchRepoActionViewModel>
 {
-    private BatchRepoActionViewModel Vm => (BatchRepoActionViewModel)DataContext;
+    public BatchRepoActionViewModel ViewModel { get; }
     
     public BatchRepoAction()
     {
         InitializeComponent();
+        
+        var viewModel = App.Current.ServiceProvider.GetRequiredService<BatchRepoActionViewModel>();
 
-        DataContext = new BatchRepoActionViewModel();
+        ViewModel = viewModel;
+        DataContext = ViewModel;
     }
 }

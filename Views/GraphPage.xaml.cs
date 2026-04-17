@@ -3,34 +3,35 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Felweed.Models;
 using Felweed.ViewModels;
+using Wpf.Ui.Abstractions.Controls;
 
 namespace Felweed.Views;
 
-public partial class GraphPage : Page
+public partial class GraphPage : Page, INavigableView<GraphPageViewModel>
 {
-    private GraphPageViewModel Vm => (GraphPageViewModel)DataContext;
+    public GraphPageViewModel ViewModel { get; }
 
-    public GraphPage()
+    public GraphPage(GraphPageViewModel viewModel)
     {
         InitializeComponent();
-
-        var vm = new GraphPageViewModel();
-        vm.Load();
-
-        DataContext = vm;
+        
+        ViewModel = viewModel;
+        DataContext = viewModel;
+        
+        ViewModel.Load();
     }
 
     private void ClearFilter_Click(object sender, RoutedEventArgs e)
     {
         LibFilter.SelectedIndex = -1;
-        Vm.ApplyFilter(null);
+        ViewModel.ApplyFilter(null);
     }
 
     private void LibFilter_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (e.AddedItems.Count > 0)
         {
-            Vm.ApplyFilter((e.AddedItems[0] as Solution).Id);
+            ViewModel.ApplyFilter((e.AddedItems[0] as Solution).Id);
             ScrollToTop_Click(sender, null);
             SetExpansionStatus(MainTree, true);
         }

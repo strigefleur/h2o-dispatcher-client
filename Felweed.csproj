@@ -21,6 +21,7 @@
       <PackageReference Include="System.Linq.Async" Version="7.0.0" />
       <PackageReference Include="Velopack" Version="0.0.1298" />
       <PackageReference Include="WPF-UI" Version="4.2.0" />
+      <PackageReference Include="WPF-UI.DependencyInjection" Version="4.2.0" />
     </ItemGroup>
 
     <ItemGroup>

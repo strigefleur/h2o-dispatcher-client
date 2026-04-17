@@ -1,16 +1,24 @@
 ﻿using System.Windows.Input;
 using Felweed.Models.Enumerators;
 using Felweed.ViewModels;
+using Wpf.Ui;
+using Wpf.Ui.Abstractions;
 
 namespace Felweed.Views;
 
 public partial class MainWindow
 {
-    public MainWindow(MainViewModel viewModel)
+    public MainWindow(
+        MainViewModel viewModel,
+        INavigationViewPageProvider pageProvider, 
+        INavigationService navigationService)
     {
         InitializeComponent();
 
         DataContext = viewModel;
+        
+        RootNavigation.SetPageProviderService(pageProvider);
+        navigationService.SetNavigationControl(RootNavigation);
     }
 
     private async void MainWindow_OnContentRendered(object? sender, EventArgs e)
