@@ -13,9 +13,4 @@ public partial class ScriptPage : Page
 
         DataContext = new ScriptPageViewModel();
     }
-
-    private void ActualizeTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
-    {
-        ActualizeTextBox.ScrollToEnd();
-    }
 }

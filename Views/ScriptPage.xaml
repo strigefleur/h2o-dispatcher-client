@@ -4,7 +4,6 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-      xmlns:localConverters="clr-namespace:Felweed.ViewModels.Converters"
       xmlns:local="clr-namespace:Felweed.Views"
       xmlns:m="clr-namespace:Felweed.Models"
       xmlns:vm="clr-namespace:Felweed.ViewModels"
@@ -14,10 +13,6 @@
       d:DesignWidth="880"
       ScrollViewer.CanContentScroll="False"
       Title="ScriptPage">
-    <Page.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <localConverters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
-    </Page.Resources>
     
     <Grid>
         <TabControl Margin="8">
@@ -29,121 +24,7 @@
                     </StackPanel>
                 </TabItem.Header>
                 
-                <Grid Margin="8">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="4*" />
-                        <RowDefinition Height="40" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    
-                    <GroupBox Header="Выбор зависимостей через DAG" Padding="8">
-                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-                            <ComboBox x:Name="ActualizeSolutionFilter"
-                                      Width="320"
-                                      ItemsSource="{Binding ActualizeSolutions}"
-                                      SelectedItem="{Binding DagFilterSolution}"
-                                      IsEnabled="{Binding ActualizeViewEnabled}"
-                                      DisplayMemberPath="Solution.Name"
-                                      IsEditable="True"
-                                      IsTextSearchEnabled="True"
-                                      TextSearch.TextPath="Solution.Name"
-                                      StaysOpenOnEdit="True"/>
-            
-                            <Button Content="Применить" Margin="16,0,0,0"
-                                    VerticalContentAlignment="Center"
-                                    VerticalAlignment="Stretch"
-                                    IsEnabled="{Binding ActualizeViewEnabled}"
-                                    Command="{Binding UseDagFilterSelectionCommand}"/>
-                        </StackPanel>
-                    </GroupBox>
-                    
-                    <GroupBox Grid.Row="1" Header="Выбор зависимостей вручную" Padding="8">
-                        <ui:ListView ItemsSource="{Binding ActualizeSolutions}"
-                                     SelectionMode="Multiple"
-                                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                                     IsEnabled="{Binding ActualizeViewEnabled}">
-                            <ui:ListView.ItemContainerStyle>
-                                <Style TargetType="ListViewItem">
-                                    <Setter Property="IsSelected" Value="{Binding IsChecked, Mode=TwoWay}" />
-                                </Style>
-                            </ui:ListView.ItemContainerStyle>
-                            
-                            <ui:ListView.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Vertical" 
-                                               Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}" />
-                                </ItemsPanelTemplate>
-                            </ui:ListView.ItemsPanel>
-                            
-                            <ListView.ItemTemplate>
-                                <DataTemplate DataType="{x:Type vm:SolutionActualizeVm}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="48" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        
-                                        <ui:ProgressRing Grid.Column="0" IsIndeterminate="True"
-                                                         Width="16"
-                                                         Height="16"
-                                                         Margin="8"
-                                                         HorizontalAlignment="Center"
-                                                         HorizontalContentAlignment="Center"
-                                                         VerticalAlignment="Center"
-                                                         VerticalContentAlignment="Center"
-                                                         Visibility="{Binding IsProcessing, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                        
-                                        <CheckBox Grid.Column="0" IsEnabled="False"
-                                                  HorizontalAlignment="Center"
-                                                  HorizontalContentAlignment="Center"
-                                                  VerticalContentAlignment="Center"
-                                                  VerticalAlignment="Center"
-                                                  Visibility="{Binding IsProcessing, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                                                  IsChecked="{Binding IsChecked}"
-                                        />
-                                    
-                                        <TextBlock Grid.Column="1" Text="{Binding Solution.Name}"
-                                                   VerticalAlignment="Center"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ui:ListView>
-                    </GroupBox>
-                    
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0, 8, 0, 0">
-                        <CheckBox Content="Пропустить проверку сборки (yarn build)"
-                                  IsEnabled="{Binding ActualizeViewEnabled}"
-                                  IsChecked="{Binding SkipBuild}"/>
-                    
-                        <ui:Button Content="Запустить актуализацию" 
-                                   Command="{Binding ActualizeFrontendDepsCommand}"
-                                   Margin="16, 0, 0, 0"
-                                   Cursor="Hand">
-                            <ui:Button.Icon>
-                                <ui:SymbolIcon Symbol="Play24" />
-                            </ui:Button.Icon>
-                        </ui:Button>
-                        
-                        <ui:Button Content="Прервать актуализацию" 
-                                   Command="{Binding InterruptFrontendDepsActualizationCommand}"
-                                   IsEnabled="{Binding CanInterruptActualization}"
-                                   Margin="8, 0, 0, 0"
-                                   Cursor="Hand">
-                            <ui:Button.Icon>
-                                <ui:SymbolIcon Symbol="Stop24" />
-                            </ui:Button.Icon>
-                        </ui:Button>
-                    </StackPanel>
-                    
-                    <ui:TextBox x:Name="ActualizeTextBox" Text="{Binding ActualizeResult}"
-                                IsReadOnly="True"
-                                Grid.Row="3"
-                                VerticalScrollBarVisibility="Auto"
-                                TextChanged="ActualizeTextBox_OnTextChanged"
-                                Margin="0, 8, 0, 0"/>
-                </Grid>
+                <local:DepActualizer/>
             </TabItem>
             
             <TabItem>
@@ -154,74 +35,7 @@
                     </StackPanel>
                 </TabItem.Header>
                 
-                <StackPanel Orientation="Vertical" Margin="8">
-                    <StackPanel Margin="8" Orientation="Horizontal">
-                        <RadioButton
-                            Content="Бэкенд и фронтенд"
-                            GroupName="radio_group_one"
-                            IsChecked="{Binding Both}" />
-                        <RadioButton
-                            Content="Только бэкенд"
-                            Margin="16, 0, 0, 0"
-                            GroupName="radio_group_one"
-                            IsChecked="{Binding BackendOnly}" />
-                        <RadioButton
-                            Content="Только фронтенд"
-                            Margin="16, 0, 0, 0"
-                            GroupName="radio_group_one"
-                            IsChecked="{Binding FrontendOnly}" />
-                    </StackPanel>
-                    
-                    <CheckBox Content="Только сервисы"
-                              IsChecked="{Binding ServiceOnly}"
-                              Margin="0, 8, 0, 0"/>
-                
-                    <ui:TextBox Text="{Binding Filename}"
-                                PlaceholderText="Название файла с расширением, например: package.json"/>
-                    
-                    <Grid Margin="0, 8, 0, 0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        
-                        <CheckBox Content="Сделать комит" IsChecked="{Binding WithCommit}"/>
-                    
-                        <ui:TextBox Grid.Column="1" Text="{Binding CommitMessage}"
-                                    IsEnabled="{Binding WithCommit}"
-                                    PlaceholderText="Сообщение коммита"/>
-                    </Grid>
-                    
-                    <ui:TextBox Text="{Binding LookupText}" PlaceholderText="Что заменить"
-                                Margin="0, 8, 0, 0"/>
-                    
-                    <ui:TextBox Text="{Binding ReplaceText}" PlaceholderText="На что заменить"
-                                Margin="0, 8, 0, 0"/>
-                    
-                    <StackPanel Orientation="Horizontal" Margin="0, 8, 0, 0">
-                        <ui:Button Content="Выполнить замену" 
-                                   Command="{Binding ReplaceCommand}"
-                                   Cursor="Hand">
-                            <ui:Button.Icon>
-                                <ui:SymbolIcon Symbol="Play24" />
-                            </ui:Button.Icon>
-                        </ui:Button>
-                        
-                        <ui:Button Content="Предсказать изменения (без записи)" 
-                                   Command="{Binding ReplaceDryRunCommand}"
-                                   Margin="8, 0, 0, 0"
-                                   Cursor="Hand">
-                            <ui:Button.Icon>
-                                <ui:SymbolIcon Symbol="Play24" />
-                            </ui:Button.Icon>
-                        </ui:Button>
-                    </StackPanel>
-                
-                    <ui:TextBlock Text="{Binding ReplaceResult}"
-                                  Height="300"
-                                  Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                  Margin="0, 8, 0, 0"/>
-                </StackPanel>
+                <local:BatchRepoAction/>
             </TabItem>
         </TabControl>
     </Grid>
