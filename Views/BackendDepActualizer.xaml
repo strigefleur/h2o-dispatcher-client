@@ -1,0 +1,148 @@
+﻿<UserControl x:Class="Felweed.Views.BackendDepActualizer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Felweed.Views"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             mc:Ignorable="d"
+             xmlns:localConverters="clr-namespace:Felweed.ViewModels.Converters"
+             xmlns:vm="clr-namespace:Felweed.ViewModels"
+             d:DataContext="{d:DesignInstance Type=vm:BackendDepActualizerViewModel, IsDesignTimeCreatable=True}"
+             d:DesignHeight="808"
+             d:DesignWidth="880">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <localConverters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+        <localConverters:InverseNullableBooleanToVisibilityConverter x:Key="InverseNullableBooleanToVisibilityConverter"/>
+    </UserControl.Resources>
+    
+    <Grid>
+        <ui:ProgressRing IsIndeterminate="True"
+                      Visibility="{Binding IsProcessing, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        
+        <Grid Visibility="{Binding IsProcessing, Converter={StaticResource InverseNullableBooleanToVisibilityConverter}}">
+            <ui:TextBlock Visibility="{Binding IsInitialized, Converter={StaticResource InverseNullableBooleanToVisibilityConverter}}">
+                Не удалось установить или проверить состояние утилиты
+            </ui:TextBlock>
+            
+            <Grid Margin="8"
+                  Visibility="{Binding IsInitialized, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="4*" />
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                
+                <GroupBox Header="Выбор зависимостей через DAG" Padding="8">
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                        <ComboBox x:Name="ActualizeSolutionFilter"
+                                  Width="320"
+                                  ItemsSource="{Binding ActualizeSolutions}"
+                                  SelectedItem="{Binding DagFilterSolution}"
+                                  IsEnabled="{Binding ActualizeViewEnabled}"
+                                  DisplayMemberPath="Solution.Name"
+                                  IsEditable="True"
+                                  IsTextSearchEnabled="True"
+                                  TextSearch.TextPath="Solution.Name"
+                                  StaysOpenOnEdit="True"/>
+
+                        <Button Content="Применить" Margin="16,0,0,0"
+                                VerticalContentAlignment="Center"
+                                VerticalAlignment="Stretch"
+                                IsEnabled="{Binding ActualizeViewEnabled}"
+                                Command="{Binding UseDagFilterSelectionCommand}"/>
+                    </StackPanel>
+                </GroupBox>
+                
+                <GroupBox Grid.Row="1" Header="Выбор зависимостей вручную" Padding="8">
+                    <ui:ListView ItemsSource="{Binding ActualizeSolutions}"
+                                 SelectionMode="Multiple"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                 ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                 IsEnabled="{Binding ActualizeViewEnabled}">
+                        <ui:ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="IsSelected" Value="{Binding IsChecked, Mode=TwoWay}" />
+                            </Style>
+                        </ui:ListView.ItemContainerStyle>
+                        
+                        <ui:ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Vertical" 
+                                           Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}" />
+                            </ItemsPanelTemplate>
+                        </ui:ListView.ItemsPanel>
+                        
+                        <ListView.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:SolutionActualizeVm}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="48" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <ui:ProgressRing Grid.Column="0" IsIndeterminate="True"
+                                                     Width="16"
+                                                     Height="16"
+                                                     Margin="8"
+                                                     HorizontalAlignment="Center"
+                                                     HorizontalContentAlignment="Center"
+                                                     VerticalAlignment="Center"
+                                                     VerticalContentAlignment="Center"
+                                                     Visibility="{Binding IsProcessing, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    
+                                    <CheckBox Grid.Column="0"
+                                              IsEnabled="False"
+                                              HorizontalAlignment="Center"
+                                              HorizontalContentAlignment="Center"
+                                              VerticalContentAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Visibility="{Binding IsProcessing, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                              IsChecked="{Binding IsChecked}"
+                                    />
+                                
+                                    <TextBlock Grid.Column="1" Text="{Binding Solution.Name}"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ui:ListView>
+                </GroupBox>
+                
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0, 8, 0, 0">
+                    <CheckBox Content="Пропустить проверку сборки (yarn build)"
+                              IsEnabled="{Binding ActualizeViewEnabled}"
+                              IsChecked="{Binding SkipBuild}"/>
+                
+                    <ui:Button Content="Запустить актуализацию" 
+                               Command="{Binding ActualizeFrontendDepsCommand}"
+                               Margin="16, 0, 0, 0"
+                               Cursor="Hand">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Play24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    
+                    <ui:Button Content="Прервать актуализацию" 
+                               Command="{Binding InterruptFrontendDepsActualizationCommand}"
+                               IsEnabled="{Binding CanInterruptActualization}"
+                               Margin="8, 0, 0, 0"
+                               Cursor="Hand">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Stop24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                </StackPanel>
+                
+                <ui:TextBox x:Name="ActualizeTextBox" Text="{Binding ActualizeResult}"
+                            IsReadOnly="True"
+                            Grid.Row="3"
+                            VerticalScrollBarVisibility="Auto"
+                            TextChanged="ActualizeTextBox_OnTextChanged"
+                            Margin="0, 8, 0, 0"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

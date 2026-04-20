@@ -11,7 +11,7 @@ using LibGit2Sharp;
 
 namespace Felweed.ViewModels;
 
-public partial class DepActualizerViewModel : ObservableObject
+public partial class FrontendDepActualizerViewModel : ObservableObject
 {
     [ObservableProperty] private ObservableCollection<SolutionActualizeVm> _actualizeSolutions = [];
     [ObservableProperty] private bool _skipBuild;
@@ -22,7 +22,7 @@ public partial class DepActualizerViewModel : ObservableObject
 
     private CancellationTokenSource? _actualizationCts;
 
-    public DepActualizerViewModel()
+    public FrontendDepActualizerViewModel()
     {
         foreach (var angularSolution in SolutionScanner.AngularSolutions
                      .Where(x => x is { IsCorporate: true })
@@ -197,6 +197,10 @@ public partial class DepActualizerViewModel : ObservableObject
                         return;
                     }
 
+                    var nextVersion = solution.IsPackable
+                        ? VersionHelper.IncPatchVersion(solution.TagVersionNumber)
+                        : null;
+                    
                     if (solution.IsPackable)
                     {
                         LogActualize("Актуализация внутреннего package.json библиотеки...");
@@ -234,7 +238,7 @@ public partial class DepActualizerViewModel : ObservableObject
                         LogActualize("Создание записи для changelog...");
                         var changelogFilename = Path.Combine(solution.Path, "changelog.md");
                         ChangelogHelper.AddVersion(changelogFilename,
-                            VersionHelper.IncPatchVersion(solution.TagVersionNumber),
+                            nextVersion,
                             ["Обновление зависимостей"]);
                     }
 

@@ -16,26 +16,49 @@
     
     <Grid>
         <TabControl Margin="8">
-            <TabItem>
+            <TabItem ToolTip="Актуализировать зависимости (фронт)">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="Document24" />
-                        <TextBlock Text="Актуализировать зависимости (фронт)" />
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="Braces24" />
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="WindowArrowUp24" />
                     </StackPanel>
                 </TabItem.Header>
                 
-                <local:DepActualizer/>
+                <TabItem.ContentTemplate>
+                    <DataTemplate>
+                        <local:FrontendDepActualizer/>
+                    </DataTemplate>
+                </TabItem.ContentTemplate>
             </TabItem>
             
-            <TabItem>
+            <TabItem ToolTip="Актуализировать зависимости (бэк)">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="Document24" />
-                        <TextBlock Text="Для каждого репозитория" />
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="Server24" />
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="WindowArrowUp24" />
                     </StackPanel>
                 </TabItem.Header>
                 
-                <local:BatchRepoAction/>
+                <TabItem.ContentTemplate>
+                    <DataTemplate>
+                        <local:BackendDepActualizer/>
+                    </DataTemplate>
+                </TabItem.ContentTemplate>
+            </TabItem>
+            
+            <TabItem ToolTip="Для каждого репозитория">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="WindowMultiple20" />
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="DocumentEdit24" />
+                    </StackPanel>
+                </TabItem.Header>
+                
+                <TabItem.ContentTemplate>
+                    <DataTemplate>
+                        <local:BatchRepoAction/>
+                    </DataTemplate>
+                </TabItem.ContentTemplate>
             </TabItem>
         </TabControl>
     </Grid>

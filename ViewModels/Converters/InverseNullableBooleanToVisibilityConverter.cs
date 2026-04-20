@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace Felweed.ViewModels.Converters;
 
-public class InverseBooleanToVisibilityConverter : IValueConverter
+public class InverseNullableBooleanToVisibilityConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
@@ -13,7 +13,7 @@ public class InverseBooleanToVisibilityConverter : IValueConverter
             return boolValue ? Visibility.Collapsed : Visibility.Visible;
         }
 
-        return Visibility.Visible;
+        return Visibility.Collapsed;
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

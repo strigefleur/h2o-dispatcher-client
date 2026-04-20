@@ -51,8 +51,11 @@ public partial class App : Application
         services.AddScoped<AboutPageViewModel>();
         services.AddScoped<AboutPage>();
         
-        services.AddSingleton<DepActualizerViewModel>();
-        services.AddSingleton<DepActualizer>();
+        services.AddSingleton<FrontendDepActualizerViewModel>();
+        services.AddSingleton<FrontendDepActualizer>();
+        
+        services.AddSingleton<BackendDepActualizerViewModel>();
+        services.AddSingleton<BackendDepActualizer>();
         
         services.AddNavigationViewPageProvider();
         services.AddSingleton<INavigationService, NavigationService>();
