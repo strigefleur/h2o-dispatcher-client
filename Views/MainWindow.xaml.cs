@@ -11,7 +11,8 @@ public partial class MainWindow
     public MainWindow(
         MainViewModel viewModel,
         INavigationViewPageProvider pageProvider, 
-        INavigationService navigationService)
+        INavigationService navigationService,
+        IContentDialogService contentDialogService)
     {
         InitializeComponent();
 
@@ -19,6 +20,8 @@ public partial class MainWindow
         
         RootNavigation.SetPageProviderService(pageProvider);
         navigationService.SetNavigationControl(RootNavigation);
+        
+        contentDialogService.SetDialogHost(RootContentDialogHost);
     }
 
     private async void MainWindow_OnContentRendered(object? sender, EventArgs e)

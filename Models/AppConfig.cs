@@ -14,6 +14,10 @@ public sealed record AppConfig
     public SymbolRegular ThemeSwitchIcon { get; set; } = SymbolRegular.WeatherMoon24;
     public string? ServerUrl { get; set; }
     public string AnecdoteUrl { get; set; } = "https://shortiki.com/export/api.php?format=json&type=random&amount=1";
+    
+    public string? NugetConfigPath { get; set; } = "%appdata%/nuget";
+    public string? CorporateNexusSourceUrl { get; set; }
+    public string? CorporateNexusSourceName { get; set; }
 
     public List<EnvVariable> EnvVariables { get; set; } = [..EnvVariableConst.DefaultEnvVariables];
 
@@ -33,6 +37,9 @@ public sealed record AppConfig
             switch (propertyName)
             {
                 case nameof(ServerUrl): ServerUrl = (string?)value; break;
+                case nameof(NugetConfigPath): NugetConfigPath = (string?)value; break;
+                case nameof(CorporateNexusSourceUrl): CorporateNexusSourceUrl = (string?)value; break;
+                case nameof(CorporateNexusSourceName): CorporateNexusSourceName = (string?)value; break;
                 default: throw new ArgumentException("Property not found");
             }
         }

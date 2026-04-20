@@ -60,6 +60,8 @@ public partial class App : Application
         services.AddNavigationViewPageProvider();
         services.AddSingleton<INavigationService, NavigationService>();
         
+        services.AddSingleton<IContentDialogService, ContentDialogService>();
+        
         services.AddHttpClient();
 
         ServiceProvider = services.BuildServiceProvider();

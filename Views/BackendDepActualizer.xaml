@@ -22,9 +22,10 @@
                       Visibility="{Binding IsProcessing, Converter={StaticResource BooleanToVisibilityConverter}}"/>
         
         <Grid Visibility="{Binding IsProcessing, Converter={StaticResource InverseNullableBooleanToVisibilityConverter}}">
-            <ui:TextBlock Visibility="{Binding IsInitialized, Converter={StaticResource InverseNullableBooleanToVisibilityConverter}}">
-                Не удалось установить или проверить состояние утилиты
-            </ui:TextBlock>
+            <ui:TextBlock Visibility="{Binding IsInitialized, Converter={StaticResource InverseNullableBooleanToVisibilityConverter}}"
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Center"
+                          Text="{Binding InitError}"/>
             
             <Grid Margin="8"
                   Visibility="{Binding IsInitialized, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -112,7 +113,7 @@
                 </GroupBox>
                 
                 <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0, 8, 0, 0">
-                    <CheckBox Content="Пропустить проверку сборки (yarn build)"
+                    <CheckBox Content="Пропустить проверку сборки (dotnet build)"
                               IsEnabled="{Binding ActualizeViewEnabled}"
                               IsChecked="{Binding SkipBuild}"/>
                 

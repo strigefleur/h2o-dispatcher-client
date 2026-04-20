@@ -18,6 +18,7 @@ public partial class BackendDepActualizerViewModel : ObservableObject
 
     [ObservableProperty] private bool? _isInitialized;
     [ObservableProperty] private bool? _isProcessing;
+    [ObservableProperty] private string? _initError;
     
     [ObservableProperty] private ObservableCollection<SolutionActualizeVm> _actualizeSolutions = [];
     [ObservableProperty] private bool _skipBuild;
@@ -41,37 +42,31 @@ public partial class BackendDepActualizerViewModel : ObservableObject
             });
         }
     }
-
-    #region Dotnet Tool Init
     
-    public async Task InitDotnetToolAsync(CancellationToken ct = default)
+    #region Init
+
+    public async Task InitAsync()
     {
         if (IsInitialized == true || IsProcessing == true)
             return;
         
         IsProcessing = true;
-
+        
         try
         {
-            if (await DotnetToolHelper.IsToolInstalled(ToolName, ct))
+            if (!NugetHelper.IsValidNugetFeedConfig())
             {
-                // RunDotnetCommand($"tool update --global {ToolName}");
-                IsInitialized = true;
+                IsInitialized = false;
+                InitError = "В настройках не задана конфигурация Nuget";
+                
+                return;
             }
-            else
-            {
-                if (!await DotnetToolHelper.RunDotnetCommand($"tool install --global {ToolName}", ct))
-                {
-                    IsInitialized = false;
-                }
-                else
-                {
-                    IsInitialized = await DotnetToolHelper.IsToolInstalled(ToolName, ct);
-                }
-            }
+            
+            await InitDotnetToolAsync();
         }
         catch
         {
+            InitError = $"Ошибка при инициализации конфигурации Nuget или {ToolName}";
             IsInitialized = false;
         }
         finally
@@ -80,7 +75,30 @@ public partial class BackendDepActualizerViewModel : ObservableObject
         }
     }
     
-    
+    private async Task InitDotnetToolAsync(CancellationToken ct = default)
+    {
+        if (await DotnetToolHelper.IsToolInstalled(ToolName, ct))
+        {
+            // RunDotnetCommand($"tool update --global {ToolName}");
+            IsInitialized = true;
+        }
+        else
+        {
+            if (!await DotnetToolHelper.RunDotnetCommand($"tool install --global {ToolName}", ct))
+            {
+                InitError = $"Не удалось установить утилиту {ToolName}";
+                IsInitialized = false;
+            }
+            else
+            {
+                IsInitialized = await DotnetToolHelper.IsToolInstalled(ToolName, ct);
+                if (IsInitialized != true)
+                {
+                    InitError = $"Что-то пошло не так при установке утилиты {ToolName}";
+                }
+            }
+        }
+    }
     
     #endregion Dotnet Tool Init
     
@@ -131,28 +149,45 @@ public partial class BackendDepActualizerViewModel : ObservableObject
 
     private List<LevelVm> ApplyFilter(DependencyGraph graph, ICollection<LevelVm> levels, Guid? libraryId)
     {
-        var visible = libraryId is null
-            ? null
-            : GraphQueries.GetDownstreamInclusive(graph, libraryId.Value);
+        if (libraryId == null) return levels.ToList();
 
-        List<LevelVm> filteredLevels = [];
-        foreach (var lvl in levels)
+        // 1. Находим всех, кто зависит от библиотеки (вниз по графу)
+        var downstreamIds = GraphQueries.GetDownstreamInclusive(graph, libraryId.Value).ToHashSet();
+
+        // 2. Рассчитываем уровни ЛОКАЛЬНО относительно libraryId
+        // libraryId = Level 0, его прямые потребители = Level 1, и т.д.
+        var localLevels = new Dictionary<Guid, int>();
+        localLevels[libraryId.Value] = 0;
+
+        // Считаем Longest Path внутри подграфа
+        var sorted = GraphLayering.TopoSortLocal(graph, downstreamIds);
+        foreach (var id in sorted)
         {
-            var nodes = (visible is null)
-                ? lvl.Nodes.ToList()
-                : lvl.Nodes.Where(n => visible.Contains(n.Id)).ToList();
+            if (!graph.Outgoing.TryGetValue(id, out var edges)) continue;
+            foreach (var edge in edges)
+            {
+                if (!downstreamIds.Contains(edge.ToId)) continue;
 
-            if (nodes.Count == 0)
-                continue; // hide empty levels
+                var currentLevel = localLevels.ContainsKey(id) ? localLevels[id] : 0;
+                var targetLevel = currentLevel + 1;
 
-            var copy = new LevelVm { Level = lvl.Level };
-            foreach (var n in nodes)
-                copy.Nodes.Add(n);
-
-            filteredLevels.Add(copy);
+                if (!localLevels.ContainsKey(edge.ToId) || localLevels[edge.ToId] < targetLevel)
+                    localLevels[edge.ToId] = targetLevel;
+            }
         }
 
-        return filteredLevels;
+        // 3. Собираем результат
+        return localLevels
+            .GroupBy(kv => kv.Value)
+            .OrderBy(g => g.Key)
+            .Select(g =>
+            {
+                var levelVm = new LevelVm { Level = g.Key };
+                foreach (var kv in g)
+                    levelVm.Nodes.Add(graph.Nodes[kv.Key].Solution);
+                return levelVm;
+            })
+            .ToList();
     }
 
     [RelayCommand]
@@ -198,7 +233,9 @@ public partial class BackendDepActualizerViewModel : ObservableObject
                     LogActualize($"Начало актуализации {solution.Name}...");
 
                     LogActualize("Выполнение [dotnet outdated]...");
-                    if (!await TerminalHelper.RunCmd(Command, CommandArgs, solution.Path, _actualizationCts.Token))
+
+                    var dir = Path.GetDirectoryName(solution.Path);
+                    if (!await TerminalHelper.RunCmd(Command, CommandArgs, dir, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка при выполнении [dotnet outdated]\n\n");
                         continue;
@@ -210,7 +247,7 @@ public partial class BackendDepActualizerViewModel : ObservableObject
                         return;
                     }
 
-                    using (var repo = new Repository(solution.Path))
+                    using (var repo = new Repository(dir))
                     {
                         Commands.Stage(repo, ".");
                         if (!repo.RetrieveStatus().IsDirty)
@@ -223,7 +260,7 @@ public partial class BackendDepActualizerViewModel : ObservableObject
                     if (!SkipBuild)
                     {
                         LogActualize("Выполнение [dotnet build]...");
-                        if (!await TerminalHelper.RunCmd("dotnet", "build", solution.Path, _actualizationCts.Token))
+                        if (!await TerminalHelper.RunCmd("dotnet", "build", dir, _actualizationCts.Token))
                         {
                             LogActualize("Ошибка при выполнении [dotnet build]\n\n");
                             continue;
@@ -247,7 +284,7 @@ public partial class BackendDepActualizerViewModel : ObservableObject
                     if (solution.IsPackable)
                     {
                         LogActualize("Создание записи для changelog...");
-                        var changelogFilename = Path.Combine(solution.Path, "changelog.md");
+                        var changelogFilename = Path.Combine(dir, "changelog.md");
                         ChangelogHelper.AddVersion(changelogFilename,
                             nextVersion,
                             ["Обновление зависимостей"]);
@@ -266,13 +303,13 @@ public partial class BackendDepActualizerViewModel : ObservableObject
                         ? $"{defaultCommitMessage} to {nextVersion}\""
                         : defaultCommitMessage;
                     
-                    if (!await TerminalHelper.RunCmd("git", "add .", solution.Path, _actualizationCts.Token))
+                    if (!await TerminalHelper.RunCmd("git", "add .", dir, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка stage комита\n\n");
                         continue;
                     }
 
-                    if (!await TerminalHelper.RunCmd("git", commitMessage, solution.Path, _actualizationCts.Token))
+                    if (!await TerminalHelper.RunCmd("git", commitMessage, dir, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка при создании комита\n\n");
                         continue;

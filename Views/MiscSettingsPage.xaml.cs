@@ -1,5 +1,4 @@
 ﻿using System.Windows.Controls;
-using Felweed.Services;
 using Felweed.ViewModels;
 using Wpf.Ui.Abstractions.Controls;
 
@@ -22,13 +21,9 @@ public partial class MiscSettingsPage : Page, INavigableView<MiscSettingsPageVie
         if (e.Cancel)
             return;
 
-        var config = ConfigurationService.LoadConfig();
+        if (e.Row.DataContext is not MiscSettingVm miscSettingVm)
+            return;
 
-        foreach (var miscSetting in ViewModel.MiscSettings)
-        {
-            config[miscSetting.AppConfigPropName] = miscSetting.Value;
-        }
-        
-        ConfigurationService.SaveConfig();
+        ViewModel.OnSettingVmUpdated(miscSettingVm);
     }
 }

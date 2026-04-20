@@ -8,6 +8,7 @@ namespace Felweed.Services;
 public static class ConfigurationService
 {
     private const string ConfigFileName = "appconfig.json";
+    private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
 
     private static readonly string ConfigPath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Felweed", ConfigFileName);
@@ -45,7 +46,7 @@ public static class ConfigurationService
         Guard.Against.Null(_appConfig);
         
         Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath)!);
-        var json = JsonSerializer.Serialize(_appConfig, new JsonSerializerOptions { WriteIndented = true });
+        var json = JsonSerializer.Serialize(_appConfig, Options);
         File.WriteAllText(ConfigPath, json);
     }
 
@@ -56,5 +57,17 @@ public static class ConfigurationService
         return _appConfig.SolutionDirectories.Any(dir => 
             !string.IsNullOrWhiteSpace(dir) && 
             Directory.Exists(dir));
+    }
+    
+    public static NugetFeedConfig ReadNugetFeedConfig()
+    {
+        var config = LoadConfig();
+
+        return new()
+        {
+            ConfigPath = config.NugetConfigPath,
+            Name = config.CorporateNexusSourceName,
+            Url = config.CorporateNexusSourceUrl,
+        };
     }
 }

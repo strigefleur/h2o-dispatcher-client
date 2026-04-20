@@ -83,28 +83,45 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
 
     private List<LevelVm> ApplyFilter(DependencyGraph graph, ICollection<LevelVm> levels, Guid? libraryId)
     {
-        var visible = libraryId is null
-            ? null
-            : GraphQueries.GetDownstreamInclusive(graph, libraryId.Value);
+        if (libraryId == null) return levels.ToList();
 
-        List<LevelVm> filteredLevels = [];
-        foreach (var lvl in levels)
+        // 1. Находим всех, кто зависит от библиотеки (вниз по графу)
+        var downstreamIds = GraphQueries.GetDownstreamInclusive(graph, libraryId.Value).ToHashSet();
+
+        // 2. Рассчитываем уровни ЛОКАЛЬНО относительно libraryId
+        // libraryId = Level 0, его прямые потребители = Level 1, и т.д.
+        var localLevels = new Dictionary<Guid, int>();
+        localLevels[libraryId.Value] = 0;
+
+        // Считаем Longest Path внутри подграфа
+        var sorted = GraphLayering.TopoSortLocal(graph, downstreamIds);
+        foreach (var id in sorted)
         {
-            var nodes = (visible is null)
-                ? lvl.Nodes.ToList()
-                : lvl.Nodes.Where(n => visible.Contains(n.Id)).ToList();
+            if (!graph.Outgoing.TryGetValue(id, out var edges)) continue;
+            foreach (var edge in edges)
+            {
+                if (!downstreamIds.Contains(edge.ToId)) continue;
 
-            if (nodes.Count == 0)
-                continue; // hide empty levels
+                var currentLevel = localLevels.ContainsKey(id) ? localLevels[id] : 0;
+                var targetLevel = currentLevel + 1;
 
-            var copy = new LevelVm { Level = lvl.Level };
-            foreach (var n in nodes)
-                copy.Nodes.Add(n);
-
-            filteredLevels.Add(copy);
+                if (!localLevels.ContainsKey(edge.ToId) || localLevels[edge.ToId] < targetLevel)
+                    localLevels[edge.ToId] = targetLevel;
+            }
         }
 
-        return filteredLevels;
+        // 3. Собираем результат
+        return localLevels
+            .GroupBy(kv => kv.Value)
+            .OrderBy(g => g.Key)
+            .Select(g =>
+            {
+                var levelVm = new LevelVm { Level = g.Key };
+                foreach (var kv in g)
+                    levelVm.Nodes.Add(graph.Nodes[kv.Key].Solution);
+                return levelVm;
+            })
+            .ToList();
     }
 
     [RelayCommand]

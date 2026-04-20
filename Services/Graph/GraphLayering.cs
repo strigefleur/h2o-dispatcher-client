@@ -48,4 +48,23 @@ public static class GraphLayering
 
         return layers;
     }
+    
+    public static List<Guid> TopoSortLocal(DependencyGraph g, HashSet<Guid> subset)
+    {
+        var visited = new HashSet<Guid>();
+        var result = new List<Guid>();
+
+        void Visit(Guid id)
+        {
+            if (!subset.Contains(id) || !visited.Add(id)) return;
+            if (g.Outgoing.TryGetValue(id, out var edges))
+                foreach (var e in edges)
+                    Visit(e.ToId);
+            result.Add(id);
+        }
+
+        foreach (var id in subset) Visit(id);
+        result.Reverse();
+        return result;
+    }
 }

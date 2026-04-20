@@ -24,7 +24,7 @@ public partial class BackendDepActualizer : UserControl, INavigableView<BackendD
     
     private async void PageLoaded(object sender, RoutedEventArgs e)
     {
-        await ViewModel.InitDotnetToolAsync();
+        await ViewModel.InitAsync();
     }
     
     private void ActualizeTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
