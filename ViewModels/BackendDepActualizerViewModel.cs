@@ -58,7 +58,7 @@ public partial class BackendDepActualizerViewModel : ObservableObject
                 return;
             }
             
-            // await InitDotnetToolAsync();
+            await InitDotnetToolAsync();
         }
         catch (Exception ex)
         {
@@ -72,30 +72,30 @@ public partial class BackendDepActualizerViewModel : ObservableObject
         }
     }
     
-    // private async Task InitDotnetToolAsync(CancellationToken ct = default)
-    // {
-    //     if (await DotnetToolHelper.IsToolInstalled(ToolName, ct))
-    //     {
-    //         // RunDotnetCommand($"tool update --global {ToolName}");
-    //         IsInitialized = true;
-    //     }
-    //     else
-    //     {
-    //         if (!await DotnetToolHelper.RunDotnetCommand($"tool install --global {ToolName}", ct))
-    //         {
-    //             InitError = $"Не удалось установить утилиту {ToolName}";
-    //             IsInitialized = false;
-    //         }
-    //         else
-    //         {
-    //             IsInitialized = await DotnetToolHelper.IsToolInstalled(ToolName, ct);
-    //             if (IsInitialized != true)
-    //             {
-    //                 InitError = $"Что-то пошло не так при установке утилиты {ToolName}";
-    //             }
-    //         }
-    //     }
-    // }
+    private async Task InitDotnetToolAsync(CancellationToken ct = default)
+    {
+        // if (await DotnetToolHelper.IsToolInstalled(ToolName, ct))
+        {
+            // RunDotnetCommand($"tool update --global {ToolName}");
+            IsInitialized = true;
+        }
+        // else
+        // {
+        //     if (!await DotnetToolHelper.RunDotnetCommand($"tool install --global {ToolName}", ct))
+        //     {
+        //         InitError = $"Не удалось установить утилиту {ToolName}";
+        //         IsInitialized = false;
+        //     }
+        //     else
+        //     {
+        //         IsInitialized = await DotnetToolHelper.IsToolInstalled(ToolName, ct);
+        //         if (IsInitialized != true)
+        //         {
+        //             InitError = $"Что-то пошло не так при установке утилиты {ToolName}";
+        //         }
+        //     }
+        // }
+    }
     
     #endregion Dotnet Tool Init
     

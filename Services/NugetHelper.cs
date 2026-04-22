@@ -81,7 +81,7 @@ public static class NugetHelper
     {
         try
         {
-            // 1. Get outdated packages (same as before)
+            // 1. Get outdated packages
             var jsonOutput = await GetOutdatedPackagesJson(workDir, ct);
             if (string.IsNullOrEmpty(jsonOutput))
                 return false;
@@ -173,5 +173,4 @@ public static class NugetHelper
         // Return the raw JSON or null/empty if the process failed
         return listProcess.ExitCode == 0 ? jsonOutput : string.Empty;
     }
-
 }

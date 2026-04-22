@@ -18,6 +18,11 @@ public partial class GraphPage : Page, INavigableView<GraphPageViewModel>
         ViewModel = viewModel;
         DataContext = viewModel;
         
+        Loaded += PageLoaded;
+    }
+    
+    private void PageLoaded(object sender, RoutedEventArgs e)
+    {
         ViewModel.Load();
     }
 

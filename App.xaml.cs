@@ -52,29 +52,29 @@ public partial class App : Application
         // Register Windows
         services.AddTransient<MainWindow>();
 
-        services.AddScoped<SolutionGridPageViewModel>();
-        services.AddScoped<SolutionGridPage>();
+        services.AddTransient<SolutionGridPageViewModel>();
+        services.AddTransient<SolutionGridPage>();
 
-        services.AddScoped<ScriptPageViewModel>();
-        services.AddScoped<ScriptPage>();
+        services.AddTransient<ScriptPageViewModel>();
+        services.AddTransient<ScriptPage>();
 
-        services.AddScoped<RemoteStatePageViewModel>();
-        services.AddScoped<RemoteStatePage>();
+        services.AddSingleton<RemoteStatePageViewModel>();
+        services.AddSingleton<RemoteStatePage>();
         
-        services.AddScoped<MiscSettingsPageViewModel>();
-        services.AddScoped<MiscSettingsPage>();
+        services.AddTransient<MiscSettingsPageViewModel>();
+        services.AddTransient<MiscSettingsPage>();
 
-        services.AddScoped<GraphPageViewModel>();
-        services.AddScoped<GraphPage>();
+        services.AddTransient<GraphPageViewModel>();
+        services.AddTransient<GraphPage>();
 
-        services.AddScoped<EnvVariablesPageViewModel>();
-        services.AddScoped<EnvVariablesPage>();
+        services.AddTransient<EnvVariablesPageViewModel>();
+        services.AddTransient<EnvVariablesPage>();
 
-        services.AddScoped<BatchRepoActionViewModel>();
-        services.AddScoped<BatchRepoAction>();
+        services.AddTransient<BatchRepoActionViewModel>();
+        services.AddTransient<BatchRepoAction>();
 
-        services.AddScoped<AboutPageViewModel>();
-        services.AddScoped<AboutPage>();
+        services.AddTransient<AboutPageViewModel>();
+        services.AddTransient<AboutPage>();
         
         services.AddSingleton<FrontendDepActualizerViewModel>();
         services.AddSingleton<FrontendDepActualizer>();

@@ -181,7 +181,7 @@
                         VerticalAlignment="Center"
                         FontWeight="Medium"
                         Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
-                        Text="0.10.0" />
+                        Text="0.11.0" />
                 </ui:NavigationView.PaneFooter>
             </ui:NavigationView>
         </Grid>
