@@ -4,6 +4,7 @@ using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Felweed.Constants;
+using Felweed.Extensions;
 using Felweed.Models.Enumerators;
 using Felweed.Models.Graph;
 using Felweed.Services;
@@ -15,23 +16,17 @@ namespace Felweed.ViewModels;
 
 public partial class FrontendDepActualizerViewModel : ObservableObject
 {
-    [ObservableProperty]
-    public partial ObservableCollection<SolutionActualizeVm> ActualizeSolutions { get; set; } = [];
+    [ObservableProperty] public partial ObservableCollection<SolutionActualizeVm> ActualizeSolutions { get; set; } = [];
 
-    [ObservableProperty]
-    public partial bool SkipBuild { get; set; }
+    [ObservableProperty] public partial bool SkipBuild { get; set; }
 
-    [ObservableProperty]
-    public partial string ActualizeResult { get; set; } = "";
+    [ObservableProperty] public partial string ActualizeResult { get; set; } = "";
 
-    [ObservableProperty]
-    public partial bool ActualizeViewEnabled { get; set; } = true;
+    [ObservableProperty] public partial bool ActualizeViewEnabled { get; set; } = true;
 
-    [ObservableProperty]
-    public partial bool CanInterruptActualization { get; set; }
+    [ObservableProperty] public partial bool CanInterruptActualization { get; set; }
 
-    [ObservableProperty]
-    public partial SolutionActualizeVm? DagFilterSolution { get; set; }
+    [ObservableProperty] public partial SolutionActualizeVm? DagFilterSolution { get; set; }
 
     private CancellationTokenSource? _actualizationCts;
 
@@ -190,57 +185,63 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
                     }
 
                     LogActualize($"Начало актуализации {solution.Name}...");
-                    using (var repo = new Repository(solution.Path))
+
+                    string authUrl;
+                    using (var prePullRepo = new Repository(solution.Path))
                     {
-                        var remote = repo.Network.Remotes["origin"].Url;
+                        var remote = prePullRepo.GetRemote();
                         var cleanUrl = remote.Replace("https://", "");
-                        var authUrl = $"https://oauth2:{gitlabToken}@{cleanUrl}";
+                        authUrl = $"https://oauth2:{gitlabToken}@{cleanUrl}";
+                    }
 
-                        var branch = config.ActiveBranch;
-                        if (string.IsNullOrWhiteSpace(branch))
-                        {
-                            LogActualize("Ошибка при определении активной ветки\n\n");
-                            
-                            solutionVm.Status = SolutionActualizeStatus.Failed;
-                            continue;
-                        }
-                        
-                        LogActualize($"Выполнение [git pull] для {branch}...");
-                        if (!await TerminalHelper.RunCmd("git", $"pull {authUrl} {branch} --ff-only", solution.Path, _actualizationCts.Token))
-                        {
-                            LogActualize("Ошибка при выполнении [git pull]\n\n");
-                            
-                            solutionVm.Status = SolutionActualizeStatus.Failed;
-                            continue;
-                        }
+                    var branch = config.ActiveBranch;
+                    if (string.IsNullOrWhiteSpace(branch))
+                    {
+                        LogActualize("Ошибка при определении активной ветки\n\n");
 
-                        LogActualize("Выполнение [npm-check-updates]...");
-                        const string angularDepPrefixRegex =
-                            @$"/^{PrefixConst.AngularCorporateL0Prefix}\.{PrefixConst.AngularCorporateL1Prefix}\//";
+                        solutionVm.Status = SolutionActualizeStatus.Failed;
+                        continue;
+                    }
 
-                        if (!await TerminalHelper.RunCmd("npx",
-                                @$"--strict-ssl=false -y npm-check-updates -p yarn -f {angularDepPrefixRegex} -u --install always",
-                                solution.Path, _actualizationCts.Token))
-                        {
-                            LogActualize("Ошибка при выполнении [npm-check-updates]\n\n");
-                            solutionVm.Status = SolutionActualizeStatus.Failed;
-                            continue;
-                        }
+                    LogActualize($"Выполнение [git pull] для {branch}...");
+                    if (!await TerminalHelper.RunCmd("git", $"pull {authUrl} {branch} --ff-only --tags", solution.Path,
+                            _actualizationCts.Token))
+                    {
+                        LogActualize("Ошибка при выполнении [git pull]\n\n");
 
-                        if (_actualizationCts.IsCancellationRequested)
-                        {
-                            LogActualize("Прервано");
-                            solutionVm.Status = SolutionActualizeStatus.Skipped;
-                            return;
-                        }
+                        solutionVm.Status = SolutionActualizeStatus.Failed;
+                        continue;
+                    }
 
-                        Commands.Stage(repo, ".");
-                        if (!repo.RetrieveStatus().IsDirty)
-                        {
-                            LogActualize("Нечего обновлять, пропускаю\n\n");
-                            solutionVm.Status = SolutionActualizeStatus.Skipped;
-                            continue;
-                        }
+                    LogActualize("Выполнение [npm-check-updates]...");
+                    const string angularDepPrefixRegex =
+                        @$"/^{PrefixConst.AngularCorporateL0Prefix}\.{PrefixConst.AngularCorporateL1Prefix}\//";
+
+                    if (!await TerminalHelper.RunCmd("npx",
+                            @$"--strict-ssl=false -y npm-check-updates -p yarn -f {angularDepPrefixRegex} -u --install always",
+                            solution.Path, _actualizationCts.Token))
+                    {
+                        LogActualize("Ошибка при выполнении [npm-check-updates]\n\n");
+                        solutionVm.Status = SolutionActualizeStatus.Failed;
+                        continue;
+                    }
+
+                    if (_actualizationCts.IsCancellationRequested)
+                    {
+                        LogActualize("Прервано");
+                        solutionVm.Status = SolutionActualizeStatus.Skipped;
+                        return;
+                    }
+
+                    // заново инициализируем, чтобы гарантировать наличие запуленных тэгов
+                    using var repo = new Repository(solution.Path);
+
+                    Commands.Stage(repo, ".");
+                    if (!repo.RetrieveStatus().IsDirty)
+                    {
+                        LogActualize("Нечего обновлять, пропускаю\n\n");
+                        solutionVm.Status = SolutionActualizeStatus.Skipped;
+                        continue;
                     }
 
                     if (!SkipBuild)
@@ -266,9 +267,8 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
                     }
 
                     // после пула могли появиться новые тэги, нужен повторный анализ
-                    var (_, tagVersion) = GitHelper.GetRepoInfo(solution.Path);
-                    solution.UpdateTagVersionNumber(tagVersion);
-                    
+                    solution.UpdateTagVersionNumber(repo.GetLatestTagVersion());
+
                     var nextVersion = solution.IsPackable
                         ? VersionHelper.IncPatchVersion(solution.TagVersionNumber)
                         : null;

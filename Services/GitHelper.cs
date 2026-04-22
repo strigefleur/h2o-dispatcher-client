@@ -1,6 +1,4 @@
 ﻿using System.IO;
-using LibGit2Sharp;
-using NuGet.Versioning;
 
 namespace Felweed.Services;
 
@@ -28,27 +26,5 @@ public static class GitHelper
         // or it's a fresh init. You could check the config file as a fallback 
         // to verify it's a valid repo.
         return null; 
-    }
-
-    public static (string? OriginUrl, string? TagVersion) GetRepoInfo(string repoPath)
-    {
-        using var repo = new Repository(repoPath);
-        
-        // 1. Get all local tags
-        // 2. Parse names into Semantic Versions
-        // 3. Filter out any that don't follow versioning (like 'alpha-test')
-        // 4. Grab the highest version
-        var latestTag = repo.Tags
-            .Select(t => new { 
-                Tag = t, 
-                Version = NuGetVersion.TryParse(t.FriendlyName, out var v) ? v : null 
-            })
-            .Where(x => x.Version != null)
-            .OrderByDescending(x => x.Version)
-            .FirstOrDefault();
-        
-        var remote = repo.Network.Remotes["origin"];
-        
-        return (remote?.Url, latestTag?.Version?.ToString());
     }
 }

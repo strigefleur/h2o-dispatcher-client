@@ -3,8 +3,10 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Channels;
 using Ardalis.GuardClauses;
+using Felweed.Extensions;
 using Felweed.Models;
 using Felweed.Models.Enumerators;
+using LibGit2Sharp;
 using Serilog;
 
 namespace Felweed.Services;
@@ -51,7 +53,7 @@ public static partial class SolutionScanner
             ? ParsePackageJson(packageJson)
             : ("NotExists", []);
 
-        var (originUrl, tagVersion) = GitHelper.GetRepoInfo(angularDir);
+        using var repo = new Repository(angularDir);
 
         var solution = new AngularSolution
         {
@@ -59,12 +61,12 @@ public static partial class SolutionScanner
             Path = angularDir,
             PackageId = name,
             Type = GitlabConfigHelper.GetProjectType(Path.Combine(angularDir, ".gitlab-ci.yml")),
-            GitOriginUrl = originUrl,
+            GitOriginUrl = repo.GetRemote(),
             LatestSyncDate = GitHelper.GetLastGitSyncDate(angularDir),
             IsCorporate = name.StartsWith(Constants.PrefixConst.AngularCorporateL0Prefix)
         };
         
-        solution.UpdateTagVersionNumber(tagVersion);
+        solution.UpdateTagVersionNumber(repo.GetLatestTagVersion());
 
         solution.AddConsumedDependencies(dependencies.ToArray());
 

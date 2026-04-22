@@ -4,7 +4,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using System.Xml.Linq;
 using Ardalis.GuardClauses;
+using Felweed.Extensions;
 using Felweed.Models;
+using LibGit2Sharp;
 using Serilog;
 
 namespace Felweed.Services;
@@ -77,7 +79,7 @@ public static partial class SolutionScanner
             .Replace(".sln", string.Empty)
             .Replace("-", string.Empty);
         
-        var (originUrl, tagVersion) = GitHelper.GetRepoInfo(slnDir);
+        using var repo = new Repository(slnDir);
         
         var solution = new CSharpSolution
         {
@@ -85,12 +87,12 @@ public static partial class SolutionScanner
             Path = slnPath,
             PackageId = $"{Constants.PrefixConst.CSharpCorporateL0Prefix}.{nugetPackageNamePart}",
             Type = GitlabConfigHelper.GetProjectType(Path.Combine(slnDir, ".gitlab-ci.yml")),
-            GitOriginUrl = originUrl,
+            GitOriginUrl = repo.GetRemote(),
             LatestSyncDate = GitHelper.GetLastGitSyncDate(slnDir),
             IsCorporate = isCorporate
         };
         
-        solution.UpdateTagVersionNumber(tagVersion);
+        solution.UpdateTagVersionNumber(repo.GetLatestTagVersion());
         
         solution.AddConsumedDependencies([..dependencies.OrderBy(d => d.Name).ThenBy(x => x.Version)]);
         
