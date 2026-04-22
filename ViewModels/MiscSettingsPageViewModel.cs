@@ -94,7 +94,7 @@ public partial class MiscSettingsPageViewModel : ObservableObject
                     Title = "Учетная запись для Nexus",
                     Content = dialog,
                     PrimaryButtonText = "Применить",
-                    CloseButtonText = "Передумал",
+                    CloseButtonText = "Уже не хочется",
                 }
             );
 

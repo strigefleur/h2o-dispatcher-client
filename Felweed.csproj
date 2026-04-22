@@ -10,16 +10,16 @@
 
     <ItemGroup>
       <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
-      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
       <PackageReference Include="LibGit2Sharp" Version="0.31.0" />
-      <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.5" />
-      <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.5" />
-      <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.5" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
-      <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
+      <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.7" />
+      <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.7" />
+      <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.7" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.7" />
       <PackageReference Include="NuGet.Configuration" Version="7.3.1" />
       <PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
-      <PackageReference Include="System.Linq.Async" Version="7.0.0" />
+      <PackageReference Include="System.Linq.Async" Version="7.0.1" />
       <PackageReference Include="Velopack" Version="0.0.1298" />
       <PackageReference Include="WPF-UI" Version="4.2.0" />
       <PackageReference Include="WPF-UI.DependencyInjection" Version="4.2.0" />

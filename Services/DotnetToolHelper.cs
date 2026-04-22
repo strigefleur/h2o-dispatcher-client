@@ -6,16 +6,14 @@ public static class DotnetToolHelper
 {
     public static async Task<bool> IsToolInstalled(string toolName, CancellationToken ct = default)
     {
-        var process = new Process
+        using var process = new Process();
+        process.StartInfo = new ProcessStartInfo
         {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "dotnet",
-                Arguments = "tool list --global",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            }
+            FileName = "dotnet",
+            Arguments = "tool list --global",
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
         };
 
         process.Start();
@@ -30,15 +28,13 @@ public static class DotnetToolHelper
 
     public static async Task<bool> RunDotnetCommand(string arguments, CancellationToken ct = default)
     {
-        var process = new Process
+        using var process = new Process();
+        process.StartInfo = new ProcessStartInfo
         {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "dotnet",
-                Arguments = arguments,
-                UseShellExecute = false,
-                CreateNoWindow = false
-            }
+            FileName = "dotnet",
+            Arguments = arguments,
+            UseShellExecute = false,
+            CreateNoWindow = false
         };
 
         process.Start();

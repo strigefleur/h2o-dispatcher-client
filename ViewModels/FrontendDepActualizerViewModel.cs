@@ -90,23 +90,25 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
 
         // 2. Рассчитываем уровни ЛОКАЛЬНО относительно libraryId
         // libraryId = Level 0, его прямые потребители = Level 1, и т.д.
-        var localLevels = new Dictionary<Guid, int>();
-        localLevels[libraryId.Value] = 0;
+        var localLevels = new Dictionary<Guid, int>
+        {
+            [libraryId.Value] = 0
+        };
 
         // Считаем Longest Path внутри подграфа
         var sorted = GraphLayering.TopoSortLocal(graph, downstreamIds);
         foreach (var id in sorted)
         {
             if (!graph.Outgoing.TryGetValue(id, out var edges)) continue;
-            foreach (var edge in edges)
+            foreach (var edgeToId in edges.Select(x => x.ToId))
             {
-                if (!downstreamIds.Contains(edge.ToId)) continue;
+                if (!downstreamIds.Contains(edgeToId)) continue;
 
-                var currentLevel = localLevels.ContainsKey(id) ? localLevels[id] : 0;
+                var currentLevel = localLevels.GetValueOrDefault(id, 0);
                 var targetLevel = currentLevel + 1;
 
-                if (!localLevels.ContainsKey(edge.ToId) || localLevels[edge.ToId] < targetLevel)
-                    localLevels[edge.ToId] = targetLevel;
+                if (!localLevels.TryGetValue(edgeToId, out var value) || value < targetLevel)
+                    localLevels[edgeToId] = targetLevel;
             }
         }
 

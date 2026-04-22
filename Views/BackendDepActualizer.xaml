@@ -118,7 +118,7 @@
                               IsChecked="{Binding SkipBuild}"/>
                 
                     <ui:Button Content="Запустить актуализацию" 
-                               Command="{Binding ActualizeFrontendDepsCommand}"
+                               Command="{Binding ActualizeBackendDepsCommand}"
                                Margin="16, 0, 0, 0"
                                Cursor="Hand">
                         <ui:Button.Icon>
@@ -127,7 +127,7 @@
                     </ui:Button>
                     
                     <ui:Button Content="Прервать актуализацию" 
-                               Command="{Binding InterruptFrontendDepsActualizationCommand}"
+                               Command="{Binding InterruptBackendDepsActualizationCommand}"
                                IsEnabled="{Binding CanInterruptActualization}"
                                Margin="8, 0, 0, 0"
                                Cursor="Hand">

@@ -2,7 +2,6 @@
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Felweed.Constants;
 using Felweed.Models.Graph;
 using Felweed.Services;
 using Felweed.Services.Graph;
@@ -12,10 +11,6 @@ namespace Felweed.ViewModels;
 
 public partial class BackendDepActualizerViewModel : ObservableObject
 {
-    private const string ToolName = "dotnet-outdated-tool";
-    private const string Command = "dotnet";
-    private const string CommandArgs = $"dotnet outdated -u -inc {PrefixConst.CSharpCorporateL0Prefix}";
-
     [ObservableProperty] private bool? _isInitialized;
     [ObservableProperty] private bool? _isProcessing;
     [ObservableProperty] private string? _initError;
@@ -62,11 +57,11 @@ public partial class BackendDepActualizerViewModel : ObservableObject
                 return;
             }
             
-            await InitDotnetToolAsync();
+            // await InitDotnetToolAsync();
         }
         catch
         {
-            InitError = $"Ошибка при инициализации конфигурации Nuget или {ToolName}";
+            InitError = $"Ошибка при инициализации конфигурации Nuget";
             IsInitialized = false;
         }
         finally
@@ -75,30 +70,30 @@ public partial class BackendDepActualizerViewModel : ObservableObject
         }
     }
     
-    private async Task InitDotnetToolAsync(CancellationToken ct = default)
-    {
-        if (await DotnetToolHelper.IsToolInstalled(ToolName, ct))
-        {
-            // RunDotnetCommand($"tool update --global {ToolName}");
-            IsInitialized = true;
-        }
-        else
-        {
-            if (!await DotnetToolHelper.RunDotnetCommand($"tool install --global {ToolName}", ct))
-            {
-                InitError = $"Не удалось установить утилиту {ToolName}";
-                IsInitialized = false;
-            }
-            else
-            {
-                IsInitialized = await DotnetToolHelper.IsToolInstalled(ToolName, ct);
-                if (IsInitialized != true)
-                {
-                    InitError = $"Что-то пошло не так при установке утилиты {ToolName}";
-                }
-            }
-        }
-    }
+    // private async Task InitDotnetToolAsync(CancellationToken ct = default)
+    // {
+    //     if (await DotnetToolHelper.IsToolInstalled(ToolName, ct))
+    //     {
+    //         // RunDotnetCommand($"tool update --global {ToolName}");
+    //         IsInitialized = true;
+    //     }
+    //     else
+    //     {
+    //         if (!await DotnetToolHelper.RunDotnetCommand($"tool install --global {ToolName}", ct))
+    //         {
+    //             InitError = $"Не удалось установить утилиту {ToolName}";
+    //             IsInitialized = false;
+    //         }
+    //         else
+    //         {
+    //             IsInitialized = await DotnetToolHelper.IsToolInstalled(ToolName, ct);
+    //             if (IsInitialized != true)
+    //             {
+    //                 InitError = $"Что-то пошло не так при установке утилиты {ToolName}";
+    //             }
+    //         }
+    //     }
+    // }
     
     #endregion Dotnet Tool Init
     
@@ -156,23 +151,25 @@ public partial class BackendDepActualizerViewModel : ObservableObject
 
         // 2. Рассчитываем уровни ЛОКАЛЬНО относительно libraryId
         // libraryId = Level 0, его прямые потребители = Level 1, и т.д.
-        var localLevels = new Dictionary<Guid, int>();
-        localLevels[libraryId.Value] = 0;
+        var localLevels = new Dictionary<Guid, int>
+        {
+            [libraryId.Value] = 0
+        };
 
         // Считаем Longest Path внутри подграфа
         var sorted = GraphLayering.TopoSortLocal(graph, downstreamIds);
         foreach (var id in sorted)
         {
             if (!graph.Outgoing.TryGetValue(id, out var edges)) continue;
-            foreach (var edge in edges)
+            foreach (var edgeToId in edges.Select(x => x.ToId))
             {
-                if (!downstreamIds.Contains(edge.ToId)) continue;
+                if (!downstreamIds.Contains(edgeToId)) continue;
 
-                var currentLevel = localLevels.ContainsKey(id) ? localLevels[id] : 0;
+                var currentLevel = localLevels.GetValueOrDefault(id, 0);
                 var targetLevel = currentLevel + 1;
 
-                if (!localLevels.ContainsKey(edge.ToId) || localLevels[edge.ToId] < targetLevel)
-                    localLevels[edge.ToId] = targetLevel;
+                if (!localLevels.TryGetValue(edgeToId, out var value) || value < targetLevel)
+                    localLevels[edgeToId] = targetLevel;
             }
         }
 
@@ -191,13 +188,13 @@ public partial class BackendDepActualizerViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void InterruptFrontendDepsActualization()
+    private void InterruptBackendDepsActualization()
     {
         _actualizationCts?.Cancel();
     }
 
     [RelayCommand]
-    private async Task ActualizeFrontendDeps()
+    private async Task ActualizeBackendDeps()
     {
         _actualizationCts = new CancellationTokenSource();
         CanInterruptActualization = true;
@@ -235,7 +232,7 @@ public partial class BackendDepActualizerViewModel : ObservableObject
                     LogActualize("Выполнение [dotnet outdated]...");
 
                     var dir = Path.GetDirectoryName(solution.Path);
-                    if (!await TerminalHelper.RunCmd(Command, CommandArgs, dir, _actualizationCts.Token))
+                    if (!await NugetHelper.ResolveUpdates(dir, Environment.ProcessorCount, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка при выполнении [dotnet outdated]\n\n");
                         continue;
