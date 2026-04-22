@@ -1,8 +1,10 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Windows;
 using Felweed.Services;
 using Felweed.ViewModels;
 using Felweed.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using Velopack;
 using Wpf.Ui;
 using Wpf.Ui.Appearance;
@@ -19,6 +21,29 @@ public partial class App : Application
     
     public App()
     {
+        // Recommended path for logs
+        var logDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), 
+            "Felweed", 
+            "Logs"
+        );
+
+        // Create the directory if it doesn't exist
+        Directory.CreateDirectory(logDirectory);
+        
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.File($"{logDirectory}/felweed-.txt", rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+        
+        DispatcherUnhandledException += (s, e) => {
+            Log.Fatal(e.Exception, "UI Thread crash");
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (s, e) => {
+            Log.Fatal((Exception)e.ExceptionObject, "Background thread crash");
+        };
+        
         var services = new ServiceCollection();
         
         // Register ViewModels
@@ -83,7 +108,7 @@ public partial class App : Application
         mainWindow.Show();
     }
 
-    private void ApplyThemeFromConfig()
+    private static void ApplyThemeFromConfig()
     {
         var currentTheme = ApplicationThemeManager.GetAppTheme();
         var config = ConfigurationService.LoadConfig();
@@ -107,5 +132,11 @@ public partial class App : Application
         App app = new();
         app.InitializeComponent();
         app.Run();
+    }
+    
+    protected override void OnExit(ExitEventArgs e)
+    {
+        Log.CloseAndFlush();
+        base.OnExit(e);
     }
 }

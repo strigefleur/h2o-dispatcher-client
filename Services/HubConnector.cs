@@ -4,14 +4,15 @@ using MessagePack.Resolvers;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace Felweed.Services;
 
-public class HubConnector
+public static class HubConnector
 {
     private static HubConnection? _connection;
 
-    public async Task<string?> Init(Action<byte[]> onFullState)
+    public static async Task<string?> InitAsync(Action<byte[]> onFullState)
     {
         var config = ConfigurationService.LoadConfig();
         var hubUrl = config.GetHubUrl();
@@ -48,15 +49,16 @@ public class HubConnector
                 await _connection.InvokeAsync(SignalrConst.Methods.Subscribe);
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return e.Message;
+            Log.Error(ex, "Failed to initialize connection");
+            return ex.Message;
         }
 
         return null;
     }
     
-    public async Task CleanupConnection()
+    public static async Task CleanupConnectionAsync()
     {
         if (_connection != null)
         {
@@ -67,14 +69,12 @@ public class HubConnector
             }
             catch (Exception ex)
             {
-                // Log issues like network timeout during closure
+                Log.Error(ex, "Error cleaning up connection");
             }
             finally
             {
-                // Always dispose to free up the object's resources
                 await _connection.DisposeAsync();
             }
         }
     }
-
 }

@@ -17,13 +17,10 @@ public partial class RemoteStatePageViewModel : ObservableObject, IAsyncDisposab
     
     [ObservableProperty]
     private ObservableCollection<Solution> _solutions = [];
-    
-    private HubConnector? _connector;
 
     public async Task ConnectAsync()
     {
-        _connector ??= new HubConnector();
-        Error = await _connector.Init(OnFullState);
+        Error = await HubConnector.InitAsync(OnFullState);
 
         IsConnecting = false;
         
@@ -58,9 +55,6 @@ public partial class RemoteStatePageViewModel : ObservableObject, IAsyncDisposab
     
     public async ValueTask DisposeAsync()
     {
-        if (_connector != null)
-        {
-            await _connector.CleanupConnection();
-        }
+        await HubConnector.CleanupConnectionAsync();
     }
 }

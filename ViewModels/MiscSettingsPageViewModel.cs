@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Felweed.Services;
 using Felweed.Views;
+using Serilog;
 using Wpf.Ui;
 using Wpf.Ui.Controls;
 using Wpf.Ui.Extensions;
@@ -83,11 +84,11 @@ public partial class MiscSettingsPageViewModel : ObservableObject
     private async Task OnShowDialog()
     {
         NexusCredentialsDialog? dialog = null;
-        
+
         try
         {
             dialog = new NexusCredentialsDialog();
-            
+
             var result = await _contentDialogService.ShowSimpleDialogAsync(
                 new SimpleContentDialogCreateOptions()
                 {
@@ -107,6 +108,10 @@ public partial class MiscSettingsPageViewModel : ObservableObject
 
             NugetHelper.SetNugetCredentials(feedConfig.ConfigPath, feedConfig.Name, feedConfig.Url,
                 dialog.ViewModel.NexusUsername, dialog.NexusPasswordBox.Password);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to apply nuget credentials");
         }
         finally
         {

@@ -5,6 +5,7 @@ using System.Threading.Channels;
 using Ardalis.GuardClauses;
 using Felweed.Models;
 using Felweed.Models.Enumerators;
+using Serilog;
 
 namespace Felweed.Services;
 
@@ -15,7 +16,7 @@ public static partial class SolutionScanner
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         var channel = Channel.CreateUnbounded<string>();
-    
+
         // Producer: find all angular.json files
         _ = Task.Run(async () =>
         {
@@ -29,7 +30,10 @@ public static partial class SolutionScanner
                     }
                 }
             }
-            finally { channel.Writer.Complete(); }
+            finally
+            {
+                channel.Writer.Complete();
+            }
         }, ct);
 
         // Consumer: parse and yield
@@ -46,7 +50,7 @@ public static partial class SolutionScanner
         var (name, dependencies) = File.Exists(packageJson)
             ? ParsePackageJson(packageJson)
             : ("NotExists", []);
-        
+
         var (originUrl, tagVersion) = GitHelper.GetRepoInfo(angularDir);
 
         var solution = new AngularSolution
@@ -60,9 +64,9 @@ public static partial class SolutionScanner
             LatestSyncDate = GitHelper.GetLastGitSyncDate(angularDir),
             IsCorporate = name.StartsWith(Constants.PrefixConst.AngularCorporateL0Prefix)
         };
-        
+
         solution.AddConsumedDependencies(dependencies.ToArray());
-        
+
         if (solution.Type == SolutionType.Library)
             solution.AddProducedDependencies(name);
 
@@ -75,10 +79,10 @@ public static partial class SolutionScanner
         {
             using var doc = JsonDocument.Parse(File.ReadAllText(path));
             var root = doc.RootElement;
-            
+
             var name = root.TryGetProperty("name", out var nameEl) ? nameEl.GetString() ?? "Unknown" : "Unknown";
             var version = root.TryGetProperty("version", out var versionEl) ? versionEl.GetString() : "?.?.?";
-            
+
             var deps = new List<ConsumedDependency>();
 
             deps.AddRange(ExtractDeps(root, "dependencies", AngularDependencyType.Runtime));
@@ -87,12 +91,17 @@ public static partial class SolutionScanner
 
             return (name, [.. deps.OrderBy(d => d.Name).ThenBy(x => x.Version)]);
         }
-        catch { return ("Error", []); }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to parse package.json");
+            return ("Error", []);
+        }
     }
-    
-    private static IEnumerable<ConsumedDependency> ExtractDeps(JsonElement root, string section, AngularDependencyType type)
+
+    private static IEnumerable<ConsumedDependency> ExtractDeps(JsonElement root, string section,
+        AngularDependencyType type)
     {
-        if (!root.TryGetProperty(section, out var element)) 
+        if (!root.TryGetProperty(section, out var element))
             yield break;
 
         foreach (var prop in element.EnumerateObject())

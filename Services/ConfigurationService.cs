@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Ardalis.GuardClauses;
 using Felweed.Models;
+using Serilog;
 
 namespace Felweed.Services;
 
@@ -31,10 +32,10 @@ public static class ConfigurationService
                     _appConfig = new AppConfig();
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Log error if needed
                 _appConfig = new AppConfig();
+                Log.Error(ex, "Failed to load appconfig");
             }
         }
         

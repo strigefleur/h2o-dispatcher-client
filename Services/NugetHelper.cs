@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using Felweed.Constants;
 using NuGet.Configuration;
+using Serilog;
 
 namespace Felweed.Services;
 
@@ -117,8 +118,9 @@ public static class NugetHelper
             var results = await Task.WhenAll(updateTasks);
             return results.All(success => success);
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Error(ex, "Failed to resolve updates");
             return false;
         }
     }

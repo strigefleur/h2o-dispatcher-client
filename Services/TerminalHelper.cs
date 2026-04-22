@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Serilog;
 
 namespace Felweed.Services;
 
@@ -111,8 +112,9 @@ public static class TerminalHelper
 
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Error(ex, "Failed to run cmd");
             return false;
         }
     }

@@ -3,6 +3,7 @@ using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Felweed.Models;
 using Felweed.Services;
+using Serilog;
 
 namespace Felweed.ViewModels;
 
@@ -45,8 +46,9 @@ public partial class AboutPageViewModel : ObservableObject
 
             Anecdote = anecdotes?[0].Content ?? BadAnecdotePlaceholder;
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Error(ex, "Failed to get anecdote");
             Anecdote = BadAnecdotePlaceholder;
         }
         finally

@@ -6,6 +6,7 @@ using Felweed.Models.Graph;
 using Felweed.Services;
 using Felweed.Services.Graph;
 using LibGit2Sharp;
+using Serilog;
 
 namespace Felweed.ViewModels;
 
@@ -59,8 +60,9 @@ public partial class BackendDepActualizerViewModel : ObservableObject
             
             // await InitDotnetToolAsync();
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Error(ex, "Failed to initialize backend dep actualizer");
             InitError = $"Ошибка при инициализации конфигурации Nuget";
             IsInitialized = false;
         }
@@ -277,7 +279,7 @@ public partial class BackendDepActualizerViewModel : ObservableObject
                     var nextVersion = solution.IsPackable
                         ? VersionHelper.IncPatchVersion(solution.TagVersionNumber)
                         : null;
-                    
+
                     if (solution.IsPackable)
                     {
                         LogActualize("Создание записи для changelog...");
@@ -294,12 +296,12 @@ public partial class BackendDepActualizerViewModel : ObservableObject
                     }
 
                     LogActualize("Создание комита...");
-                    
+
                     const string defaultCommitMessage = "commit -m \"chore: bump deps\"";
                     var commitMessage = solution.IsPackable
                         ? $"{defaultCommitMessage} to {nextVersion}\""
                         : defaultCommitMessage;
-                    
+
                     if (!await TerminalHelper.RunCmd("git", "add .", dir, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка stage комита\n\n");
@@ -319,6 +321,10 @@ public partial class BackendDepActualizerViewModel : ObservableObject
                     solutionVm.IsProcessing = false;
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to actualize backend deps");
         }
         finally
         {

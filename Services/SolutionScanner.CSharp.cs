@@ -5,6 +5,7 @@ using System.Threading.Channels;
 using System.Xml.Linq;
 using Ardalis.GuardClauses;
 using Felweed.Models;
+using Serilog;
 
 namespace Felweed.Services;
 
@@ -127,7 +128,11 @@ public static partial class SolutionScanner
                         .ToList()
                 );
         }
-        catch { return (false, []); }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to parse dependencies");
+            return (false, []);
+        }
     }
     
     private static string GetPackageId(XDocument xdoc)

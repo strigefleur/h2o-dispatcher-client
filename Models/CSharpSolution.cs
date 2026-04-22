@@ -2,6 +2,7 @@
 using Ardalis.GuardClauses;
 using Felweed.Models.Enumerators;
 using Felweed.Services;
+using Serilog;
 
 namespace Felweed.Models;
 
@@ -46,7 +47,7 @@ public record CSharpSolution : Solution
         }
         catch (Exception ex)
         {
-            // TODO - обработка ошибок приклада
+            Log.Error(ex, "Failed to delete package");
         }
     }
 
