@@ -11,7 +11,7 @@ public abstract record Solution
     public required string Path { get; init; }
     public required string Name { get; init; }
     public required string PackageId { get; init; }
-    public required string? TagVersionNumber { get; init; }
+    public string? TagVersionNumber { get; private set; }
     public required string? GitOriginUrl { get; init; }
     public required SolutionType? Type { get; init; }
     public required DateTime? LatestSyncDate { get; init; }
@@ -81,4 +81,9 @@ public abstract record Solution
     public abstract void Run(params string[] args);
     public abstract void Pack();
     public abstract void InvalidateCache();
+    
+    public void UpdateTagVersionNumber(string? tagVersion)
+    {
+        TagVersionNumber = tagVersion;
+    }
 }

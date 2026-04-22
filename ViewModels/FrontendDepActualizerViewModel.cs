@@ -4,21 +4,34 @@ using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Felweed.Constants;
+using Felweed.Models.Enumerators;
 using Felweed.Models.Graph;
 using Felweed.Services;
 using Felweed.Services.Graph;
 using LibGit2Sharp;
+using Serilog;
 
 namespace Felweed.ViewModels;
 
 public partial class FrontendDepActualizerViewModel : ObservableObject
 {
-    [ObservableProperty] private ObservableCollection<SolutionActualizeVm> _actualizeSolutions = [];
-    [ObservableProperty] private bool _skipBuild;
-    [ObservableProperty] private string _actualizeResult = "";
-    [ObservableProperty] private bool _actualizeViewEnabled = true;
-    [ObservableProperty] private bool _canInterruptActualization;
-    [ObservableProperty] private SolutionActualizeVm? _dagFilterSolution;
+    [ObservableProperty]
+    public partial ObservableCollection<SolutionActualizeVm> ActualizeSolutions { get; set; } = [];
+
+    [ObservableProperty]
+    public partial bool SkipBuild { get; set; }
+
+    [ObservableProperty]
+    public partial string ActualizeResult { get; set; } = "";
+
+    [ObservableProperty]
+    public partial bool ActualizeViewEnabled { get; set; } = true;
+
+    [ObservableProperty]
+    public partial bool CanInterruptActualization { get; set; }
+
+    [ObservableProperty]
+    public partial SolutionActualizeVm? DagFilterSolution { get; set; }
 
     private CancellationTokenSource? _actualizationCts;
 
@@ -46,7 +59,7 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
     {
         foreach (var solution in ActualizeSolutions)
         {
-            solution.IsChecked = false;
+            solution.ResetStatus();
         }
 
         if (DagFilterSolution == null)
@@ -81,7 +94,7 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
         }
     }
 
-    private List<LevelVm> ApplyFilter(DependencyGraph graph, ICollection<LevelVm> levels, Guid? libraryId)
+    private static List<LevelVm> ApplyFilter(DependencyGraph graph, ICollection<LevelVm> levels, Guid? libraryId)
     {
         if (libraryId == null) return levels.ToList();
 
@@ -138,6 +151,13 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
         _actualizationCts = new CancellationTokenSource();
         CanInterruptActualization = true;
 
+        var config = ConfigurationService.LoadConfig();
+        var gitlabToken = SecureStorage.LoadApiKey();
+        foreach (var solution in ActualizeSolutions)
+        {
+            solution.ResetStatus();
+        }
+
         try
         {
             ActualizeResult = string.Empty;
@@ -148,8 +168,11 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
                 if (_actualizationCts.IsCancellationRequested)
                 {
                     LogActualize("Прервано");
+                    solutionVm.Status = SolutionActualizeStatus.Skipped;
                     return;
                 }
+
+                solutionVm.Status = SolutionActualizeStatus.InProgress;
 
                 try
                 {
@@ -167,31 +190,55 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
                     }
 
                     LogActualize($"Начало актуализации {solution.Name}...");
-
-                    LogActualize("Выполнение [npm-check-updates]...");
-                    const string angularDepPrefixRegex =
-                        @$"/^{PrefixConst.AngularCorporateL0Prefix}\.{PrefixConst.AngularCorporateL1Prefix}\//";
-
-                    if (!await TerminalHelper.RunCmd("npx",
-                            @$"--strict-ssl=false -y npm-check-updates -p yarn -f {angularDepPrefixRegex} -u --install always",
-                            solution.Path, _actualizationCts.Token))
-                    {
-                        LogActualize("Ошибка при выполнении [npm-check-updates]\n\n");
-                        continue;
-                    }
-
-                    if (_actualizationCts.IsCancellationRequested)
-                    {
-                        LogActualize("Прервано");
-                        return;
-                    }
-
                     using (var repo = new Repository(solution.Path))
                     {
+                        var remote = repo.Network.Remotes["origin"].Url;
+                        var cleanUrl = remote.Replace("https://", "");
+                        var authUrl = $"https://oauth2:{gitlabToken}@{cleanUrl}";
+
+                        var branch = config.ActiveBranch;
+                        if (string.IsNullOrWhiteSpace(branch))
+                        {
+                            LogActualize("Ошибка при определении активной ветки\n\n");
+                            
+                            solutionVm.Status = SolutionActualizeStatus.Failed;
+                            continue;
+                        }
+                        
+                        LogActualize($"Выполнение [git pull] для {branch}...");
+                        if (!await TerminalHelper.RunCmd("git", $"pull {authUrl} {branch} --ff-only", solution.Path, _actualizationCts.Token))
+                        {
+                            LogActualize("Ошибка при выполнении [git pull]\n\n");
+                            
+                            solutionVm.Status = SolutionActualizeStatus.Failed;
+                            continue;
+                        }
+
+                        LogActualize("Выполнение [npm-check-updates]...");
+                        const string angularDepPrefixRegex =
+                            @$"/^{PrefixConst.AngularCorporateL0Prefix}\.{PrefixConst.AngularCorporateL1Prefix}\//";
+
+                        if (!await TerminalHelper.RunCmd("npx",
+                                @$"--strict-ssl=false -y npm-check-updates -p yarn -f {angularDepPrefixRegex} -u --install always",
+                                solution.Path, _actualizationCts.Token))
+                        {
+                            LogActualize("Ошибка при выполнении [npm-check-updates]\n\n");
+                            solutionVm.Status = SolutionActualizeStatus.Failed;
+                            continue;
+                        }
+
+                        if (_actualizationCts.IsCancellationRequested)
+                        {
+                            LogActualize("Прервано");
+                            solutionVm.Status = SolutionActualizeStatus.Skipped;
+                            return;
+                        }
+
                         Commands.Stage(repo, ".");
                         if (!repo.RetrieveStatus().IsDirty)
                         {
                             LogActualize("Нечего обновлять, пропускаю\n\n");
+                            solutionVm.Status = SolutionActualizeStatus.Skipped;
                             continue;
                         }
                     }
@@ -202,6 +249,7 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
                         if (!await TerminalHelper.RunCmd("yarn", "build", solution.Path, _actualizationCts.Token))
                         {
                             LogActualize("Ошибка при выполнении [yarn build]\n\n");
+                            solutionVm.Status = SolutionActualizeStatus.Failed;
                             continue;
                         }
                     }
@@ -213,13 +261,18 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
                     if (_actualizationCts.IsCancellationRequested)
                     {
                         LogActualize("Прервано");
+                        solutionVm.Status = SolutionActualizeStatus.Skipped;
                         return;
                     }
 
+                    // после пула могли появиться новые тэги, нужен повторный анализ
+                    var (_, tagVersion) = GitHelper.GetRepoInfo(solution.Path);
+                    solution.UpdateTagVersionNumber(tagVersion);
+                    
                     var nextVersion = solution.IsPackable
                         ? VersionHelper.IncPatchVersion(solution.TagVersionNumber)
                         : null;
-                    
+
                     if (solution.IsPackable)
                     {
                         LogActualize("Актуализация внутреннего package.json библиотеки...");
@@ -251,6 +304,7 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
                         if (_actualizationCts.IsCancellationRequested)
                         {
                             LogActualize("Прервано");
+                            solutionVm.Status = SolutionActualizeStatus.Skipped;
                             return;
                         }
 
@@ -264,6 +318,7 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
                     if (_actualizationCts.IsCancellationRequested)
                     {
                         LogActualize("Прервано");
+                        solutionVm.Status = SolutionActualizeStatus.Skipped;
                         return;
                     }
 
@@ -274,6 +329,7 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
                                 _actualizationCts.Token))
                         {
                             LogActualize("Ошибка при создании комита\n\n");
+                            solutionVm.Status = SolutionActualizeStatus.Failed;
                             continue;
                         }
                     }
@@ -282,6 +338,7 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
                         if (!await TerminalHelper.RunCmd("git", "add .", solution.Path, _actualizationCts.Token))
                         {
                             LogActualize("Ошибка stage комита\n\n");
+                            solutionVm.Status = SolutionActualizeStatus.Failed;
                             continue;
                         }
 
@@ -289,10 +346,12 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
                                 _actualizationCts.Token))
                         {
                             LogActualize("Ошибка при создании комита\n\n");
+                            solutionVm.Status = SolutionActualizeStatus.Failed;
                             continue;
                         }
                     }
 
+                    solutionVm.Status = SolutionActualizeStatus.Success;
                     LogActualize("Готово!\n\n");
                 }
                 finally
@@ -300,6 +359,11 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
                     solutionVm.IsProcessing = false;
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error actualizing frontend deps");
+            // solutionVm.Status = SolutionActualizeStatus.Failed;
         }
         finally
         {

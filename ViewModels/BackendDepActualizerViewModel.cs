@@ -230,10 +230,18 @@ public partial class BackendDepActualizerViewModel : ObservableObject
                     }
 
                     LogActualize($"Начало актуализации {solution.Name}...");
+                    
+                    var dir = Path.GetDirectoryName(solution.Path);
+                    
+                    // LogActualize("Выполнение [git pull]...");
+                    // if (!await TerminalHelper.RunCmd("git", "pull", dir, _actualizationCts.Token))
+                    // {
+                    //     LogActualize("Ошибка при выполнении [git pull]\n\n");
+                    //     //solutionVm.Status = SolutionActualizeStatus.Failed;
+                    //     continue;
+                    // }
 
                     LogActualize("Выполнение [dotnet outdated]...");
-
-                    var dir = Path.GetDirectoryName(solution.Path);
                     if (!await NugetHelper.ResolveUpdates(dir, Environment.ProcessorCount, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка при выполнении [dotnet outdated]\n\n");
@@ -275,6 +283,10 @@ public partial class BackendDepActualizerViewModel : ObservableObject
                         LogActualize("Прервано");
                         return;
                     }
+                    
+                    // после пула могли появиться новые тэги, нужен повторный анализ
+                    // var (_, tagVersion) = GitHelper.GetRepoInfo(solution.Path);
+                    // solution.UpdateTagVersionNumber(tagVersion);
 
                     var nextVersion = solution.IsPackable
                         ? VersionHelper.IncPatchVersion(solution.TagVersionNumber)

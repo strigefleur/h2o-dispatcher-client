@@ -7,15 +7,26 @@
       xmlns:local="clr-namespace:Felweed.Views"
       xmlns:m="clr-namespace:Felweed.Models"
       xmlns:vm="clr-namespace:Felweed.ViewModels"
+      xmlns:localConverters="clr-namespace:Felweed.ViewModels.Converters"
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance Type=vm:ScriptPageViewModel, IsDesignTimeCreatable=True}"
       d:DesignHeight="808"
       d:DesignWidth="880"
       ScrollViewer.CanContentScroll="False"
       Title="ScriptPage">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <localConverters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+    </Page.Resources>
     
     <Grid>
-        <TabControl Margin="8">
+        <ui:TextBlock Text="Не задан API ключ Gitlab" 
+                      VerticalAlignment="Center"
+                      Visibility="{Binding IsInit, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                      Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                      HorizontalAlignment="Center" />
+        
+        <TabControl Margin="8" Visibility="{Binding IsInit, Converter={StaticResource BooleanToVisibilityConverter}}">
             <TabItem ToolTip="Актуализировать зависимости (фронт)">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">

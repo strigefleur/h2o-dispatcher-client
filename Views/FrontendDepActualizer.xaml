@@ -13,7 +13,10 @@
              d:DesignWidth="880">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <localConverters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+        <localConverters:SolutionActualizeStatusToIconConverter x:Key="SolutionActualizeStatusToIconConverter"/>
+        <localConverters:SolutionActualizeStatusToVisibilityConverter x:Key="SolutionActualizeStatusToVisibilityConverter" />
+        <localConverters:SolutionActualizeStatusToForegroundConverter  x:Key="SolutionActualizeStatusToForegroundConverter"/>
+        <localConverters:InvertVisibilityConverter x:Key="InvertVisibilityConverter" />
     </UserControl.Resources>
     
     <Grid Margin="8">
@@ -87,9 +90,18 @@
                                       HorizontalContentAlignment="Center"
                                       VerticalContentAlignment="Center"
                                       VerticalAlignment="Center"
-                                      Visibility="{Binding IsProcessing, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                                       IsChecked="{Binding IsChecked}"
+                                      Visibility="{Binding Visibility, ElementName=SolutionActualizeStatusIcon, Converter={StaticResource InvertVisibilityConverter}}"
                             />
+                            
+                            <ui:SymbolIcon Grid.Column="0" 
+                                           Width="16"
+                                           Height="16"
+                                           Margin="8"
+                                           x:Name="SolutionActualizeStatusIcon"
+                                           Symbol="{Binding Status, Converter={StaticResource SolutionActualizeStatusToIconConverter}}"
+                                           Foreground="{Binding Status, Converter={StaticResource SolutionActualizeStatusToForegroundConverter}}"
+                                           Visibility="{Binding Status, Converter={StaticResource SolutionActualizeStatusToVisibilityConverter}}"/>
                         
                             <TextBlock Grid.Column="1" Text="{Binding Solution.Name}"
                                        VerticalAlignment="Center"/>

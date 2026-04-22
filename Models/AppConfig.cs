@@ -18,6 +18,8 @@ public sealed record AppConfig
     public string? NugetConfigPath { get; set; } = "%appdata%/nuget";
     public string? CorporateNexusSourceUrl { get; set; }
     public string? CorporateNexusSourceName { get; set; }
+    public string? EncryptedGitlabKey { get; set; }
+    public string? ActiveBranch { get; set; } = "feature/dev";
 
     public List<EnvVariable> EnvVariables { get; set; } = [..EnvVariableConst.DefaultEnvVariables];
 

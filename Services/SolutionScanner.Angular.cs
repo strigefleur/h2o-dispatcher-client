@@ -59,11 +59,12 @@ public static partial class SolutionScanner
             Path = angularDir,
             PackageId = name,
             Type = GitlabConfigHelper.GetProjectType(Path.Combine(angularDir, ".gitlab-ci.yml")),
-            TagVersionNumber = tagVersion,
             GitOriginUrl = originUrl,
             LatestSyncDate = GitHelper.GetLastGitSyncDate(angularDir),
             IsCorporate = name.StartsWith(Constants.PrefixConst.AngularCorporateL0Prefix)
         };
+        
+        solution.UpdateTagVersionNumber(tagVersion);
 
         solution.AddConsumedDependencies(dependencies.ToArray());
 

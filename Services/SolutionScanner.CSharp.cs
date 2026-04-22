@@ -85,11 +85,12 @@ public static partial class SolutionScanner
             Path = slnPath,
             PackageId = $"{Constants.PrefixConst.CSharpCorporateL0Prefix}.{nugetPackageNamePart}",
             Type = GitlabConfigHelper.GetProjectType(Path.Combine(slnDir, ".gitlab-ci.yml")),
-            TagVersionNumber = tagVersion,
             GitOriginUrl = originUrl,
             LatestSyncDate = GitHelper.GetLastGitSyncDate(slnDir),
             IsCorporate = isCorporate
         };
+        
+        solution.UpdateTagVersionNumber(tagVersion);
         
         solution.AddConsumedDependencies([..dependencies.OrderBy(d => d.Name).ThenBy(x => x.Version)]);
         

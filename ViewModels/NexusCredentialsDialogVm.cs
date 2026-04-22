@@ -4,5 +4,6 @@ namespace Felweed.ViewModels;
 
 public partial class NexusCredentialsDialogVm : ObservableObject
 {
-    [ObservableProperty] private string? _nexusUsername;
+    [ObservableProperty]
+    public partial string? NexusUsername { get; set; }
 }
