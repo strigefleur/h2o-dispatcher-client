@@ -173,7 +173,7 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
                         @$"/^{PrefixConst.AngularCorporateL0Prefix}\.{PrefixConst.AngularCorporateL1Prefix}\//";
 
                     if (!await TerminalHelper.RunCmd("npx",
-                            @$"--strict-ssl=false npm-check-updates -p yarn -f {angularDepPrefixRegex} -u --install always",
+                            @$"--strict-ssl=false -y npm-check-updates -p yarn -f {angularDepPrefixRegex} -u --install always",
                             solution.Path, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка при выполнении [npm-check-updates]\n\n");
