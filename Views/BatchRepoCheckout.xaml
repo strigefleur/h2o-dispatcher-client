@@ -33,24 +33,48 @@
         </ui:TextBlock>
         
         <GroupBox Grid.Row="1" Header="Выбор ветки" Padding="8">
-            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-                <ui:AutoSuggestBox Text="{Binding BranchName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                   Width="320"
-                                   OriginalItemsSource="{Binding AutoSuggestBoxSuggestions, Mode=OneWay}"
-                                   IsEnabled="{Binding ActualizeViewEnabled}"
-                                   ClearButtonEnabled="{Binding ActualizeViewEnabled}"
-                                   Icon="{ui:SymbolIcon Branch24}" 
-                                   PlaceholderText="Название целевой ветки"/>
-                
-                <CheckBox Content="Автопоиск"
-                          IsEnabled="{Binding ActualizeViewEnabled}"
-                          IsChecked="{Binding AutoSearch}"/>
-                
-                <Button Content="Переключить" Margin="16,0,0,0"
-                        VerticalContentAlignment="Center"
-                        VerticalAlignment="Stretch"
+            <StackPanel>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                    <ui:AutoSuggestBox Text="{Binding BranchName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                       Width="320"
+                                       OriginalItemsSource="{Binding AutoSuggestBoxSuggestions, Mode=OneWay}"
+                                       IsEnabled="{Binding ActualizeViewEnabled}"
+                                       ClearButtonEnabled="{Binding ActualizeViewEnabled}"
+                                       Icon="{ui:SymbolIcon Branch24}" 
+                                       PlaceholderText="Название целевой ветки"/>
+                    
+                    <ui:Button Content="Подобрать" Margin="16,0,0,0"
+                               VerticalContentAlignment="Center"
+                               VerticalAlignment="Stretch"
+                               IsEnabled="{Binding ActualizeViewEnabled}"
+                               Command="{Binding FindCommand}"/>
+                    
+                    <ui:Button Content="Переключить" Margin="8,0,0,0"
+                               VerticalContentAlignment="Center"
+                               VerticalAlignment="Stretch"
+                               IsEnabled="{Binding ActualizeViewEnabled}"
+                               Command="{Binding ProcessCommand}"/>
+                    
+                    <ui:Button ToolTip="Очистить" 
+                               Margin="8,0,0,0"
+                               Icon="{ui:SymbolIcon DeleteDismiss24}"
+                                VerticalContentAlignment="Center"
+                                VerticalAlignment="Stretch"
+                                IsEnabled="{Binding ActualizeViewEnabled}"
+                                Command="{Binding ClearCommand}"
+                               />
+                    
+                    <ui:NumberBox
+                        ToolTip="Количество параллельных потоков" 
+                        Margin="8,0,0,0"
                         IsEnabled="{Binding ActualizeViewEnabled}"
-                        Command="{Binding ProcessCommand}"/>
+                        Icon="{ui:SymbolIcon NumberSymbolSquare24}"
+                        MaxDecimalPlaces="0"
+                        Maximum="{Binding ProcessorCount}"
+                        Minimum="1"
+                        SmallChange="1"
+                        Value="{Binding MaxDegreeOfParallelism, Mode=TwoWay}" />
+                </StackPanel>
             </StackPanel>
         </GroupBox>
         
@@ -96,7 +120,7 @@
                                       HorizontalContentAlignment="Center"
                                       VerticalContentAlignment="Center"
                                       VerticalAlignment="Center"
-                                      IsChecked="{Binding IsChecked}"
+                                      IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                       Visibility="{Binding Visibility, ElementName=SolutionActualizeStatusIcon, Converter={StaticResource InvertVisibilityConverter}}"
                             />
                             

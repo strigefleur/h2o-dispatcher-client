@@ -15,12 +15,15 @@ public partial class BatchRepoCheckoutVm : ObservableObject
     [ObservableProperty] public partial ObservableCollection<SolutionActualizeVm> Solutions { get; set; } = [];
     [ObservableProperty] public partial string BranchName { get; set; } = string.Empty;
     [ObservableProperty] public partial bool ActualizeViewEnabled { get; set; } = true;
-    [ObservableProperty] public partial bool AutoSearch { get; set; } = true;
-    [ObservableProperty] public partial ObservableCollection<string> AutoSuggestBoxSuggestions { get; set; } =
+    [ObservableProperty] public partial int ProcessorCount { get; set; } = Environment.ProcessorCount;
+    [ObservableProperty] public partial int MaxDegreeOfParallelism { get; set; } = Environment.ProcessorCount;
+
+    [ObservableProperty]
+    public partial ObservableCollection<string> AutoSuggestBoxSuggestions { get; set; } =
     [
         "feature/", "bugfix/", "rc", "master", "production", "feature/dev", "feature/catnip", "feature/ECO_H20-"
     ];
-    
+
     public BatchRepoCheckoutVm()
     {
         foreach (var angularSolution in SolutionScanner.AngularSolutions
@@ -33,7 +36,7 @@ public partial class BatchRepoCheckoutVm : ObservableObject
                 Solution = angularSolution
             });
         }
-        
+
         foreach (var angularSolution in SolutionScanner.CsharpSolutions
                      .Where(x => x is { IsCorporate: true })
                      .OrderBy(x => x.IsRunnable)
@@ -45,47 +48,70 @@ public partial class BatchRepoCheckoutVm : ObservableObject
             });
         }
     }
-    
-    private async Task FilterSolutionsWithBranch(CancellationToken ct = default)
+
+    [RelayCommand]
+    private async Task Find(CancellationToken ct = default)
     {
-        var gitlabToken = SecureStorage.LoadApiKey();
-        
-        foreach (var solutionVm in Solutions)
+        if (string.IsNullOrWhiteSpace(BranchName))
+            return;
+
+        ActualizeViewEnabled = false;
+
+        try
         {
-            try
-            {
-                solutionVm.Status = SolutionActualizeStatus.InProgress;
+            var gitlabToken = SecureStorage.LoadApiKey();
 
-                var solutionDir = solutionVm.Solution.Kind == SolutionKind.Angular
-                    ? solutionVm.Solution.Path
-                    : Path.GetDirectoryName(solutionVm.Solution.Path);
+            await Parallel.ForEachAsync(Solutions,
+                new ParallelOptions { CancellationToken = ct, MaxDegreeOfParallelism = MaxDegreeOfParallelism },
+                async (solutionVm, token) =>
+                {
+                    try
+                    {
+                        solutionVm.Status = SolutionActualizeStatus.InProgress;
 
-                using var repo = new Repository(solutionDir);
-                    
-                var branch = repo.Branches[BranchName];
-                if (branch != null)
-                {
-                    solutionVm.IsChecked = true;
-                }
-                else
-                {
-                    var fetchResult = await repo.FetchAsync(gitlabToken, solutionDir, ct);
-                    if (fetchResult.ExitCode != 0)
-                    {
-                        continue;
+                        var solutionDir = solutionVm.Solution.Kind == SolutionKind.Angular
+                            ? solutionVm.Solution.Path
+                            : Path.GetDirectoryName(solutionVm.Solution.Path);
+
+                        using var repo = new Repository(solutionDir);
+
+                        var branch = repo.Branches[BranchName];
+                        if (branch != null)
+                        {
+                            solutionVm.IsChecked = true;
+                        }
+                        else
+                        {
+                            var fetchResult = await repo.FetchAsync(gitlabToken, solutionDir, token);
+                            if (fetchResult.ExitCode == 0)
+                            {
+                                var remoteBranch = repo.Branches[$"origin/{BranchName}"];
+                                if (remoteBranch != null)
+                                {
+                                    solutionVm.IsChecked = true;
+                                }
+                            }
+                        }
                     }
-                    
-                    var remoteBranch = repo.Branches[$"origin/{BranchName}"];
-                    if (remoteBranch != null)
+                    catch (Exception ex)
                     {
-                        solutionVm.IsChecked = true;
+                        Log.Error(ex, "An exception during filter solutions with branch");
                     }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "An exception during filter solutions with branch");
-            }
+                });
+        }
+        finally
+        {
+            ActualizeViewEnabled = true;
+        }
+    }
+
+    [RelayCommand]
+    private void Clear()
+    {
+        foreach (var solution in Solutions)
+        {
+            solution.ResetStatus();
+            solution.IsChecked = false;
         }
     }
 
@@ -94,9 +120,9 @@ public partial class BatchRepoCheckoutVm : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(BranchName))
             return;
-        
+
         ActualizeViewEnabled = false;
-        
+
         foreach (var solution in Solutions)
         {
             solution.ResetStatus();
@@ -104,65 +130,64 @@ public partial class BatchRepoCheckoutVm : ObservableObject
 
         try
         {
-            if (AutoSearch)
-            {
-                await FilterSolutionsWithBranch(ct);
-            }
-            
             var gitlabToken = SecureStorage.LoadApiKey();
-            
-            foreach (var solutionVm in Solutions.Where(x => x.IsChecked))
-            {
-                try
+
+            await Parallel.ForEachAsync(Solutions.Where(x => x.IsChecked),
+                new ParallelOptions { CancellationToken = ct, MaxDegreeOfParallelism = MaxDegreeOfParallelism },
+                async (solutionVm, token) =>
                 {
-                    solutionVm.Status = SolutionActualizeStatus.InProgress;
-
-                    var solutionDir = solutionVm.Solution.Kind == SolutionKind.Angular
-                        ? solutionVm.Solution.Path
-                        : Path.GetDirectoryName(solutionVm.Solution.Path);
-
-                    using var repo = new Repository(solutionDir);
-                    
-                    var branch = repo.Branches[BranchName];
-                    if (branch != null)
+                    try
                     {
-                        if (branch.IsCurrentRepositoryHead)
+                        solutionVm.Status = SolutionActualizeStatus.InProgress;
+
+                        var solutionDir = solutionVm.Solution.Kind == SolutionKind.Angular
+                            ? solutionVm.Solution.Path
+                            : Path.GetDirectoryName(solutionVm.Solution.Path);
+
+                        using var repo = new Repository(solutionDir);
+
+                        var branch = repo.Branches[BranchName];
+                        if (branch != null)
                         {
-                            solutionVm.Status = SolutionActualizeStatus.Skipped;
-                            continue;
-                        }
-                        
-                        Commands.Checkout(repo, branch);
-                        solutionVm.Status = SolutionActualizeStatus.Success;
-                    }
-                    else
-                    { 
-                        var fetchResult = await repo.FetchAsync(gitlabToken, solutionDir, ct);
-                        if (fetchResult.ExitCode != 0)
-                        {
-                            solutionVm.Status = SolutionActualizeStatus.Failed;
-                            continue;
-                        }
-                        
-                        var remoteBranch = repo.Branches[$"origin/{BranchName}"];
-                        if (remoteBranch != null)
-                        {
-                            var localBranch = repo.CreateBranch(BranchName, remoteBranch.Tip);
-                            Commands.Checkout(repo, localBranch);
-                            solutionVm.Status = SolutionActualizeStatus.Success;
+                            if (branch.IsCurrentRepositoryHead)
+                            {
+                                solutionVm.Status = SolutionActualizeStatus.Skipped;
+                            }
+                            else
+                            {
+                                Commands.Checkout(repo, branch);
+                                solutionVm.Status = SolutionActualizeStatus.Success;
+                            }
                         }
                         else
                         {
-                            solutionVm.Status = SolutionActualizeStatus.Failed;
+                            var fetchResult = await repo.FetchAsync(gitlabToken, solutionDir, token);
+                            if (fetchResult.ExitCode != 0)
+                            {
+                                solutionVm.Status = SolutionActualizeStatus.Failed;
+                            }
+                            else
+                            {
+                                var remoteBranch = repo.Branches[$"origin/{BranchName}"];
+                                if (remoteBranch != null)
+                                {
+                                    var localBranch = repo.CreateBranch(BranchName, remoteBranch.Tip);
+                                    Commands.Checkout(repo, localBranch);
+                                    solutionVm.Status = SolutionActualizeStatus.Success;
+                                }
+                                else
+                                {
+                                    solutionVm.Status = SolutionActualizeStatus.Failed;
+                                }
+                            }
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "An exception during solution checkout");
-                    solutionVm.Status = SolutionActualizeStatus.Failed;
-                }
-            }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "An exception during solution checkout");
+                        solutionVm.Status = SolutionActualizeStatus.Failed;
+                    }
+                });
         }
         finally
         {
