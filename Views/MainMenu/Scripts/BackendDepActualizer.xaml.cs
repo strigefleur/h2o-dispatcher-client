@@ -1,0 +1,34 @@
+﻿using System.Windows;
+using System.Windows.Controls;
+using Felweed.ViewModels.MainMenu.Scripts;
+using Microsoft.Extensions.DependencyInjection;
+using Wpf.Ui.Abstractions.Controls;
+
+namespace Felweed.Views.MainMenu.Scripts;
+
+public partial class BackendDepActualizer : UserControl, INavigableView<BackendDepActualizerViewModel>
+{
+    public BackendDepActualizerViewModel ViewModel { get; }
+    
+    public BackendDepActualizer()
+    {
+        InitializeComponent();
+        
+        var viewModel = App.Current.ServiceProvider.GetRequiredService<BackendDepActualizerViewModel>();
+
+        ViewModel = viewModel;
+        DataContext = ViewModel;
+        
+        Loaded += PageLoaded;
+    }
+    
+    private async void PageLoaded(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.InitAsync();
+    }
+    
+    private void ActualizeTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
+    {
+        ActualizeTextBox.ScrollToEnd();
+    }
+}

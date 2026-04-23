@@ -2,7 +2,21 @@
 using System.Windows;
 using Felweed.Services;
 using Felweed.ViewModels;
+using Felweed.ViewModels.MainMenu.About;
+using Felweed.ViewModels.MainMenu.Graph;
+using Felweed.ViewModels.MainMenu.RemoteState;
+using Felweed.ViewModels.MainMenu.Scripts;
+using Felweed.ViewModels.MainMenu.Settings.EnvVariables;
+using Felweed.ViewModels.MainMenu.Settings.MiscSettings;
+using Felweed.ViewModels.MainMenu.SolutionGrid;
 using Felweed.Views;
+using Felweed.Views.MainMenu.About;
+using Felweed.Views.MainMenu.Graph;
+using Felweed.Views.MainMenu.RemoteState;
+using Felweed.Views.MainMenu.Scripts;
+using Felweed.Views.MainMenu.Settings.EnvVariables;
+using Felweed.Views.MainMenu.Settings.MiscSettings;
+using Felweed.Views.MainMenu.SolutionGrid;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Velopack;
@@ -52,6 +66,7 @@ public partial class App : Application
         // Register Windows
         services.AddTransient<MainWindow>();
 
+        // основные разделы
         services.AddTransient<SolutionGridPageViewModel>();
         services.AddTransient<SolutionGridPage>();
 
@@ -60,21 +75,23 @@ public partial class App : Application
 
         services.AddSingleton<RemoteStatePageViewModel>();
         services.AddSingleton<RemoteStatePage>();
+
+        services.AddTransient<GraphPageViewModel>();
+        services.AddTransient<GraphPage>();
+        
+        services.AddTransient<AboutPageViewModel>();
+        services.AddTransient<AboutPage>();
+        
+        // раздел настроек
+        services.AddTransient<EnvVariablesPageViewModel>();
+        services.AddTransient<EnvVariablesPage>();
         
         services.AddTransient<MiscSettingsPageViewModel>();
         services.AddTransient<MiscSettingsPage>();
 
-        services.AddTransient<GraphPageViewModel>();
-        services.AddTransient<GraphPage>();
-
-        services.AddTransient<EnvVariablesPageViewModel>();
-        services.AddTransient<EnvVariablesPage>();
-
-        services.AddTransient<BatchRepoActionViewModel>();
-        services.AddTransient<BatchRepoAction>();
-
-        services.AddTransient<AboutPageViewModel>();
-        services.AddTransient<AboutPage>();
+        // раздел "скриптов"
+        services.AddSingleton<BatchRepoActionViewModel>();
+        services.AddSingleton<BatchRepoAction>();
         
         services.AddSingleton<FrontendDepActualizerViewModel>();
         services.AddSingleton<FrontendDepActualizer>();
@@ -82,8 +99,9 @@ public partial class App : Application
         services.AddSingleton<BackendDepActualizerViewModel>();
         services.AddSingleton<BackendDepActualizer>();
 
-        services.AddTransient<BatchRepoCheckoutVm>();
-        services.AddTransient<BatchRepoCheckout>();
+        services.AddSingleton<BatchRepoCheckoutVm>();
+        services.AddSingleton<BatchRepoCheckout>();
+        
         
         services.AddNavigationViewPageProvider();
         services.AddSingleton<INavigationService, NavigationService>();

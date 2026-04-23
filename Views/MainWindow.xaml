@@ -10,6 +10,14 @@
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance Type=vm:MainViewModel, IsDesignTimeCreatable=True}"
                  xmlns:v="clr-namespace:Felweed.Views"
+                 xmlns:dialogs="clr-namespace:Felweed.Views.Dialogs"
+                 xmlns:solutionGrid="clr-namespace:Felweed.Views.MainMenu.SolutionGrid"
+                 xmlns:remoteState="clr-namespace:Felweed.Views.MainMenu.RemoteState"
+                 xmlns:graph="clr-namespace:Felweed.Views.MainMenu.Graph"
+                 xmlns:scripts="clr-namespace:Felweed.Views.MainMenu.Scripts"
+                 xmlns:envVariables="clr-namespace:Felweed.Views.MainMenu.Settings.EnvVariables"
+                 xmlns:miscSettings="clr-namespace:Felweed.Views.MainMenu.Settings.MiscSettings"
+                 xmlns:about="clr-namespace:Felweed.Views.MainMenu.About"
                  WindowCornerPreference="Round"
                  WindowStartupLocation="CenterScreen"
                  ExtendsContentIntoTitleBar="True"
@@ -78,7 +86,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             
-            <v:SetupDialog DataContext="{Binding SetupDialogViewModel}" HorizontalAlignment="Stretch" />
+            <dialogs:SetupDialog DataContext="{Binding SetupDialogViewModel}" HorizontalAlignment="Stretch" />
             
             <Button Grid.Row="1" Content="Confirm" IsDefault="True"
                     Command="{Binding ConfirmSelectorCommand}"
@@ -111,12 +119,12 @@
                     <ui:NavigationViewItem
                         Content="Список решений"
                         Icon="{ui:SymbolIcon AppsListDetail24}"
-                        TargetPageType="{x:Type v:SolutionGridPage}" />
+                        TargetPageType="{x:Type solutionGrid:SolutionGridPage}" />
                     <ui:NavigationViewItem
                         Content="Gitlab"
                         IsEnabled="False"
                         Icon="{ui:SymbolIcon PlugConnected24}"
-                        TargetPageType="{x:Type v:RemoteStatePage}" />
+                        TargetPageType="{x:Type remoteState:RemoteStatePage}" />
                     <ui:NavigationViewItem
                         Content="Зависимости (DAG)"
                         IsExpanded="True"
@@ -127,7 +135,7 @@
                                 x:Name="BackendGraphPage"
                                 Icon="{ui:SymbolIcon Settings24}"
                                 PreviewMouseUp="BackendGraphPage_OnPreviewMouseUp"
-                                TargetPageType="{x:Type v:GraphPage}"
+                                TargetPageType="{x:Type graph:GraphPage}"
                                 />
                             
                             <ui:NavigationViewItem
@@ -135,14 +143,14 @@
                                 x:Name="FrontendGraphPage"
                                 Icon="{ui:SymbolIcon Library24}"
                                 PreviewMouseUp="FrontendGraphPage_OnPreviewMouseUp"
-                                TargetPageType="{x:Type v:GraphPage}"
+                                TargetPageType="{x:Type graph:GraphPage}"
                                 />
                         </ui:NavigationViewItem.MenuItems>
                     </ui:NavigationViewItem>
                     <ui:NavigationViewItem
                         Content="Скрипты"
                         Icon="{ui:SymbolIcon DocumentPageNumber24}"
-                        TargetPageType="{x:Type v:ScriptPage}" />
+                        TargetPageType="{x:Type scripts:ScriptPage}" />
                     <ui:NavigationViewItem
                         Content="Настройки"
                         IsExpanded="True"
@@ -152,20 +160,20 @@
                                 Content="Переменные окружения"
                                 x:Name="EnvVariablesPage"
                                 Icon="{ui:SymbolIcon Layer24}"
-                                TargetPageType="{x:Type v:EnvVariablesPage}"
+                                TargetPageType="{x:Type envVariables:EnvVariablesPage}"
                             />
                             <ui:NavigationViewItem
                                 Content="Прочее"
                                 x:Name="MiscConfigPage"
                                 Icon="{ui:SymbolIcon SettingsChat24}"
-                                TargetPageType="{x:Type v:MiscSettingsPage}"
+                                TargetPageType="{x:Type miscSettings:MiscSettingsPage}"
                             />
                         </ui:NavigationViewItem.MenuItems>
                     </ui:NavigationViewItem>
                     <ui:NavigationViewItem
                         Content="О программе"
                         Icon="{ui:SymbolIcon Info24}"
-                        TargetPageType="{x:Type v:AboutPage}" />
+                        TargetPageType="{x:Type about:AboutPage}" />
                 </ui:NavigationView.MenuItems>
                 <ui:NavigationView.Header>
                     <ui:HyperlinkButton

@@ -1,6 +1,7 @@
 ﻿using System.Windows.Input;
 using Felweed.Models.Enumerators;
 using Felweed.ViewModels;
+using Felweed.Views.MainMenu.About;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 

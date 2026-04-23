@@ -1,0 +1,129 @@
+﻿<Page x:Class="Felweed.Views.MainMenu.Graph.GraphPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:Felweed.Views"
+      xmlns:vm="clr-namespace:Felweed.ViewModels"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:graph="clr-namespace:Felweed.Models.Graph"
+      xmlns:localConverters="clr-namespace:Felweed.ViewModels.Converters"
+      xmlns:models="clr-namespace:Felweed.Models"
+      xmlns:graph1="clr-namespace:Felweed.ViewModels.MainMenu.Graph"
+      mc:Ignorable="d"
+      d:DataContext="{d:DesignInstance Type=graph1:GraphPageViewModel, IsDesignTimeCreatable=True}"
+      d:DesignHeight="808"
+      d:DesignWidth="880"
+      ScrollViewer.CanContentScroll="False">
+    <Page.Resources>
+        <localConverters:SolutionTypeToIconConverter x:Key="SolutionTypeToIconConverter"/>
+        <localConverters:SolutionTypeToTooltipConverter x:Key="SolutionTypeToTooltipConverter"/>
+        <localConverters:InverseSolutionTypeToVisibilityConverter x:Key="InverseSolutionTypeToVisibilityConverter"/>
+        <localConverters:SolutionKindToPackInvalidateTooltipConverter x:Key="SolutionKindToPackInvalidateTooltipConverter"/>
+        <localConverters:SolutionKindToPackTooltipConverter x:Key="SolutionKindToPackTooltipConverter"/>
+    </Page.Resources>
+    
+    <DockPanel Margin="12">
+
+        <!-- Filter row -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+            <TextBlock VerticalAlignment="Center" Text="Фильтр:" Margin="0,0,8,0"
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+            <ComboBox x:Name="LibFilter"
+                      Width="320"
+                      ItemsSource="{Binding FilterListLibraries}"
+                      SelectionChanged="LibFilter_OnSelectionChanged"
+                      DisplayMemberPath="Name"
+                      IsEditable="True"
+                      IsTextSearchEnabled="True"
+                      TextSearch.TextPath="Name"
+                      StaysOpenOnEdit="True"
+                      SelectedValuePath="Id" />
+
+            <Button Content="Сбросить" Margin="8,0,0,0" Padding="10,4"
+                    Click="ClearFilter_Click"/>
+            
+            <Separator Margin="8,4" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}"/>
+            
+            <Button Margin="0,0,4,0" Padding="8,4" Click="ScrollToTop_Click" ToolTip="Наверх">
+                <ui:SymbolIcon Symbol="ArrowUp24" FontSize="16"/>
+            </Button>
+            
+            <Button Content="Развернуть все" Margin="0,0,4,0" Padding="10,4" Click="ExpandAll_Click"/>
+            
+            <Button Content="Свернуть все" Padding="10,4" Click="CollapseAll_Click"/>
+        </StackPanel>
+
+        <!-- Levels Tree -->
+        <TreeView x:Name="MainTree" VirtualizingStackPanel.IsVirtualizing="True" ItemsSource="{Binding FilteredLevels}">
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+            </TreeView.ItemContainerStyle>
+            <TreeView.Resources>
+
+                <HierarchicalDataTemplate DataType="{x:Type graph1:LevelVm}"
+                                          ItemsSource="{Binding Nodes}">
+                    <TextBlock Text="{Binding Header}" FontWeight="SemiBold"/>
+                </HierarchicalDataTemplate>
+
+                <DataTemplate DataType="{x:Type models:Solution}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" /> <!-- Icon -->
+                            <ColumnDefinition Width="8" />    <!-- Spacing -->
+                            <ColumnDefinition Width="200" />  <!-- Title -->
+                            <ColumnDefinition Width="8" />    <!-- Spacing -->
+                            <ColumnDefinition Width="*" />    <!-- Path (fills remaining space) -->
+                        </Grid.ColumnDefinitions>
+
+                        <ui:SymbolIcon Grid.Column="0"
+                                       Symbol="{Binding Type, Converter={StaticResource SolutionTypeToIconConverter}}" 
+                                       ToolTip="{Binding Type, Converter={StaticResource SolutionTypeToTooltipConverter}}"
+                                       FontSize="18" 
+                                       VerticalAlignment="Center" />
+
+                        <TextBlock Grid.Column="2" 
+                                   Text="{Binding Name}" 
+                                   TextTrimming="CharacterEllipsis"
+                                   TextWrapping="NoWrap"
+                                   VerticalAlignment="Center" />
+
+                        <TextBlock Grid.Column="4" 
+                                   Text="{Binding Path}" 
+                                   Foreground="Gray" 
+                                   FontSize="11" 
+                                   TextTrimming="CharacterEllipsis"
+                                   TextWrapping="NoWrap"
+                                   VerticalAlignment="Center" />
+                        
+                        <Grid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="{Binding Name}" />
+                                <Separator/>
+                                <MenuItem Header="Упаковать"
+                                          Icon="{ui:SymbolIcon Apps24}"
+                                          ToolTip="{Binding Kind, Converter={StaticResource SolutionKindToPackTooltipConverter}}"
+                                          Visibility="{Binding Type, Converter={StaticResource InverseSolutionTypeToVisibilityConverter}}"
+                                          Command="{Binding DataContext.PackSolutionCommand, RelativeSource={RelativeSource AncestorType=DockPanel}}"
+                                          CommandParameter="{Binding}"
+                                          Cursor="Hand"/>
+                                <MenuItem Header="Отменить упаковку"
+                                          Icon="{ui:SymbolIcon UninstallApp24}"
+                                          ToolTip="{Binding Kind, Converter={StaticResource SolutionKindToPackInvalidateTooltipConverter}}"
+                                          Visibility="{Binding Type, Converter={StaticResource InverseSolutionTypeToVisibilityConverter}}"
+                                          Command="{Binding DataContext.InvalidateLibraryCacheCommand, RelativeSource={RelativeSource AncestorType=DockPanel}}"
+                                          CommandParameter="{Binding}"
+                                          Cursor="Hand"/>
+                            </ContextMenu>
+                        </Grid.ContextMenu>
+                    </Grid>
+                </DataTemplate>
+
+            </TreeView.Resources>
+        </TreeView>
+
+    </DockPanel>
+</Page>

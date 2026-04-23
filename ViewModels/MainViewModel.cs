@@ -10,17 +10,22 @@ namespace Felweed.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    public SetupDialogViewModel SetupDialogViewModel { get; } = new();
-    
-    [ObservableProperty] private bool _isLoading;
-    [ObservableProperty] private bool _isSelector;
-    [ObservableProperty] private bool _isLoaded;
-    
-    [ObservableProperty] private SymbolRegular _themeSwitchIcon = ConfigurationService.LoadConfig().ThemeSwitchIcon;
-    
-    // TODO
-    [ObservableProperty] private bool _showPublicDependencies;
+    public Dialogs.SetupDialogViewModel SetupDialogViewModel { get; } = new();
 
+    [ObservableProperty]
+    public partial bool IsLoading { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsSelector { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsLoaded { get; set; }
+
+    [ObservableProperty] private SymbolRegular _themeSwitchIcon = ConfigurationService.LoadConfig().ThemeSwitchIcon;
+
+    // TODO
+    [ObservableProperty]
+    public partial bool ShowPublicDependencies { get; set; }
     public static SolutionKind GraphPageSelector { get; set; } = SolutionKind.CSharp;
     
     partial void OnThemeSwitchIconChanged(SymbolRegular oldValue, SymbolRegular newValue)

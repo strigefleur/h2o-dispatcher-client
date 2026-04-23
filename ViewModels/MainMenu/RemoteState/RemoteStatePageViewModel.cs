@@ -1,0 +1,69 @@
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Felweed.Extensions;
+using Felweed.Models;
+using Felweed.Models.Digestion;
+using Felweed.Services;
+
+namespace Felweed.ViewModels.MainMenu.RemoteState;
+
+public partial class RemoteStatePageViewModel : ObservableObject, IAsyncDisposable
+{
+    [ObservableProperty]
+    public partial bool IsConnecting { get; set; } = true;
+
+    [ObservableProperty]
+    public partial bool IsConnected { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsError { get; set; }
+
+    [ObservableProperty]
+    public partial string? Error { get; set; }
+
+    [ObservableProperty]
+    public partial CobwebState? State { get; set; }
+
+    [ObservableProperty]
+    private ObservableCollection<Solution> _solutions = [];
+
+    public async Task ConnectAsync()
+    {
+        Error = await HubConnector.InitAsync(OnFullState);
+
+        IsConnecting = false;
+        
+        if (Error == null)
+        {
+            IsConnected = true;
+        }
+        else
+        {
+            IsError = true;
+        }
+    }
+
+    private void OnFullState(byte[] data)
+    {
+        State = data.CobwebDecompress<CobwebState>();
+
+        foreach (var solution in SolutionScanner.AngularSolutions)
+        {
+            solution.BindToCobwebProject(Enumerable.SingleOrDefault<CobwebProject>(State.Projects, x => x.HttpUrl == solution.GitOriginUrl));
+        }
+        
+        foreach (var solution in SolutionScanner.CsharpSolutions)
+        {
+            solution.BindToCobwebProject(Enumerable.SingleOrDefault<CobwebProject>(State.Projects, x => x.HttpUrl == solution.GitOriginUrl));
+        }
+        
+        List<Solution> solutions = [..SolutionScanner.CsharpSolutions, ..SolutionScanner.AngularSolutions];
+
+        Solutions = new ObservableCollection<Solution>(solutions.OrderByDescending(x => x.Type));
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        await HubConnector.CleanupConnectionAsync();
+    }
+}
