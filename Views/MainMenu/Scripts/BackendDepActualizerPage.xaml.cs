@@ -6,15 +6,15 @@ using Wpf.Ui.Abstractions.Controls;
 
 namespace Felweed.Views.MainMenu.Scripts;
 
-public partial class BackendDepActualizer : UserControl, INavigableView<BackendDepActualizerViewModel>
+public partial class BackendDepActualizerPage : UserControl, INavigableView<BackendDepActualizerPageVm>
 {
-    public BackendDepActualizerViewModel ViewModel { get; }
+    public BackendDepActualizerPageVm ViewModel { get; }
     
-    public BackendDepActualizer()
+    public BackendDepActualizerPage()
     {
         InitializeComponent();
         
-        var viewModel = App.Current.ServiceProvider.GetRequiredService<BackendDepActualizerViewModel>();
+        var viewModel = App.Current.ServiceProvider.GetRequiredService<BackendDepActualizerPageVm>();
 
         ViewModel = viewModel;
         DataContext = ViewModel;

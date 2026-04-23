@@ -5,15 +5,15 @@ using Wpf.Ui.Abstractions.Controls;
 
 namespace Felweed.Views.MainMenu.Scripts;
 
-public partial class FrontendDepActualizer : UserControl, INavigableView<FrontendDepActualizerViewModel>
+public partial class FrontendDepActualizerPage : UserControl, INavigableView<FrontendDepActualizerPageVm>
 {
-    public FrontendDepActualizerViewModel ViewModel { get; }
+    public FrontendDepActualizerPageVm ViewModel { get; }
     
-    public FrontendDepActualizer()
+    public FrontendDepActualizerPage()
     {
         InitializeComponent();
         
-        var viewModel = App.Current.ServiceProvider.GetRequiredService<FrontendDepActualizerViewModel>();
+        var viewModel = App.Current.ServiceProvider.GetRequiredService<FrontendDepActualizerPageVm>();
 
         ViewModel = viewModel;
         DataContext = ViewModel;

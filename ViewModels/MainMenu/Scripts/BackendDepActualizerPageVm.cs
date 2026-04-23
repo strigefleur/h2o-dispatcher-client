@@ -11,7 +11,7 @@ using Serilog;
 
 namespace Felweed.ViewModels.MainMenu.Scripts;
 
-public partial class BackendDepActualizerViewModel : ObservableObject
+public partial class BackendDepActualizerPageVm : ObservableObject
 {
     [ObservableProperty]
     public partial bool? IsInitialized { get; set; }
@@ -40,7 +40,7 @@ public partial class BackendDepActualizerViewModel : ObservableObject
 
     private CancellationTokenSource? _actualizationCts;
     
-    public BackendDepActualizerViewModel()
+    public BackendDepActualizerPageVm()
     {
         foreach (var csharpSolution in SolutionScanner.CsharpSolutions
                      .Where(x => x is { IsCorporate: true })

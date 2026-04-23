@@ -7,7 +7,7 @@ using LibGit2Sharp;
 
 namespace Felweed.ViewModels.MainMenu.Scripts;
 
-public partial class BatchRepoActionViewModel : ObservableObject
+public partial class BatchRepoTextReplacePageVm : ObservableObject
 {
     [ObservableProperty]
     public partial bool BackendOnly { get; set; }

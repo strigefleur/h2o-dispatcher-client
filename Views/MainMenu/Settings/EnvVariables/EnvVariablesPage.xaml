@@ -4,15 +4,13 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-      xmlns:local="clr-namespace:Felweed.Views"
-      xmlns:vm="clr-namespace:Felweed.ViewModels"
       xmlns:envVariables="clr-namespace:Felweed.ViewModels.MainMenu.Settings.EnvVariables"
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance Type=envVariables:EnvVariablesPageViewModel, IsDesignTimeCreatable=True}"
       d:DesignHeight="808"
       d:DesignWidth="880"
       Title="EnvVariablesPage">
-    <Grid>
+    <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>

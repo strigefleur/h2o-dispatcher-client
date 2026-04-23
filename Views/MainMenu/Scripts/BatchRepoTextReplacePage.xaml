@@ -1,17 +1,15 @@
-﻿<UserControl x:Class="Felweed.Views.MainMenu.Scripts.BatchRepoAction"
+﻿<UserControl x:Class="Felweed.Views.MainMenu.Scripts.BatchRepoTextReplacePage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:Felweed.Views"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-             xmlns:vm="clr-namespace:Felweed.ViewModels"
              xmlns:scripts="clr-namespace:Felweed.ViewModels.MainMenu.Scripts"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance Type=scripts:BatchRepoActionViewModel, IsDesignTimeCreatable=True}"
+             d:DataContext="{d:DesignInstance Type=scripts:BatchRepoTextReplacePageVm, IsDesignTimeCreatable=True}"
              d:DesignHeight="808"
              d:DesignWidth="880">
-    <StackPanel Orientation="Vertical" Margin="8">
+    <StackPanel Orientation="Vertical" Margin="16">
         <ui:TextBlock Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
                       Margin="0, 8, 0, 0">
             Замена текста в указанном файле с искомого на целевой в каждом репозитории, где найдется совпадение

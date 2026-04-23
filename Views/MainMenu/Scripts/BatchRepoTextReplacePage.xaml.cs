@@ -5,15 +5,15 @@ using Wpf.Ui.Abstractions.Controls;
 
 namespace Felweed.Views.MainMenu.Scripts;
 
-public partial class BatchRepoCheckout : UserControl, INavigableView<BatchRepoCheckoutVm>
+public partial class BatchRepoTextReplacePage : UserControl, INavigableView<BatchRepoTextReplacePageVm>
 {
-    public BatchRepoCheckoutVm ViewModel { get; }
+    public BatchRepoTextReplacePageVm ViewModel { get; }
     
-    public BatchRepoCheckout()
+    public BatchRepoTextReplacePage()
     {
         InitializeComponent();
         
-        var viewModel = App.Current.ServiceProvider.GetRequiredService<BatchRepoCheckoutVm>();
+        var viewModel = App.Current.ServiceProvider.GetRequiredService<BatchRepoTextReplacePageVm>();
 
         ViewModel = viewModel;
         DataContext = ViewModel;

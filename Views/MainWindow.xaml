@@ -2,14 +2,12 @@
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-                 xmlns:localConverters="clr-namespace:Felweed.ViewModels.Converters"
                  xmlns:vm="clr-namespace:Felweed.ViewModels"
                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance Type=vm:MainViewModel, IsDesignTimeCreatable=True}"
-                 xmlns:v="clr-namespace:Felweed.Views"
                  xmlns:dialogs="clr-namespace:Felweed.Views.Dialogs"
                  xmlns:solutionGrid="clr-namespace:Felweed.Views.MainMenu.SolutionGrid"
                  xmlns:remoteState="clr-namespace:Felweed.Views.MainMenu.RemoteState"
@@ -127,7 +125,6 @@
                         TargetPageType="{x:Type remoteState:RemoteStatePage}" />
                     <ui:NavigationViewItem
                         Content="Зависимости (DAG)"
-                        IsExpanded="True"
                         Icon="{ui:SymbolIcon Link24}">
                         <ui:NavigationViewItem.MenuItems>
                             <ui:NavigationViewItem
@@ -149,11 +146,33 @@
                     </ui:NavigationViewItem>
                     <ui:NavigationViewItem
                         Content="Скрипты"
-                        Icon="{ui:SymbolIcon DocumentPageNumber24}"
-                        TargetPageType="{x:Type scripts:ScriptPage}" />
+                        IsExpanded="True"
+                        Icon="{ui:SymbolIcon DocumentPageNumber24}">
+                        <ui:NavigationViewItem.MenuItems>
+                            <ui:NavigationViewItem
+                                Content="Переключение веток"
+                                Icon="{ui:SymbolIcon Branch24}"
+                                TargetPageType="{x:Type scripts:BatchRepoCheckoutPage}"
+                            />
+                            <ui:NavigationViewItem
+                                Content="Замена текста"
+                                Icon="{ui:SymbolIcon DocumentEdit24}"
+                                TargetPageType="{x:Type scripts:BatchRepoTextReplacePage}"
+                            />
+                            <ui:NavigationViewItem
+                                Content="Актуализация: фронтенд"
+                                Icon="{ui:SymbolIcon Braces24}"
+                                TargetPageType="{x:Type scripts:FrontendDepActualizerPage}"
+                            />
+                            <ui:NavigationViewItem
+                                Content="Актуализация: бэкенд"
+                                Icon="{ui:SymbolIcon Server24}"
+                                TargetPageType="{x:Type scripts:BackendDepActualizerPage}"
+                            />
+                        </ui:NavigationViewItem.MenuItems>
+                    </ui:NavigationViewItem>
                     <ui:NavigationViewItem
                         Content="Настройки"
-                        IsExpanded="True"
                         Icon="{ui:SymbolIcon Settings24}">
                         <ui:NavigationViewItem.MenuItems>
                             <ui:NavigationViewItem

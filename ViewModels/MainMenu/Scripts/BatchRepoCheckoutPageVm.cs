@@ -10,7 +10,7 @@ using Serilog;
 
 namespace Felweed.ViewModels.MainMenu.Scripts;
 
-public partial class BatchRepoCheckoutVm : ObservableObject
+public partial class BatchRepoCheckoutPageVm : ObservableObject
 {
     [ObservableProperty] public partial ObservableCollection<SolutionActualizeVm> Solutions { get; set; } = [];
     [ObservableProperty] public partial string BranchName { get; set; } = string.Empty;
@@ -24,7 +24,7 @@ public partial class BatchRepoCheckoutVm : ObservableObject
         "feature/", "bugfix/", "rc", "master", "production", "feature/dev", "feature/catnip", "feature/ECO_H20-"
     ];
 
-    public BatchRepoCheckoutVm()
+    public BatchRepoCheckoutPageVm()
     {
         foreach (var angularSolution in SolutionScanner.AngularSolutions
                      .Where(x => x is { IsCorporate: true })

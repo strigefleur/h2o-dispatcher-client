@@ -70,9 +70,6 @@ public partial class App : Application
         services.AddTransient<SolutionGridPageViewModel>();
         services.AddTransient<SolutionGridPage>();
 
-        services.AddTransient<ScriptPageViewModel>();
-        services.AddTransient<ScriptPage>();
-
         services.AddSingleton<RemoteStatePageViewModel>();
         services.AddSingleton<RemoteStatePage>();
 
@@ -90,17 +87,17 @@ public partial class App : Application
         services.AddTransient<MiscSettingsPage>();
 
         // раздел "скриптов"
-        services.AddSingleton<BatchRepoActionViewModel>();
-        services.AddSingleton<BatchRepoAction>();
+        services.AddSingleton<BatchRepoTextReplacePageVm>();
+        services.AddSingleton<BatchRepoTextReplacePage>();
         
-        services.AddSingleton<FrontendDepActualizerViewModel>();
-        services.AddSingleton<FrontendDepActualizer>();
+        services.AddSingleton<FrontendDepActualizerPageVm>();
+        services.AddSingleton<FrontendDepActualizerPage>();
         
-        services.AddSingleton<BackendDepActualizerViewModel>();
-        services.AddSingleton<BackendDepActualizer>();
+        services.AddSingleton<BackendDepActualizerPageVm>();
+        services.AddSingleton<BackendDepActualizerPage>();
 
-        services.AddSingleton<BatchRepoCheckoutVm>();
-        services.AddSingleton<BatchRepoCheckout>();
+        services.AddSingleton<BatchRepoCheckoutPageVm>();
+        services.AddSingleton<BatchRepoCheckoutPage>();
         
         
         services.AddNavigationViewPageProvider();

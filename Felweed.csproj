@@ -48,16 +48,16 @@
       <Page Update="Views\MainMenu\RemoteState\RemoteStatePage.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
-      <Page Update="Views\MainMenu\Scripts\BackendDepActualizer.xaml">
+      <Page Update="Views\MainMenu\Scripts\BackendDepActualizerPage.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
-      <Page Update="Views\MainMenu\Scripts\BatchRepoAction.xaml">
+      <Page Update="Views\MainMenu\Scripts\BatchRepoTextReplacePage.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
-      <Page Update="Views\MainMenu\Scripts\BatchRepoCheckout.xaml">
+      <Page Update="Views\MainMenu\Scripts\BatchRepoCheckoutPage.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
-      <Page Update="Views\MainMenu\Scripts\FrontendDepActualizer.xaml">
+      <Page Update="Views\MainMenu\Scripts\FrontendDepActualizerPage.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
       <Page Update="Views\MainMenu\Settings\EnvVariables\EnvVariablesPage.xaml">
@@ -81,11 +81,6 @@
         <SubType>Designer</SubType>
       </Page>
       <Page Update="Views\Dialogs\SetupDialog.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
-      <Page Update="Views\MainMenu\Scripts\ScriptPage.xaml">
         <Generator>MSBuild:Compile</Generator>
         <XamlRuntime>Wpf</XamlRuntime>
         <SubType>Designer</SubType>

@@ -14,7 +14,7 @@ using Serilog;
 
 namespace Felweed.ViewModels.MainMenu.Scripts;
 
-public partial class FrontendDepActualizerViewModel : ObservableObject
+public partial class FrontendDepActualizerPageVm : ObservableObject
 {
     [ObservableProperty] public partial ObservableCollection<SolutionActualizeVm> ActualizeSolutions { get; set; } = [];
 
@@ -30,7 +30,7 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
 
     private CancellationTokenSource? _actualizationCts;
 
-    public FrontendDepActualizerViewModel()
+    public FrontendDepActualizerPageVm()
     {
         foreach (var angularSolution in SolutionScanner.AngularSolutions
                      .Where(x => x is { IsCorporate: true })
