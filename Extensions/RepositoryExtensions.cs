@@ -1,4 +1,5 @@
-﻿using LibGit2Sharp;
+﻿using CliWrap;
+using LibGit2Sharp;
 using NuGet.Versioning;
 
 namespace Felweed.Extensions;
@@ -25,9 +26,38 @@ public static class RepositoryExtensions
             return latestTag?.Version?.ToString();
         }
 
-        public string? GetRemote()
+        public string? GetRemoteUrl()
         {
             return repo.Network.Remotes["origin"]?.Url;
+        }
+
+        public string? GetAuthenticatedRemoteUrl(string gitlabToken)
+        {
+            var cleanUrl = repo.GetRemoteUrl()?.Replace("https://", "");
+
+            return cleanUrl == null ? null : $"https://oauth2:{gitlabToken}@{cleanUrl}";
+        }
+
+        public Task<CommandResult> FetchAsync(string gitlabToken, string solutionDir, CancellationToken ct = default)
+        {
+            // ошибка проверки отзыва сертификата при работе через библиотеку
+            // var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
+            // Commands.Fetch(repo, remote.Name, refSpecs, null, "");
+                    
+            var args = new List<string>
+            {
+                "-c", "http.schannelCheckRevoke=false",
+                "fetch",
+                repo.GetAuthenticatedRemoteUrl(gitlabToken),
+                "+refs/heads/*:refs/remotes/origin/*",
+                "refs/tags/*:refs/tags/*"
+            };
+                    
+            return Cli.Wrap("git")
+                .WithArguments(args)
+                .WithWorkingDirectory(solutionDir)
+                .WithValidation(CommandResultValidation.None)
+                .ExecuteAsync(ct);
         }
     }
 }

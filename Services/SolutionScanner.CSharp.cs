@@ -91,7 +91,7 @@ public static partial class SolutionScanner
             Path = slnPath,
             PackageId = $"{Constants.PrefixConst.CSharpCorporateL0Prefix}.{nugetPackageNamePart}",
             Type = GitlabConfigHelper.GetProjectType(Path.Combine(slnDir, ".gitlab-ci.yml")),
-            GitOriginUrl = repo.GetRemote(),
+            GitOriginUrl = repo.GetRemoteUrl(),
             LatestSyncDate = GitHelper.GetLastGitSyncDate(slnDir),
             IsCorporate = isCorporate
         };

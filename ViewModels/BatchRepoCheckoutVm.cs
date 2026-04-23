@@ -1,8 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
-using CliWrap;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Felweed.Extensions;
 using Felweed.Models.Enumerators;
 using Felweed.Services;
 using LibGit2Sharp;
@@ -15,6 +15,7 @@ public partial class BatchRepoCheckoutVm : ObservableObject
     [ObservableProperty] public partial ObservableCollection<SolutionActualizeVm> Solutions { get; set; } = [];
     [ObservableProperty] public partial string BranchName { get; set; } = string.Empty;
     [ObservableProperty] public partial bool ActualizeViewEnabled { get; set; } = true;
+    [ObservableProperty] public partial bool AutoSearch { get; set; } = true;
     [ObservableProperty] public partial ObservableCollection<string> AutoSuggestBoxSuggestions { get; set; } =
     [
         "feature/", "bugfix/", "rc", "master", "production", "feature/dev", "feature/catnip", "feature/ECO_H20-"
@@ -44,9 +45,52 @@ public partial class BatchRepoCheckoutVm : ObservableObject
             });
         }
     }
+    
+    private async Task FilterSolutionsWithBranch(CancellationToken ct = default)
+    {
+        var gitlabToken = SecureStorage.LoadApiKey();
+        
+        foreach (var solutionVm in Solutions)
+        {
+            try
+            {
+                solutionVm.Status = SolutionActualizeStatus.InProgress;
+
+                var solutionDir = solutionVm.Solution.Kind == SolutionKind.Angular
+                    ? solutionVm.Solution.Path
+                    : Path.GetDirectoryName(solutionVm.Solution.Path);
+
+                using var repo = new Repository(solutionDir);
+                    
+                var branch = repo.Branches[BranchName];
+                if (branch != null)
+                {
+                    solutionVm.IsChecked = true;
+                }
+                else
+                {
+                    var fetchResult = await repo.FetchAsync(gitlabToken, solutionDir, ct);
+                    if (fetchResult.ExitCode != 0)
+                    {
+                        continue;
+                    }
+                    
+                    var remoteBranch = repo.Branches[$"origin/{BranchName}"];
+                    if (remoteBranch != null)
+                    {
+                        solutionVm.IsChecked = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An exception during filter solutions with branch");
+            }
+        }
+    }
 
     [RelayCommand]
-    private async void Process()
+    private async Task Process(CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(BranchName))
             return;
@@ -60,6 +104,11 @@ public partial class BatchRepoCheckoutVm : ObservableObject
 
         try
         {
+            if (AutoSearch)
+            {
+                await FilterSolutionsWithBranch(ct);
+            }
+            
             var gitlabToken = SecureStorage.LoadApiKey();
             
             foreach (var solutionVm in Solutions.Where(x => x.IsChecked))
@@ -88,29 +137,7 @@ public partial class BatchRepoCheckoutVm : ObservableObject
                     }
                     else
                     { 
-                        var remote = repo.Network.Remotes["origin"];
-                        
-                        // ошибка проверки отзыва сертификата при работе через библиотеку
-                        // var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
-                        // Commands.Fetch(repo, remote.Name, refSpecs, null, "");
-                        
-                        var cleanUrl = remote.Url.Replace("https://", "");
-                        
-                        var args = new List<string>
-                        {
-                            "-c", "http.schannelCheckRevoke=false",
-                            "fetch",
-                            $"https://oauth2:{gitlabToken}@{cleanUrl}",
-                            "+refs/heads/*:refs/remotes/origin/*",
-                            "refs/tags/*:refs/tags/*"
-                        };
-                        
-                        var fetchResult = await Cli.Wrap("git")
-                            .WithArguments(args)
-                            .WithWorkingDirectory(solutionDir)
-                            .WithValidation(CommandResultValidation.None)
-                            .ExecuteAsync();
-                        
+                        var fetchResult = await repo.FetchAsync(gitlabToken, solutionDir, ct);
                         if (fetchResult.ExitCode != 0)
                         {
                             solutionVm.Status = SolutionActualizeStatus.Failed;

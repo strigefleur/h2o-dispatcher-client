@@ -61,7 +61,7 @@ public static partial class SolutionScanner
             Path = angularDir,
             PackageId = name,
             Type = GitlabConfigHelper.GetProjectType(Path.Combine(angularDir, ".gitlab-ci.yml")),
-            GitOriginUrl = repo.GetRemote(),
+            GitOriginUrl = repo.GetRemoteUrl(),
             LatestSyncDate = GitHelper.GetLastGitSyncDate(angularDir),
             IsCorporate = name.StartsWith(Constants.PrefixConst.AngularCorporateL0Prefix)
         };

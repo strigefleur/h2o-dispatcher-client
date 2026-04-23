@@ -42,6 +42,10 @@
                                    Icon="{ui:SymbolIcon Branch24}" 
                                    PlaceholderText="Название целевой ветки"/>
                 
+                <CheckBox Content="Автопоиск"
+                          IsEnabled="{Binding ActualizeViewEnabled}"
+                          IsChecked="{Binding AutoSearch}"/>
+                
                 <Button Content="Переключить" Margin="16,0,0,0"
                         VerticalContentAlignment="Center"
                         VerticalAlignment="Stretch"

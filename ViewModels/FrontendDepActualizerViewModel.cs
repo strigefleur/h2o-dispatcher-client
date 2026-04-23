@@ -189,7 +189,7 @@ public partial class FrontendDepActualizerViewModel : ObservableObject
                     string authUrl;
                     using (var prePullRepo = new Repository(solution.Path))
                     {
-                        var remote = prePullRepo.GetRemote();
+                        var remote = prePullRepo.GetRemoteUrl();
                         var cleanUrl = remote.Replace("https://", "");
                         authUrl = $"https://oauth2:{gitlabToken}@{cleanUrl}";
                     }
