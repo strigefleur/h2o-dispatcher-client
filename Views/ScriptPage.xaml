@@ -27,6 +27,21 @@
                       HorizontalAlignment="Center" />
         
         <TabControl Margin="8" Visibility="{Binding IsInit, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <TabItem ToolTip="Массовое переключение веток">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="WindowMultiple20" />
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="Branch24" />
+                    </StackPanel>
+                </TabItem.Header>
+                
+                <TabItem.ContentTemplate>
+                    <DataTemplate>
+                        <local:BatchRepoCheckout/>
+                    </DataTemplate>
+                </TabItem.ContentTemplate>
+            </TabItem>
+            
             <TabItem ToolTip="Актуализировать зависимости (фронт)">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">

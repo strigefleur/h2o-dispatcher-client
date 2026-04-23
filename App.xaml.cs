@@ -81,6 +81,9 @@ public partial class App : Application
         
         services.AddSingleton<BackendDepActualizerViewModel>();
         services.AddSingleton<BackendDepActualizer>();
+
+        services.AddTransient<BatchRepoCheckoutVm>();
+        services.AddTransient<BatchRepoCheckout>();
         
         services.AddNavigationViewPageProvider();
         services.AddSingleton<INavigationService, NavigationService>();
