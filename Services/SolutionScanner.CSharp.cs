@@ -29,7 +29,11 @@ public static partial class SolutionScanner
                 {
                     foreach (var file in dir.EnumerateFilesWithExclusions(allowedPrefixes, "*.sln"))
                     {
-                        await channel.Writer.WriteAsync(file, ct);
+                        var slnDir = Path.GetDirectoryName(file);
+                        if (File.Exists(Path.Combine(slnDir, ".gitlab-ci.yml")))
+                        {
+                            await channel.Writer.WriteAsync(file, ct);
+                        }
                     }
                 }
             }
