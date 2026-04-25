@@ -19,7 +19,7 @@
         <localConverters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
         <localConverters:SolutionTypeToIconConverter x:Key="SolutionTypeToIconConverter"/>
         <localConverters:SolutionTypeToTooltipConverter x:Key="SolutionTypeToTooltipConverter"/>
-        <localConverters:GitlabJobStatusToIconConverter x:Key="GitlabJobStatusToIconConverter"/>
+        <localConverters:CobwebTagToIconConverter x:Key="GitlabJobStatusToIconConverter"/>
         <localConverters:SolutionOutdatedToColorConverter x:Key="SolutionOutdatedToColorConverter"/>
         <localConverters:SolutionKindToWatermarkTextConverter x:Key="SolutionKindToWatermarkTextConverter"/>
     </Page.Resources>
@@ -77,6 +77,14 @@
                                                        HorizontalAlignment="Center" 
                                                        VerticalAlignment="Center"
                                                        IsHitTestVisible="False"/>
+                                            
+                                            <ui:SymbolIcon Symbol="{Binding Type, Converter={StaticResource SolutionTypeToIconConverter}}" 
+                                                           FontSize="12"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                           Margin="0,0,0,2"
+                                                           VerticalAlignment="Bottom"
+                                                           HorizontalAlignment="Right"
+                                                           Opacity="0.5" />
                                         </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -85,14 +93,7 @@
                             <DataGridTemplateColumn Header="Name" Width="*" IsReadOnly="True">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Grid Background="Transparent" VerticalAlignment="Stretch">
-                                            <ui:SymbolIcon Symbol="{Binding Type, Converter={StaticResource SolutionTypeToIconConverter}}" 
-                                                           ToolTip="{Binding Type, Converter={StaticResource SolutionTypeToTooltipConverter}}"
-                                                           FontSize="24"
-                                                           Foreground="Gray"
-                                                           HorizontalAlignment="Left"
-                                                           Opacity="0.3" />
-                                            
+                                        <Grid Background="Transparent" VerticalAlignment="Bottom">
                                             <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" Padding="12,0,0,0" />
                                         </Grid>
                                     </DataTemplate>
@@ -195,7 +196,7 @@
                                                             Height="16"
                                                             Margin="0,2,8,0"
                                                             VerticalAlignment="Center"
-                                                            Source="{Binding LatestPublishStatus, Converter={StaticResource GitlabJobStatusToIconConverter}}" />
+                                                            Source="{Binding ., Converter={StaticResource GitlabJobStatusToIconConverter}}" />
                                                     </DataTemplate>
                                                 </DataGridTemplateColumn.CellTemplate>
                                             </DataGridTemplateColumn>

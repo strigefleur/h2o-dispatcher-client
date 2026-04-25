@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Felweed.Models.Enumerators;
 using Felweed.Services;
+using Microsoft.AspNetCore.SignalR.Client;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -21,12 +22,26 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsLoaded { get; set; }
 
-    [ObservableProperty] private SymbolRegular _themeSwitchIcon = ConfigurationService.LoadConfig().ThemeSwitchIcon;
+    [ObservableProperty]
+    public partial SymbolRegular ThemeSwitchIcon { get; set; } = ConfigurationService.LoadConfig().ThemeSwitchIcon;
+
+    [ObservableProperty] public partial HubConnectionState ConnectionState { get; set; }
 
     // TODO
     [ObservableProperty]
     public partial bool ShowPublicDependencies { get; set; }
     public static SolutionKind GraphPageSelector { get; set; } = SolutionKind.CSharp;
+
+    public MainViewModel()
+    {
+        ConnectionState = HubConnector.Connection?.State ?? HubConnectionState.Disconnected;
+        HubConnector.StateChanged += OnSignalRStateChanged;
+    }
+    
+    private void OnSignalRStateChanged(HubConnectionState newState)
+    {
+        App.Current.Dispatcher.Invoke(() => ConnectionState = newState);
+    }
     
     partial void OnThemeSwitchIconChanged(SymbolRegular oldValue, SymbolRegular newValue)
     {

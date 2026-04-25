@@ -8,4 +8,5 @@ public sealed record CobwebTag
     public required string AuthorUsername { get; init; }
     public required DateTime CreatedAt { get; init; }
     public required JobStatus? LatestPublishStatus { get; init; }
+    public required bool? AllowFailure { get; init; }
 }

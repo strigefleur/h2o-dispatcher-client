@@ -10,7 +10,9 @@ namespace Felweed.Services;
 
 public static class HubConnector
 {
-    private static HubConnection? _connection;
+    public static HubConnection? Connection { get; private set; }
+    
+    public static event Action<HubConnectionState>? StateChanged;
 
     public static async Task<string?> InitAsync(Action<byte[]> onFullState)
     {
@@ -22,9 +24,9 @@ public static class HubConnector
 
         try
         {
-            if (_connection == null)
+            if (Connection == null)
             {
-                _connection = new HubConnectionBuilder()
+                Connection = new HubConnectionBuilder()
                     .WithUrl(hubUrl, o =>
                     {
                         o.Transports = HttpTransportType.WebSockets;
@@ -40,13 +42,17 @@ public static class HubConnector
                     .WithAutomaticReconnect()
                     .Build();
                 
-                _connection.On(SignalrConst.Events.OnFullState, onFullState);
+                Connection.On(SignalrConst.Events.OnFullState, onFullState);
+                
+                Connection.Reconnecting += (e) => Notify(HubConnectionState.Reconnecting);
+                Connection.Reconnected += (id) => Notify(HubConnectionState.Connected);
+                Connection.Closed += (e) => Notify(HubConnectionState.Disconnected);
             }
 
-            if (_connection.State == HubConnectionState.Disconnected)
+            if (Connection.State == HubConnectionState.Disconnected)
             {
-                await _connection.StartAsync();
-                await _connection.InvokeAsync(SignalrConst.Methods.Subscribe);
+                await Connection.StartAsync();
+                await Notify(HubConnectionState.Connected);
             }
         }
         catch (Exception ex)
@@ -58,14 +64,20 @@ public static class HubConnector
         return null;
     }
     
+    private static Task Notify(HubConnectionState state)
+    {
+        StateChanged?.Invoke(state);
+        return Task.CompletedTask;
+    }
+    
     public static async Task CleanupConnectionAsync()
     {
-        if (_connection != null)
+        if (Connection != null)
         {
             try
             {
                 // Explicitly stop the network traffic first
-                await _connection.StopAsync(); 
+                await Connection.StopAsync(); 
             }
             catch (Exception ex)
             {
@@ -73,7 +85,7 @@ public static class HubConnector
             }
             finally
             {
-                await _connection.DisposeAsync();
+                await Connection.DisposeAsync();
             }
         }
     }

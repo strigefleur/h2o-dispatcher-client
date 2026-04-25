@@ -6,9 +6,4 @@ public static class SignalrConst
     {
         public const string OnFullState = nameof(OnFullState);
     }
-    
-    public static class Methods
-    {
-        public const string Subscribe = nameof(Subscribe);
-    }
 }

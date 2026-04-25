@@ -16,6 +16,7 @@
                  xmlns:envVariables="clr-namespace:Felweed.Views.MainMenu.Settings.EnvVariables"
                  xmlns:miscSettings="clr-namespace:Felweed.Views.MainMenu.Settings.MiscSettings"
                  xmlns:about="clr-namespace:Felweed.Views.MainMenu.About"
+                 xmlns:converters="clr-namespace:Felweed.ViewModels.Converters"
                  WindowCornerPreference="Round"
                  WindowStartupLocation="CenterScreen"
                  ExtendsContentIntoTitleBar="True"
@@ -26,6 +27,7 @@
                  Width="1200">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:ConnectionStateToBrushConverter x:Key="ConnectionStateToBrushConverter" />
     </Window.Resources>
     
     <Grid>
@@ -120,7 +122,6 @@
                         TargetPageType="{x:Type solutionGrid:SolutionGridPage}" />
                     <ui:NavigationViewItem
                         Content="Gitlab"
-                        IsEnabled="False"
                         Icon="{ui:SymbolIcon PlugConnected24}"
                         TargetPageType="{x:Type remoteState:RemoteStatePage}" />
                     <ui:NavigationViewItem
@@ -203,12 +204,29 @@
                         NavigateUri="https://docs.google.com/spreadsheets/d/1qGU-xha3lHp07vbx6qH-VSikyNL4yQ8LLCzqpGbWOtw" />
                 </ui:NavigationView.Header>
                 <ui:NavigationView.PaneFooter>
-                    <TextBlock
-                        Margin="0,0"
-                        VerticalAlignment="Center"
-                        FontWeight="Medium"
-                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
-                        Text="0.15.0" />
+                    <Grid HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock
+                            Margin="0,0"
+                            VerticalAlignment="Center"
+                            FontWeight="Medium"
+                            Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                            HorizontalAlignment="Left"
+                            Text="0.15.0" />
+                    
+                        <ui:SymbolIcon 
+                            Grid.Column="1"
+                            Symbol="Circle24" 
+                            Foreground="{Binding ConnectionState, Converter={StaticResource ConnectionStateToBrushConverter}}"
+                            Filled="True"
+                            Margin="0,0,8,0"
+                            HorizontalAlignment="Right"
+                            FontSize="14"/>
+                    </Grid>
                 </ui:NavigationView.PaneFooter>
             </ui:NavigationView>
         </Grid>

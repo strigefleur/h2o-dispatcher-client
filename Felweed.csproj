@@ -9,87 +9,87 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
-      <PackageReference Include="CliWrap" Version="3.10.1" />
-      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-      <PackageReference Include="LibGit2Sharp" Version="0.31.0" />
-      <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.7" />
-      <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.7" />
-      <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.7" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
-      <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.7" />
-      <PackageReference Include="NuGet.Configuration" Version="7.3.1" />
-      <PackageReference Include="Serilog" Version="4.3.1" />
-      <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-      <PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
-      <PackageReference Include="System.Linq.Async" Version="7.0.1" />
-      <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.7" />
-      <PackageReference Include="Velopack" Version="0.0.1298" />
-      <PackageReference Include="WPF-UI" Version="4.2.0" />
-      <PackageReference Include="WPF-UI.DependencyInjection" Version="4.2.0" />
+        <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
+        <PackageReference Include="CliWrap" Version="3.10.1" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+        <PackageReference Include="LibGit2Sharp" Version="0.31.0" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.7" />
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.7" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.7" />
+        <PackageReference Include="NuGet.Configuration" Version="7.3.1" />
+        <PackageReference Include="Serilog" Version="4.3.1" />
+        <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+        <PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
+        <PackageReference Include="System.Linq.Async" Version="7.0.1" />
+        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.7" />
+        <PackageReference Include="Velopack" Version="0.0.1298" />
+        <PackageReference Include="WPF-UI" Version="4.2.0" />
+        <PackageReference Include="WPF-UI.DependencyInjection" Version="4.2.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <Page Update="Views\MainWindow.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
-      <ApplicationDefinition Remove="App.xaml" />
-      <Page Include="App.xaml" />
-      <Page Update="Views\MainMenu\About\AboutPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
-      <Page Update="Views\MainMenu\Graph\GraphPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
-      <Page Update="Views\MainMenu\RemoteState\RemoteStatePage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
-      <Page Update="Views\MainMenu\Scripts\BackendDepActualizerPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
-      <Page Update="Views\MainMenu\Scripts\BatchRepoTextReplacePage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
-      <Page Update="Views\MainMenu\Scripts\BatchRepoCheckoutPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
-      <Page Update="Views\MainMenu\Scripts\FrontendDepActualizerPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
-      <Page Update="Views\MainMenu\Settings\EnvVariables\EnvVariablesPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
-      <Page Update="Views\MainMenu\Settings\MiscSettings\MiscSettingsPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
-      <Page Update="Views\Dialogs\NexusCredentialsDialog.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
-      <Page Update="Views\Dialogs\GitlabApiKeyDialog.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
-      <Page Update="Views\Dialogs\SetupDialog.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
-      <Page Update="Views\MainMenu\SolutionGrid\SolutionGridPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
+        <Page Update="Views\MainWindow.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <XamlRuntime>Wpf</XamlRuntime>
+            <SubType>Designer</SubType>
+        </Page>
+        <ApplicationDefinition Remove="App.xaml" />
+        <Page Include="App.xaml" />
+        <Page Update="Views\MainMenu\About\AboutPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <XamlRuntime>Wpf</XamlRuntime>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\MainMenu\Graph\GraphPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="Views\MainMenu\RemoteState\RemoteStatePage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="Views\MainMenu\Scripts\BackendDepActualizerPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="Views\MainMenu\Scripts\BatchRepoTextReplacePage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="Views\MainMenu\Scripts\BatchRepoCheckoutPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="Views\MainMenu\Scripts\FrontendDepActualizerPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="Views\MainMenu\Settings\EnvVariables\EnvVariablesPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <XamlRuntime>Wpf</XamlRuntime>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\MainMenu\Settings\MiscSettings\MiscSettingsPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <XamlRuntime>Wpf</XamlRuntime>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\Dialogs\NexusCredentialsDialog.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <XamlRuntime>Wpf</XamlRuntime>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\Dialogs\GitlabApiKeyDialog.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <XamlRuntime>Wpf</XamlRuntime>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\Dialogs\SetupDialog.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <XamlRuntime>Wpf</XamlRuntime>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\MainMenu\SolutionGrid\SolutionGridPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <XamlRuntime>Wpf</XamlRuntime>
+            <SubType>Designer</SubType>
+        </Page>
     </ItemGroup>
 
     <PropertyGroup>
@@ -97,44 +97,22 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Remove="Assets\Icons\h2o_logo.svg" />
-      <Resource Include="Assets\Icons\Gitlab\gitlab_pipeline_shortcut.svg" />
-      <Resource Include="Assets\Icons\Gitlab\gitlab_shortcut.svg" />
-      <Resource Include="Assets\Icons\h2o_logo.svg" />
-      <None Remove="Assets\Icons\h2o_logo.ico" />
-      <Resource Include="Assets\Icons\h2o_logo.ico" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-critical.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-error.svg" />
-      <Resource Include="Assets\Icons\Gitlab\mr-status-error.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-failed.svg" />
-      <Resource Include="Assets\Icons\Gitlab\mr-status-failed.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-failed-1.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-high.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-info.svg" />
-      <Resource Include="Assets\Icons\Gitlab\mr-status-info.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-loading-1.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-low.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-medium.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-neutral.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-neutral-1.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-notice.svg" />
-      <Resource Include="Assets\Icons\Gitlab\mr-status-notice.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-success.svg" />
-      <Resource Include="Assets\Icons\Gitlab\mr-status-success.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-success-1.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-unknown.svg" />
-      <Resource Include="Assets\Icons\Gitlab\mr-status-unknown.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-warning.svg" />
-      <Resource Include="Assets\Icons\Gitlab\mr-status-warning.svg" />
-      <None Remove="Assets\Icons\Gitlab\mr-status-warning-1.svg" />
-      <None Remove="Assets\Icons\Gitlab\status_skipped.svg" />
-      <Resource Include="Assets\Icons\Gitlab\status_skipped.svg" />
-      <None Remove="Assets\Icons\gitlab_shortcut.svg" />
-      <None Remove="Assets\Icons\gitlab_pipeline_shortcut.svg" />
-      <None Remove="Assets\Icons\gitlab_shortcut.png" />
-      <None Remove="Assets\Icons\gitlab_pipeline_shortcut.png" />
-      <None Remove="Assets\Icons\Gitlab\gitlab-tanuki.svg" />
-      <Resource Include="Assets\Icons\Gitlab\gitlab-tanuki.svg" />
+        <None Remove="Assets\Icons\h2o_logo.svg" />
+        <Resource Include="Assets\Icons\h2o_logo.svg" />
+        <None Remove="Assets\Icons\h2o_logo.ico" />
+        <Resource Include="Assets\Icons\h2o_logo.ico" />
+        <None Remove="Assets\Icons\Gitlab\skipped.svg" />
+        <Resource Include="Assets\Icons\Gitlab\skipped.svg" />
+        <None Remove="Assets\Icons\Gitlab\canceled.svg" />
+        <Resource Include="Assets\Icons\Gitlab\canceled.svg" />
+        <None Remove="Assets\Icons\Gitlab\failed.svg" />
+        <Resource Include="Assets\Icons\Gitlab\failed.svg" />
+        <None Remove="Assets\Icons\Gitlab\running.svg" />
+        <Resource Include="Assets\Icons\Gitlab\running.svg" />
+        <None Remove="Assets\Icons\Gitlab\success.svg" />
+        <Resource Include="Assets\Icons\Gitlab\success.svg" />
+        <None Remove="Assets\Icons\Gitlab\warning.svg" />
+        <Resource Include="Assets\Icons\Gitlab\warning.svg" />
     </ItemGroup>
 
 </Project>
