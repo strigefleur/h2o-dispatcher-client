@@ -26,8 +26,7 @@
                           HorizontalAlignment="Center"
                           Text="{Binding InitError}"/>
             
-            <Grid Margin="8"
-                  Visibility="{Binding IsInitialized, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid Visibility="{Binding IsInitialized, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="4*" />
