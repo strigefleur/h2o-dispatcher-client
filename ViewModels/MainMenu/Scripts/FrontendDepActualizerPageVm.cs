@@ -145,18 +145,21 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
     {
         _actualizationCts = new CancellationTokenSource();
         CanInterruptActualization = true;
-
-        var config = ConfigurationService.LoadConfig();
-        var gitlabToken = SecureStorage.LoadApiKey();
+        
         foreach (var solution in ActualizeSolutions)
         {
             solution.ResetStatus();
         }
+        
+        ActualizeResult = string.Empty;
+        ActualizeViewEnabled = false;
 
         try
         {
-            ActualizeResult = string.Empty;
-            ActualizeViewEnabled = false;
+            var config = ConfigurationService.LoadConfig();
+            var gitlabToken = SecureStorage.LoadApiKey();
+            if (gitlabToken == null)
+                return;
 
             foreach (var solutionVm in ActualizeSolutions.Where(x => x.IsChecked))
             {
@@ -186,13 +189,7 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
 
                     LogActualize($"Начало актуализации {solution.Name}...");
 
-                    string authUrl;
-                    using (var prePullRepo = new Repository(solution.Path))
-                    {
-                        var remote = prePullRepo.GetRemoteUrl();
-                        var cleanUrl = remote.Replace("https://", "");
-                        authUrl = $"https://oauth2:{gitlabToken}@{cleanUrl}";
-                    }
+                    using var repo = new Repository(solution.Path);
 
                     var branch = config.ActiveBranch;
                     if (string.IsNullOrWhiteSpace(branch))
@@ -204,8 +201,7 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
                     }
 
                     LogActualize($"Выполнение [git pull] для {branch}...");
-                    if (!await TerminalHelper.RunCmd("git", $"pull {authUrl} {branch} --ff-only --tags", solution.Path,
-                            _actualizationCts.Token))
+                    if (!await repo.PullAsync(gitlabToken, solution.Path, branch, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка при выполнении [git pull]\n\n");
 
@@ -232,9 +228,6 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
                         solutionVm.Status = SolutionActualizeStatus.Skipped;
                         return;
                     }
-
-                    // заново инициализируем, чтобы гарантировать наличие запуленных тэгов
-                    using var repo = new Repository(solution.Path);
 
                     Commands.Stage(repo, ".");
                     if (!repo.RetrieveStatus().IsDirty)
@@ -335,17 +328,9 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
                     }
                     else
                     {
-                        if (!await TerminalHelper.RunCmd("git", "add .", solution.Path, _actualizationCts.Token))
+                        if (!await repo.StageAndCommitAsync(solution.Path, "chore: bump deps", _actualizationCts.Token))
                         {
-                            LogActualize("Ошибка stage комита\n\n");
-                            solutionVm.Status = SolutionActualizeStatus.Failed;
-                            continue;
-                        }
-
-                        if (!await TerminalHelper.RunCmd("git", "commit -m \"chore: bump deps\"", solution.Path,
-                                _actualizationCts.Token))
-                        {
-                            LogActualize("Ошибка при создании комита\n\n");
+                            LogActualize("Ошибка stage/commit\n\n");
                             solutionVm.Status = SolutionActualizeStatus.Failed;
                             continue;
                         }

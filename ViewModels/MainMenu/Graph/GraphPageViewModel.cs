@@ -78,8 +78,8 @@ public partial class GraphPageViewModel : ObservableObject
         foreach (var lvl in AllLevels)
         {
             var nodes = (visible is null)
-                ? Enumerable.ToList<Solution>(lvl.Nodes)
-                : Enumerable.Where<Solution>(lvl.Nodes, n => visible.Contains(n.Id)).ToList();
+                ? lvl.Nodes.ToList()
+                : lvl.Nodes.Where<Solution>(n => visible.Contains(n.Id)).ToList();
 
             if (nodes.Count == 0)
                 continue; // hide empty levels

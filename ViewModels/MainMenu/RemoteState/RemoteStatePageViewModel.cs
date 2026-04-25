@@ -49,12 +49,12 @@ public partial class RemoteStatePageViewModel : ObservableObject, IAsyncDisposab
 
         foreach (var solution in SolutionScanner.AngularSolutions)
         {
-            solution.BindToCobwebProject(Enumerable.SingleOrDefault<CobwebProject>(State.Projects, x => x.HttpUrl == solution.GitOriginUrl));
+            solution.BindToCobwebProject(State.Projects.SingleOrDefault(x => x.HttpUrl == solution.GitOriginUrl));
         }
         
         foreach (var solution in SolutionScanner.CsharpSolutions)
         {
-            solution.BindToCobwebProject(Enumerable.SingleOrDefault<CobwebProject>(State.Projects, x => x.HttpUrl == solution.GitOriginUrl));
+            solution.BindToCobwebProject(State.Projects.SingleOrDefault<CobwebProject>(x => x.HttpUrl == solution.GitOriginUrl));
         }
         
         List<Solution> solutions = [..SolutionScanner.CsharpSolutions, ..SolutionScanner.AngularSolutions];

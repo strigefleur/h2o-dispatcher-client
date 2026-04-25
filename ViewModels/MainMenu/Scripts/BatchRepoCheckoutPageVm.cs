@@ -82,8 +82,7 @@ public partial class BatchRepoCheckoutPageVm : ObservableObject
                         }
                         else
                         {
-                            var fetchResult = await repo.FetchAsync(gitlabToken, solutionDir, token);
-                            if (fetchResult.ExitCode == 0)
+                            if (!await repo.FetchAsync(gitlabToken, solutionDir, token))
                             {
                                 var remoteBranch = repo.Branches[$"origin/{BranchName}"];
                                 if (remoteBranch != null)
@@ -131,6 +130,8 @@ public partial class BatchRepoCheckoutPageVm : ObservableObject
         try
         {
             var gitlabToken = SecureStorage.LoadApiKey();
+            if (gitlabToken == null)
+                return;
 
             await Parallel.ForEachAsync(Solutions.Where(x => x.IsChecked),
                 new ParallelOptions { CancellationToken = ct, MaxDegreeOfParallelism = MaxDegreeOfParallelism },
@@ -151,18 +152,32 @@ public partial class BatchRepoCheckoutPageVm : ObservableObject
                         {
                             if (branch.IsCurrentRepositoryHead)
                             {
-                                solutionVm.Status = SolutionActualizeStatus.Skipped;
+                                if (!await repo.PullAsync(gitlabToken, solutionDir, BranchName, token))
+                                {
+                                    solutionVm.Status = SolutionActualizeStatus.Failed;
+                                }
+                                else
+                                {
+                                    solutionVm.Status = SolutionActualizeStatus.Skipped;
+                                }
                             }
                             else
                             {
                                 Commands.Checkout(repo, branch);
-                                solutionVm.Status = SolutionActualizeStatus.Success;
+                                
+                                if (!await repo.PullAsync(gitlabToken, solutionDir, BranchName, token))
+                                {
+                                    solutionVm.Status = SolutionActualizeStatus.Failed;
+                                }
+                                else
+                                {
+                                    solutionVm.Status = SolutionActualizeStatus.Success;
+                                }
                             }
                         }
                         else
                         {
-                            var fetchResult = await repo.FetchAsync(gitlabToken, solutionDir, token);
-                            if (fetchResult.ExitCode != 0)
+                            if (!await repo.FetchAsync(gitlabToken, solutionDir, token))
                             {
                                 solutionVm.Status = SolutionActualizeStatus.Failed;
                             }

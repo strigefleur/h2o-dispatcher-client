@@ -1,8 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
+using Ardalis.GuardClauses;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Felweed.Extensions;
 using Felweed.Models;
+using Felweed.Models.Enumerators;
 using Felweed.Models.Graph;
 using Felweed.Services;
 using Felweed.Services.Graph;
@@ -130,7 +133,7 @@ public partial class BackendDepActualizerPageVm : ObservableObject
         if (DagFilterSolution == null)
             return;
 
-        var graph = DependencyGraphBuilder.Build(Enumerable.Select<SolutionActualizeVm, Solution>(ActualizeSolutions, x => x.Solution).ToArray());
+        var graph = DependencyGraphBuilder.Build(ActualizeSolutions.Select<SolutionActualizeVm, Solution>(x => x.Solution).ToArray());
         var layers = GraphLayering.BuildLayers(graph);
         var visible = GraphQueries.GetDownstreamInclusive(graph, DagFilterSolution.Solution.Id);
 
@@ -155,7 +158,7 @@ public partial class BackendDepActualizerPageVm : ObservableObject
 
         foreach (var solution in filteredLevels[1].Nodes)
         {
-            Enumerable.Single<SolutionActualizeVm>(ActualizeSolutions, x => x.Solution.Id == solution.Id).IsChecked = true;
+            ActualizeSolutions.Single(x => x.Solution.Id == solution.Id).IsChecked = true;
         }
     }
 
@@ -215,13 +218,18 @@ public partial class BackendDepActualizerPageVm : ObservableObject
     {
         _actualizationCts = new CancellationTokenSource();
         CanInterruptActualization = true;
+        
+        ActualizeResult = string.Empty;
+        ActualizeViewEnabled = false;
 
         try
         {
-            ActualizeResult = string.Empty;
-            ActualizeViewEnabled = false;
+            var config = ConfigurationService.LoadConfig();
+            var gitlabToken = SecureStorage.LoadApiKey();
+            if (gitlabToken == null)
+                return;
 
-            foreach (var solutionVm in Enumerable.Where<SolutionActualizeVm>(ActualizeSolutions, x => x.IsChecked))
+            foreach (var solutionVm in ActualizeSolutions.Where(x => x.IsChecked))
             {
                 if (_actualizationCts.IsCancellationRequested)
                 {
@@ -246,15 +254,26 @@ public partial class BackendDepActualizerPageVm : ObservableObject
 
                     LogActualize($"Начало актуализации {solution.Name}...");
                     
-                    var dir = Path.GetDirectoryName(solution.Path);
+                    var dir = Guard.Against.Null(Path.GetDirectoryName(solution.Path));
+                    using var repo = new Repository(dir);
                     
-                    // LogActualize("Выполнение [git pull]...");
-                    // if (!await TerminalHelper.RunCmd("git", "pull", dir, _actualizationCts.Token))
-                    // {
-                    //     LogActualize("Ошибка при выполнении [git pull]\n\n");
-                    //     //solutionVm.Status = SolutionActualizeStatus.Failed;
-                    //     continue;
-                    // }
+                    var branch = config.ActiveBranch;
+                    if (string.IsNullOrWhiteSpace(branch))
+                    {
+                        LogActualize("Ошибка при определении активной ветки\n\n");
+
+                        solutionVm.Status = SolutionActualizeStatus.Failed;
+                        continue;
+                    }
+                    
+                    LogActualize($"Выполнение [git pull] для {branch}...");
+                    if (!await repo.PullAsync(gitlabToken, dir, branch, _actualizationCts.Token))
+                    {
+                        LogActualize("Ошибка при выполнении [git pull]\n\n");
+
+                        solutionVm.Status = SolutionActualizeStatus.Failed;
+                        continue;
+                    }
 
                     LogActualize("Выполнение [dotnet outdated]...");
                     if (!await NugetHelper.ResolveUpdates(dir, Environment.ProcessorCount, _actualizationCts.Token))
@@ -269,14 +288,11 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                         return;
                     }
 
-                    using (var repo = new Repository(dir))
+                    Commands.Stage(repo, ".");
+                    if (!repo.RetrieveStatus().IsDirty)
                     {
-                        Commands.Stage(repo, ".");
-                        if (!repo.RetrieveStatus().IsDirty)
-                        {
-                            LogActualize("Нечего обновлять, пропускаю\n\n");
-                            continue;
-                        }
+                        LogActualize("Нечего обновлять, пропускаю\n\n");
+                        continue;
                     }
 
                     if (!SkipBuild)
@@ -300,8 +316,7 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                     }
                     
                     // после пула могли появиться новые тэги, нужен повторный анализ
-                    // var (_, tagVersion) = GitHelper.GetRepoInfo(solution.Path);
-                    // solution.UpdateTagVersionNumber(tagVersion);
+                    solution.UpdateTagVersionNumber(repo.GetLatestTagVersion());
 
                     var nextVersion = solution.IsPackable
                         ? VersionHelper.IncPatchVersion(solution.TagVersionNumber)
@@ -324,20 +339,15 @@ public partial class BackendDepActualizerPageVm : ObservableObject
 
                     LogActualize("Создание комита...");
 
-                    const string defaultCommitMessage = "commit -m \"chore: bump deps\"";
+                    const string defaultCommitMessage = "chore: bump deps";
                     var commitMessage = solution.IsPackable
                         ? $"{defaultCommitMessage} to {nextVersion}\""
                         : defaultCommitMessage;
-
-                    if (!await TerminalHelper.RunCmd("git", "add .", dir, _actualizationCts.Token))
+                    
+                    if (!await repo.StageAndCommitAsync(dir, commitMessage, _actualizationCts.Token))
                     {
-                        LogActualize("Ошибка stage комита\n\n");
-                        continue;
-                    }
-
-                    if (!await TerminalHelper.RunCmd("git", commitMessage, dir, _actualizationCts.Token))
-                    {
-                        LogActualize("Ошибка при создании комита\n\n");
+                        LogActualize("Ошибка stage/commit\n\n");
+                        solutionVm.Status = SolutionActualizeStatus.Failed;
                         continue;
                     }
 
