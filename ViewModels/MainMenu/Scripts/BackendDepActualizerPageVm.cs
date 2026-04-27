@@ -244,8 +244,11 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                 if (_actualizationCts.IsCancellationRequested)
                 {
                     LogActualize("Прервано");
+                    solutionVm.Status = SolutionActualizeStatus.Skipped;
                     return;
                 }
+                
+                solutionVm.Status = SolutionActualizeStatus.InProgress;
 
                 try
                 {
@@ -256,9 +259,11 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                     {
                         case null:
                             LogActualize("Не выбран проект\n\n");
+                            solutionVm.Status = SolutionActualizeStatus.Skipped;
                             continue;
                         case { IsPackable: true, TagVersionNumber: null }:
                             LogActualize("У библиотеки не определена текущая версия\n\n");
+                            solutionVm.Status = SolutionActualizeStatus.Skipped;
                             continue;
                     }
 
@@ -289,12 +294,16 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                     if (!await NugetHelper.ResolveUpdates(dir, ignoredAsDepList, Environment.ProcessorCount, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка при выполнении [dotnet outdated]\n\n");
+                        
+                        solutionVm.Status = SolutionActualizeStatus.Failed;
                         continue;
                     }
 
                     if (_actualizationCts.IsCancellationRequested)
                     {
                         LogActualize("Прервано");
+                        
+                        solutionVm.Status = SolutionActualizeStatus.Skipped;
                         return;
                     }
 
@@ -302,6 +311,8 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                     if (!repo.RetrieveStatus().IsDirty)
                     {
                         LogActualize("Нечего обновлять, пропускаю\n\n");
+                        
+                        solutionVm.Status = SolutionActualizeStatus.Skipped;
                         continue;
                     }
 
@@ -311,6 +322,8 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                         if (!await TerminalHelper.RunCmd("dotnet", "build", dir, _actualizationCts.Token))
                         {
                             LogActualize("Ошибка при выполнении [dotnet build]\n\n");
+                            
+                            solutionVm.Status = SolutionActualizeStatus.Failed;
                             continue;
                         }
                     }
@@ -322,6 +335,8 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                     if (_actualizationCts.IsCancellationRequested)
                     {
                         LogActualize("Прервано");
+                        
+                        solutionVm.Status = SolutionActualizeStatus.Skipped;
                         return;
                     }
                     
@@ -344,6 +359,8 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                     if (_actualizationCts.IsCancellationRequested)
                     {
                         LogActualize("Прервано");
+                        
+                        solutionVm.Status = SolutionActualizeStatus.Skipped;
                         return;
                     }
 
@@ -357,11 +374,18 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                     if (!await repo.StageAndCommitAsync(dir, commitMessage, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка stage/commit\n\n");
+                        
                         solutionVm.Status = SolutionActualizeStatus.Failed;
                         continue;
                     }
 
+                    solutionVm.Status = SolutionActualizeStatus.Success;
                     LogActualize("Готово!\n\n");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Error actualizing backend deps");
+                    // solutionVm.Status = SolutionActualizeStatus.Failed;
                 }
                 finally
                 {

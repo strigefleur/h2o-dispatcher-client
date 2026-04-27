@@ -188,9 +188,11 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
                     {
                         case null:
                             LogActualize("Не выбран проект\n\n");
+                            solutionVm.Status = SolutionActualizeStatus.Skipped;
                             continue;
                         case { IsPackable: true, TagVersionNumber: null }:
                             LogActualize("У библиотеки не определена текущая версия\n\n");
+                            solutionVm.Status = SolutionActualizeStatus.Skipped;
                             continue;
                     }
 
