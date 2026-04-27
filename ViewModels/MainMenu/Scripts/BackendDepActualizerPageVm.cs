@@ -219,6 +219,16 @@ public partial class BackendDepActualizerPageVm : ObservableObject
         _actualizationCts = new CancellationTokenSource();
         CanInterruptActualization = true;
         
+        foreach (var solution in ActualizeSolutions)
+        {
+            solution.ResetStatus();
+        }
+
+        var ignoredAsDepList = ActualizeSolutions
+            .Where(x => x.IsIgnoredAsDep)
+            .Select(x => x.Solution.PackageId)
+            .ToArray();
+        
         ActualizeResult = string.Empty;
         ActualizeViewEnabled = false;
 
@@ -276,7 +286,7 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                     }
 
                     LogActualize("Выполнение [dotnet outdated]...");
-                    if (!await NugetHelper.ResolveUpdates(dir, Environment.ProcessorCount, _actualizationCts.Token))
+                    if (!await NugetHelper.ResolveUpdates(dir, ignoredAsDepList, Environment.ProcessorCount, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка при выполнении [dotnet outdated]\n\n");
                         continue;

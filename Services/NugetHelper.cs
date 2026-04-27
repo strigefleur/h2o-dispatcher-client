@@ -77,7 +77,8 @@ public static class NugetHelper
         sourceProvider.SavePackageSources(sources);
     }
 
-    public static async Task<bool> ResolveUpdates(string workDir, int maxParallelism = 4, CancellationToken ct = default)
+    public static async Task<bool> ResolveUpdates(string workDir, ICollection<string> ignoredDeps,
+        int maxParallelism = 4, CancellationToken ct = default)
     {
         try
         {
@@ -88,7 +89,7 @@ public static class NugetHelper
 
             using var doc = JsonDocument.Parse(jsonOutput);
             var updateTasks = new List<Task<bool>>();
-        
+
             // Use SemaphoreSlim to limit concurrent dotnet processes
             using var semaphore = new SemaphoreSlim(maxParallelism);
 
@@ -103,13 +104,14 @@ public static class NugetHelper
 
                     foreach (var pkg in packages.EnumerateArray())
                     {
-                        var id = pkg.GetProperty("id").GetString()!;
+                        var packageId = pkg.GetProperty("id").GetString()!;
                         var latest = pkg.GetProperty("latestVersion").GetString();
 
-                        if (id.StartsWith(PrefixConst.CSharpCorporateL0Prefix) && !string.IsNullOrEmpty(latest))
+                        if (packageId.StartsWith(PrefixConst.CSharpCorporateL0Prefix) &&
+                            !string.IsNullOrEmpty(latest) && !ignoredDeps.Contains(packageId))
                         {
                             // Pass the semaphore to the execution method
-                            updateTasks.Add(RunThrottledUpdateAsync(projectPath!, id, latest, semaphore, ct));
+                            updateTasks.Add(RunThrottledUpdateAsync(projectPath!, packageId, latest, semaphore, ct));
                         }
                     }
                 }
@@ -125,7 +127,7 @@ public static class NugetHelper
         }
     }
 
-    private static async Task<bool> RunThrottledUpdateAsync(string workingDir, string id, string version,
+    private static async Task<bool> RunThrottledUpdateAsync(string workingDir, string packageId, string version,
         SemaphoreSlim semaphore, CancellationToken ct)
     {
         // Wait for an available slot
@@ -135,7 +137,7 @@ public static class NugetHelper
             using var process = Process.Start(new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = $"add package {id} --version {version}",
+                Arguments = $"add package {packageId} --version {version}",
                 WorkingDirectory = workingDir,
                 CreateNoWindow = true
             });
@@ -150,7 +152,7 @@ public static class NugetHelper
             semaphore.Release();
         }
     }
-    
+
     private static async Task<string> GetOutdatedPackagesJson(string workDir, CancellationToken ct)
     {
         using var listProcess = new Process();

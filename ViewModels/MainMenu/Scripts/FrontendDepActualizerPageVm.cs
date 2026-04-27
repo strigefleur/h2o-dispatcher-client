@@ -150,6 +150,13 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
         {
             solution.ResetStatus();
         }
+
+        var ignoredAsDepList = ActualizeSolutions
+            .Where(x => x.IsIgnoredAsDep)
+            .Select(x => $"'{x.Solution.PackageId}'")
+            .ToArray();
+
+        var excludeArg = ignoredAsDepList.Length > 0 ? $" -x {string.Join(',', ignoredAsDepList)}" : null;
         
         ActualizeResult = string.Empty;
         ActualizeViewEnabled = false;
@@ -214,7 +221,8 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
                         @$"/^{PrefixConst.AngularCorporateL0Prefix}\.{PrefixConst.AngularCorporateL1Prefix}\//";
 
                     if (!await TerminalHelper.RunCmd("npx",
-                            @$"--strict-ssl=false -y npm-check-updates -p yarn -f {angularDepPrefixRegex} -u --install always",
+                            "--strict-ssl=false -y npm-check-updates -p yarn " +
+                            $"-f {angularDepPrefixRegex} -u --install always {excludeArg}",
                             solution.Path, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка при выполнении [npm-check-updates]\n\n");

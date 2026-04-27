@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Felweed.Models;
 using Felweed.Models.Enumerators;
 
@@ -14,6 +15,9 @@ public partial class SolutionActualizeVm : ObservableObject
 
     [ObservableProperty]
     public partial bool IsChecked { get; set; }
+    
+    [ObservableProperty]
+    public partial bool IsIgnoredAsDep { get; set; }
 
     [ObservableProperty] public partial SolutionActualizeStatus Status { get; set; } = SolutionActualizeStatus.None;
 
@@ -21,5 +25,17 @@ public partial class SolutionActualizeVm : ObservableObject
     {
         Status = SolutionActualizeStatus.None;
         IsProcessing = false;
+    }
+
+    [RelayCommand]
+    private void SetIgnoredAsDep()
+    {
+        IsIgnoredAsDep = true;
+    }
+    
+    [RelayCommand]
+    private void SetNotIgnoredAsDep()
+    {
+        IsIgnoredAsDep = false;
     }
 }

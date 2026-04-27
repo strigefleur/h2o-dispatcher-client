@@ -64,6 +64,31 @@
                         <ui:ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="IsSelected" Value="{Binding IsChecked, Mode=TwoWay}" />
+                                
+                                <EventSetter Event="PreviewMouseRightButtonDown" Handler="OnPreviewMouseRightButtonDown" />
+                                <Setter Property="ContextMenu">
+                                    <Setter.Value>
+                                        <ContextMenu>
+                                            <MenuItem Header="{Binding Solution.Name}"
+                                                      Focusable="False"
+                                                      IsEnabled="False"
+                                                      FontWeight="SemiBold"/>
+                                            <Separator/>
+                                            <ui:MenuItem Header="Игнорировать при обновлении" 
+                                                         Visibility="{Binding IsIgnoredAsDep, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                                         Command="{Binding SetIgnoredAsDepCommand}" />
+                                            <ui:MenuItem Header="Перестать игнорировать при обновлении" 
+                                                         Visibility="{Binding IsIgnoredAsDep, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                         Command="{Binding SetNotIgnoredAsDepCommand}" />
+                                        </ContextMenu>
+                                    </Setter.Value>
+                                </Setter>
+                                
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Solution.IsRunnable}" Value="True">
+                                        <Setter Property="ContextMenu" Value="{x:Null}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
                             </Style>
                         </ui:ListView.ItemContainerStyle>
                         
@@ -103,7 +128,20 @@
                                     />
                                 
                                     <TextBlock Grid.Column="1" Text="{Binding Solution.Name}"
-                                               VerticalAlignment="Center"/>
+                                               VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                                <!-- Default (Unchecked) -->
+                                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsIgnoredAsDep}" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                 </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>
