@@ -1,7 +1,5 @@
-﻿using System.Diagnostics;
-using System.IO;
-using System.Text.Json;
-using Felweed.Constants;
+﻿using System.IO;
+using Felweed.Models;
 using NuGet.Configuration;
 using Serilog;
 
@@ -77,105 +75,30 @@ public static class NugetHelper
         sourceProvider.SavePackageSources(sources);
     }
 
-    public static async Task<bool> ResolveUpdates(string workDir, ICollection<string> ignoredDeps,
-        bool includePreRelease, int maxParallelism = 4, CancellationToken ct = default)
+    public static async Task<bool> UpdatePackagesAsync(CSharpSolution solution, ICollection<string> ignoredDeps,
+        CancellationToken ct = default)
     {
         try
         {
-            // 1. Get outdated packages
-            var jsonOutput = await GetOutdatedPackagesJson(workDir, includePreRelease, ct);
-            if (string.IsNullOrEmpty(jsonOutput))
-                return false;
-
-            using var doc = JsonDocument.Parse(jsonOutput);
-            var updateTasks = new List<Task<bool>>();
-
-            // Use SemaphoreSlim to limit concurrent dotnet processes
-            using var semaphore = new SemaphoreSlim(maxParallelism);
-
-            foreach (var project in doc.RootElement.GetProperty("projects").EnumerateArray())
+            var solutionDir = Path.GetDirectoryName(solution.Path)!;
+            foreach (var packageId in solution.ConsumesDependencies
+                         .Where(x => x.IsCorporate)
+                         .DistinctBy(x => x.Name)
+                         .Select(x => x.Name))
             {
-                var projectPath = Path.GetDirectoryName(project.GetProperty("path").GetString());
-                if (!project.TryGetProperty("frameworks", out var frameworks)) continue;
+                // обход ограничения коллекции решения - туда записывается "основной" ИД зависимости, а не продукты (проекты)
+                if (ignoredDeps.Contains(packageId) || ignoredDeps.Any(x => packageId.StartsWith($"{x}.")))
+                    continue;
 
-                foreach (var framework in frameworks.EnumerateArray())
-                {
-                    if (!framework.TryGetProperty("topLevelPackages", out var packages)) continue;
-
-                    foreach (var pkg in packages.EnumerateArray())
-                    {
-                        var packageId = pkg.GetProperty("id").GetString()!;
-                        var latest = pkg.GetProperty("latestVersion").GetString();
-
-                        if (packageId.StartsWith(PrefixConst.CSharpCorporateL0Prefix) &&
-                            !string.IsNullOrEmpty(latest) && !ignoredDeps.Contains(packageId))
-                        {
-                            // Pass the semaphore to the execution method
-                            updateTasks.Add(RunThrottledUpdateAsync(projectPath!, packageId, latest, semaphore, ct));
-                        }
-                    }
-                }
+                await TerminalHelper.DotnetPackageUpdateAsync(solutionDir, packageId, ct);
             }
-
-            var results = await Task.WhenAll(updateTasks);
-            return results.All(success => success);
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Failed to resolve updates");
+            Log.Error(ex, "Failed to update packages");
             return false;
         }
-    }
 
-    private static async Task<bool> RunThrottledUpdateAsync(string workingDir, string packageId, string version,
-        SemaphoreSlim semaphore, CancellationToken ct)
-    {
-        // Wait for an available slot
-        await semaphore.WaitAsync(ct);
-        try
-        {
-            using var process = Process.Start(new ProcessStartInfo
-            {
-                FileName = "dotnet",
-                Arguments = $"add package {packageId} --version {version}",
-                WorkingDirectory = workingDir,
-                CreateNoWindow = true
-            });
-
-            if (process == null) return false;
-            await process.WaitForExitAsync(ct);
-            return process.ExitCode == 0;
-        }
-        finally
-        {
-            // Always release the slot, even if the process fails
-            semaphore.Release();
-        }
-    }
-
-    private static async Task<string> GetOutdatedPackagesJson(string workDir, bool includePreRelease,
-        CancellationToken ct = default)
-    {
-        var preReleaseArg = includePreRelease ? " --include-prerelease" : null;
-
-        using var listProcess = new Process();
-        listProcess.StartInfo = new ProcessStartInfo
-        {
-            FileName = "dotnet",
-            Arguments = $"list package --outdated{preReleaseArg} --format json",
-            WorkingDirectory = workDir,
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        listProcess.Start();
-
-        // Captures the entire JSON string from the process output
-        var jsonOutput = await listProcess.StandardOutput.ReadToEndAsync(ct);
-        await listProcess.WaitForExitAsync(ct);
-
-        // Return the raw JSON or null/empty if the process failed
-        return listProcess.ExitCode == 0 ? jsonOutput : string.Empty;
+        return true;
     }
 }

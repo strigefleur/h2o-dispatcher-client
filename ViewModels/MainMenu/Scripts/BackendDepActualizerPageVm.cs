@@ -301,10 +301,19 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                         solutionVm.Status = SolutionActualizeStatus.Failed;
                         continue;
                     }
+                    
+                    LogActualize("Выполнение [dotnet restore]...");
+                    if (!await TerminalHelper.DotnetRestoreAsync(dir, _actualizationCts.Token))
+                    {
+                        LogActualize("Ошибка при выполнении [git restore]\n\n");
+
+                        solutionVm.Status = SolutionActualizeStatus.Failed;
+                        continue;
+                    }
 
                     LogActualize("Выполнение [dotnet outdated]...");
-                    if (!await NugetHelper.ResolveUpdates(dir, ignoredAsDepList, IncludePreRelease,
-                            Environment.ProcessorCount, _actualizationCts.Token))
+                    if (!await NugetHelper.UpdatePackagesAsync(solutionVm.Solution as CSharpSolution, ignoredAsDepList,
+                            _actualizationCts.Token))
                     {
                         LogActualize("Ошибка при выполнении [dotnet outdated]\n\n");
 

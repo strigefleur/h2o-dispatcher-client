@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using CliWrap;
+using CliWrap.Buffered;
 using Serilog;
 
 namespace Felweed.Services;
@@ -117,5 +119,40 @@ public static class TerminalHelper
             Log.Error(ex, "Failed to run cmd");
             return false;
         }
+    }
+    
+    public static async Task<bool> DotnetRestoreAsync(string solutionDir, CancellationToken ct = default)
+    {
+        var stageResult = await Cli.Wrap("dotnet")
+            .WithArguments("restore")
+            .WithWorkingDirectory(solutionDir)
+            .WithValidation(CommandResultValidation.None)
+            .ExecuteBufferedAsync(ct);
+
+        if (!stageResult.IsSuccess)
+        {
+            Log.Error(stageResult.StandardError);
+            return false;
+        }
+
+        return true;
+    }
+
+    public static async Task<bool> DotnetPackageUpdateAsync(string solutionDir, string packageId,
+        CancellationToken ct = default)
+    {
+        var stageResult = await Cli.Wrap("dotnet")
+            .WithArguments($"package update {packageId}")
+            .WithWorkingDirectory(solutionDir)
+            .WithValidation(CommandResultValidation.None)
+            .ExecuteBufferedAsync(ct);
+
+        if (!stageResult.IsSuccess)
+        {
+            Log.Error(stageResult.StandardError);
+            return false;
+        }
+
+        return true;
     }
 }

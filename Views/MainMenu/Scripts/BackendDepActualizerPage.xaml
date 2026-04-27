@@ -172,9 +172,10 @@
                                       IsEnabled="{Binding ActualizeViewEnabled}"
                                       IsChecked="{Binding SkipBuild}"/>
                     
+                            <!-- IsEnabled="{Binding ActualizeViewEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" -->
                             <CheckBox Content="Пререлизы (rc)" 
                                       Margin="0, 0, 0, 0"
-                                      IsEnabled="{Binding ActualizeViewEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      IsEnabled="False"
                                       IsChecked="{Binding IncludePreRelease}"/>
                         </StackPanel>
                         
