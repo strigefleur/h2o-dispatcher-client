@@ -122,6 +122,7 @@
                         TargetPageType="{x:Type solutionGrid:SolutionGridPage}" />
                     <ui:NavigationViewItem
                         Content="Gitlab"
+                        IsEnabled="False"
                         Icon="{ui:SymbolIcon PlugConnected24}"
                         TargetPageType="{x:Type remoteState:RemoteStatePage}" />
                     <ui:NavigationViewItem
@@ -216,7 +217,7 @@
                             FontWeight="Medium"
                             Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
                             HorizontalAlignment="Left"
-                            Text="0.15.0" />
+                            Text="0.16.0" />
                     
                         <ui:SymbolIcon 
                             Grid.Column="1"
@@ -225,7 +226,11 @@
                             Filled="True"
                             Margin="0,0,8,0"
                             HorizontalAlignment="Right"
-                            FontSize="14"/>
+                            FontSize="14">
+                            <ui:SymbolIcon.Effect>
+                                <DropShadowEffect BlurRadius="4" ShadowDepth="1.5" Direction="320" Opacity="0.5"/>
+                            </ui:SymbolIcon.Effect>
+                        </ui:SymbolIcon>
                     </Grid>
                 </ui:NavigationView.PaneFooter>
             </ui:NavigationView>
