@@ -9,13 +9,18 @@ using Felweed.Models.Enumerators;
 using Felweed.Models.Graph;
 using Felweed.Services;
 using Felweed.Services.Graph;
+using Felweed.Views.Dialogs;
 using LibGit2Sharp;
 using Serilog;
+using Wpf.Ui;
+using Wpf.Ui.Extensions;
 
 namespace Felweed.ViewModels.MainMenu.Scripts;
 
 public partial class BackendDepActualizerPageVm : ObservableObject
 {
+    private readonly IContentDialogService _contentDialogService;
+    
     [ObservableProperty]
     public partial bool? IsInitialized { get; set; }
 
@@ -25,7 +30,9 @@ public partial class BackendDepActualizerPageVm : ObservableObject
     [ObservableProperty]
     public partial string? InitError { get; set; }
 
-    [ObservableProperty] private ObservableCollection<SolutionActualizeVm> _actualizeSolutions = [];
+    [ObservableProperty]
+    public partial ObservableCollection<SolutionActualizeVm> ActualizeSolutions { get; set; } = [];
+    
     [ObservableProperty]
     public partial bool SkipBuild { get; set; }
 
@@ -34,6 +41,9 @@ public partial class BackendDepActualizerPageVm : ObservableObject
 
     [ObservableProperty]
     public partial bool ActualizeViewEnabled { get; set; } = true;
+    
+    [ObservableProperty]
+    public partial bool IncludePreRelease { get; set; }
 
     [ObservableProperty]
     public partial bool CanInterruptActualization { get; set; }
@@ -43,8 +53,10 @@ public partial class BackendDepActualizerPageVm : ObservableObject
 
     private CancellationTokenSource? _actualizationCts;
     
-    public BackendDepActualizerPageVm()
+    public BackendDepActualizerPageVm(IContentDialogService contentDialogService)
     {
+        _contentDialogService = contentDialogService;
+        
         foreach (var csharpSolution in SolutionScanner.CsharpSolutions
                      .Where(x => x is { IsCorporate: true })
                      .OrderBy(x => x.IsRunnable)
@@ -291,10 +303,11 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                     }
 
                     LogActualize("Выполнение [dotnet outdated]...");
-                    if (!await NugetHelper.ResolveUpdates(dir, ignoredAsDepList, Environment.ProcessorCount, _actualizationCts.Token))
+                    if (!await NugetHelper.ResolveUpdates(dir, ignoredAsDepList, IncludePreRelease,
+                            Environment.ProcessorCount, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка при выполнении [dotnet outdated]\n\n");
-                        
+
                         solutionVm.Status = SolutionActualizeStatus.Failed;
                         continue;
                     }
@@ -405,5 +418,19 @@ public partial class BackendDepActualizerPageVm : ObservableObject
             _actualizationCts?.Dispose();
             _actualizationCts = null;
         }
+    }
+    
+    [RelayCommand]
+    private async Task ShowResultDialog()
+    {
+        await _contentDialogService.ShowSimpleDialogAsync(
+            new SimpleContentDialogCreateOptions()
+            {
+                Title = $"Результаты актуализации на {DateTime.Now:G}",
+                Content = new ActualizerResultDialog(ActualizeResult),
+                PrimaryButtonText = "Ок",
+                CloseButtonText = "Ну, ок"
+            }
+        );
     }
 }

@@ -78,12 +78,12 @@ public static class NugetHelper
     }
 
     public static async Task<bool> ResolveUpdates(string workDir, ICollection<string> ignoredDeps,
-        int maxParallelism = 4, CancellationToken ct = default)
+        bool includePreRelease, int maxParallelism = 4, CancellationToken ct = default)
     {
         try
         {
             // 1. Get outdated packages
-            var jsonOutput = await GetOutdatedPackagesJson(workDir, ct);
+            var jsonOutput = await GetOutdatedPackagesJson(workDir, includePreRelease, ct);
             if (string.IsNullOrEmpty(jsonOutput))
                 return false;
 
@@ -153,13 +153,16 @@ public static class NugetHelper
         }
     }
 
-    private static async Task<string> GetOutdatedPackagesJson(string workDir, CancellationToken ct)
+    private static async Task<string> GetOutdatedPackagesJson(string workDir, bool includePreRelease,
+        CancellationToken ct = default)
     {
+        var preReleaseArg = includePreRelease ? " --include-prerelease" : null;
+
         using var listProcess = new Process();
         listProcess.StartInfo = new ProcessStartInfo
         {
             FileName = "dotnet",
-            Arguments = "list package --outdated --format json",
+            Arguments = $"list package --outdated{preReleaseArg} --format json",
             WorkingDirectory = workDir,
             RedirectStandardOutput = true,
             UseShellExecute = false,
@@ -167,7 +170,7 @@ public static class NugetHelper
         };
 
         listProcess.Start();
-    
+
         // Captures the entire JSON string from the process output
         var jsonOutput = await listProcess.StandardOutput.ReadToEndAsync(ct);
         await listProcess.WaitForExitAsync(ct);

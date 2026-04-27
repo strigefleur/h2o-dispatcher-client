@@ -20,11 +20,6 @@ public partial class FrontendDepActualizerPage : UserControl, INavigableView<Fro
         DataContext = ViewModel;
     }
     
-    private void ActualizeTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
-    {
-        ActualizeTextBox.ScrollToEnd();
-    }
-    
     private void OnPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
         // Mark the event as handled to prevent selection

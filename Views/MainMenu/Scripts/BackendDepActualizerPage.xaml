@@ -33,9 +33,8 @@
             <Grid Visibility="{Binding IsInitialized, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="4*" />
-                    <RowDefinition Height="40" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 
                 <GroupBox Header="Выбор зависимостей через DAG" Padding="8">
@@ -161,37 +160,55 @@
                     </ui:ListView>
                 </GroupBox>
                 
-                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0, 8, 0, 0">
-                    <CheckBox Content="Пропустить проверку сборки (dotnet build)"
-                              IsEnabled="{Binding ActualizeViewEnabled}"
-                              IsChecked="{Binding SkipBuild}"/>
-                
-                    <ui:Button Content="Запустить актуализацию" 
-                               Command="{Binding ActualizeBackendDepsCommand}"
-                               Margin="16, 0, 0, 0"
-                               Cursor="Hand">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Play24" />
-                        </ui:Button.Icon>
-                    </ui:Button>
+                <GroupBox Header="Управление" Grid.Row="2" Margin="0, 8, 0, 0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <StackPanel Orientation="Vertical" Grid.Column="0">
+                            <CheckBox Content="Пропустить проверку сборки (dotnet build)"
+                                      IsEnabled="{Binding ActualizeViewEnabled}"
+                                      IsChecked="{Binding SkipBuild}"/>
                     
-                    <ui:Button Content="Прервать актуализацию" 
-                               Command="{Binding InterruptBackendDepsActualizationCommand}"
-                               IsEnabled="{Binding CanInterruptActualization}"
-                               Margin="8, 0, 0, 0"
-                               Cursor="Hand">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Stop24" />
-                        </ui:Button.Icon>
-                    </ui:Button>
-                </StackPanel>
-                
-                <ui:TextBox x:Name="ActualizeTextBox" Text="{Binding ActualizeResult}"
-                            IsReadOnly="True"
-                            Grid.Row="3"
-                            VerticalScrollBarVisibility="Auto"
-                            TextChanged="ActualizeTextBox_OnTextChanged"
-                            Margin="0, 8, 0, 0"/>
+                            <CheckBox Content="Пререлизы (rc)" 
+                                      Margin="0, 0, 0, 0"
+                                      IsEnabled="{Binding ActualizeViewEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      IsChecked="{Binding IncludePreRelease}"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="1">
+                            <ui:Button Content="Запустить актуализацию" 
+                                       Command="{Binding ActualizeBackendDepsCommand}"
+                                       Margin="16, 0, 0, 0"
+                                       Cursor="Hand">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Play24" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+                    
+                            <ui:Button Content="Прервать актуализацию" 
+                                       Command="{Binding InterruptBackendDepsActualizationCommand}"
+                                       IsEnabled="{Binding CanInterruptActualization}"
+                                       Margin="16, 8, 0, 0"
+                                       Cursor="Hand">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Stop24" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+                            
+                            <ui:Button Content="Показать лог" 
+                                       Command="{Binding ShowResultDialogCommand}"
+                                       Margin="16, 8, 0, 0"
+                                       Cursor="Hand">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Info24" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
             </Grid>
         </Grid>
     </Grid>

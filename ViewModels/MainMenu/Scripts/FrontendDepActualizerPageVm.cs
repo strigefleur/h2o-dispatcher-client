@@ -9,13 +9,19 @@ using Felweed.Models.Enumerators;
 using Felweed.Models.Graph;
 using Felweed.Services;
 using Felweed.Services.Graph;
+using Felweed.ViewModels.Dialogs;
+using Felweed.Views.Dialogs;
 using LibGit2Sharp;
 using Serilog;
+using Wpf.Ui;
+using Wpf.Ui.Extensions;
 
 namespace Felweed.ViewModels.MainMenu.Scripts;
 
 public partial class FrontendDepActualizerPageVm : ObservableObject
 {
+    private readonly IContentDialogService _contentDialogService;
+    
     [ObservableProperty] public partial ObservableCollection<SolutionActualizeVm> ActualizeSolutions { get; set; } = [];
 
     [ObservableProperty] public partial bool SkipBuild { get; set; }
@@ -23,6 +29,9 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
     [ObservableProperty] public partial string ActualizeResult { get; set; } = "";
 
     [ObservableProperty] public partial bool ActualizeViewEnabled { get; set; } = true;
+    
+    [ObservableProperty]
+    public partial bool IncludePreRelease { get; set; }
 
     [ObservableProperty] public partial bool CanInterruptActualization { get; set; }
 
@@ -30,8 +39,10 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
 
     private CancellationTokenSource? _actualizationCts;
 
-    public FrontendDepActualizerPageVm()
+    public FrontendDepActualizerPageVm(IContentDialogService contentDialogService)
     {
+        _contentDialogService = contentDialogService;
+        
         foreach (var angularSolution in SolutionScanner.AngularSolutions
                      .Where(x => x is { IsCorporate: true })
                      .OrderBy(x => x.IsRunnable)
@@ -157,6 +168,7 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
             .ToArray();
 
         var excludeArg = ignoredAsDepList.Length > 0 ? $" -x {string.Join(',', ignoredAsDepList)}" : null;
+        var preReleaseArg = IncludePreRelease ? " --pre" : null;
         
         ActualizeResult = string.Empty;
         ActualizeViewEnabled = false;
@@ -224,7 +236,7 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
 
                     if (!await TerminalHelper.RunCmd("npx",
                             "--strict-ssl=false -y npm-check-updates -p yarn " +
-                            $"-f {angularDepPrefixRegex} -u --install always {excludeArg}",
+                            $"-f {angularDepPrefixRegex} -u --install always{preReleaseArg}{excludeArg}",
                             solution.Path, _actualizationCts.Token))
                     {
                         LogActualize("Ошибка при выполнении [npm-check-updates]\n\n");
@@ -368,5 +380,19 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
             _actualizationCts?.Dispose();
             _actualizationCts = null;
         }
+    }
+
+    [RelayCommand]
+    private async Task ShowResultDialog()
+    {
+        await _contentDialogService.ShowSimpleDialogAsync(
+            new SimpleContentDialogCreateOptions()
+            {
+                Title = $"Результаты актуализации на {DateTime.Now:G}",
+                Content = new ActualizerResultDialog(ActualizeResult),
+                PrimaryButtonText = "Ок",
+                CloseButtonText = "Ну, ок"
+            }
+        );
     }
 }
