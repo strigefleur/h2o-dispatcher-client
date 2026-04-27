@@ -61,10 +61,11 @@
                     <DataGridTextColumn Header="Last Sync" IsReadOnly="True" Binding="{Binding LatestSyncDate, StringFormat=\{0:yyyy-MM-dd HH:mm:ss\}}" Width="160" />
 
                     <!-- Action Button -->
-                    <DataGridTemplateColumn Width="100" Header="Run" SortMemberPath="IsRunnable">
+                    <DataGridTemplateColumn SortMemberPath="IsRunnable">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <ui:Button Content="Run" 
+                                <ui:Button ToolTip="Запустить" 
+                                           Margin="2,0,2,0"
                                            Visibility="{Binding Type, Converter={StaticResource SolutionTypeToVisibilityConverter}}"
                                            Command="{Binding DataContext.RunSolutionCommand, RelativeSource={RelativeSource AncestorType=ui:DataGrid}}"
                                            CommandParameter="{Binding}"
@@ -72,6 +73,23 @@
                                            PreviewMouseLeftButtonDown="Button_PreviewMouseLeftButtonDown">
                                     <ui:Button.Icon>
                                         <ui:SymbolIcon Symbol="Play24" />
+                                    </ui:Button.Icon>
+                                </ui:Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    
+                    <DataGridTemplateColumn>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ui:Button ToolTip="Открыть каталог" 
+                                           Margin="2,0,2,0"
+                                           Command="{Binding DataContext.OpenSolutionDirCommand, RelativeSource={RelativeSource AncestorType=ui:DataGrid}}"
+                                           CommandParameter="{Binding}"
+                                           Cursor="Hand"
+                                           PreviewMouseLeftButtonDown="Button_PreviewMouseLeftButtonDown">
+                                    <ui:Button.Icon>
+                                        <ui:SymbolIcon Symbol="Folder24" />
                                     </ui:Button.Icon>
                                 </ui:Button>
                             </DataTemplate>
