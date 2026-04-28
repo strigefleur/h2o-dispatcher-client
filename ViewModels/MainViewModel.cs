@@ -1,17 +1,22 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Felweed.Extensions;
 using Felweed.Models.Enumerators;
 using Felweed.Services;
+using Felweed.Views.Dialogs;
 using Microsoft.AspNetCore.SignalR.Client;
-using Wpf.Ui.Appearance;
+using Wpf.Ui;
 using Wpf.Ui.Controls;
+using Wpf.Ui.Extensions;
 
 namespace Felweed.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    public Dialogs.SetupDialogViewModel SetupDialogViewModel { get; } = new();
+    private readonly IContentDialogService _contentDialogService;
 
     [ObservableProperty]
     public partial bool IsLoading { get; set; }
@@ -21,21 +26,33 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     public partial bool IsLoaded { get; set; }
+    
+    [ObservableProperty]
+    public partial string ActiveProfileName { get; set; }
+    
+    [ObservableProperty]
+    public partial Uri? DepsGoogleTableUrl { get; set; }
 
     [ObservableProperty]
-    public partial SymbolRegular ThemeSwitchIcon { get; set; } = ConfigurationService.LoadConfig().ThemeSwitchIcon;
+    public partial SymbolRegular ThemeSwitchIcon { get; set; } =
+        ConfigurationService.LoadConfig().CurrentProfile == null
+            ? ApplicationThemeExtensions.LightThemeSymbol
+            : ConfigurationService.LoadConfig().ActiveProfile.Theme.GetThemeSymbol();
 
     [ObservableProperty] public partial HubConnectionState ConnectionState { get; set; }
-
-    // TODO
-    [ObservableProperty]
-    public partial bool ShowPublicDependencies { get; set; }
+    
     public static SolutionKind GraphPageSelector { get; set; } = SolutionKind.CSharp;
 
-    public MainViewModel()
+    public MainViewModel(IContentDialogService contentDialogService)
     {
+        _contentDialogService =  contentDialogService;
+        
         ConnectionState = HubConnector.Connection?.State ?? HubConnectionState.Disconnected;
         HubConnector.StateChanged += OnSignalRStateChanged;
+        
+        var config = ConfigurationService.LoadConfig();
+        ActiveProfileName = config.CurrentProfileName ?? "N/A";
+        DepsGoogleTableUrl = config.CurrentProfile?.DepsGoogleTableUrl;
     }
     
     private void OnSignalRStateChanged(HubConnectionState newState)
@@ -43,57 +60,23 @@ public partial class MainViewModel : ObservableObject
         App.Current.Dispatcher.Invoke(() => ConnectionState = newState);
     }
     
-    partial void OnThemeSwitchIconChanged(SymbolRegular oldValue, SymbolRegular newValue)
-    {
-        var config = ConfigurationService.LoadConfig();
-        config.ThemeSwitchIcon = newValue;
-        
-        ConfigurationService.SaveConfig();
-    }
-    
     [RelayCommand]
     private async Task ConfirmSelector()
     {
-        await InitializeAsync();
+        await OpenProfileSelectorAsync();
     }
     
     [RelayCommand]
     private void SwitchTheme()
     {
-        var currentTheme = ApplicationThemeManager.GetAppTheme();
-    
-        if (currentTheme == ApplicationTheme.Dark)
-        {
-            ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
-            ThemeSwitchIcon = SymbolRegular.WeatherMoon24;
-        }
-        else
-        {
-            ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType.None);
-            ThemeSwitchIcon = SymbolRegular.WeatherSunny24;
-        }
+        ThemeSwitchIcon = ThemeManager.SwitchTheme();
+        ConfigurationService.SetThemeBySymbol(ThemeSwitchIcon);
     }
 
-    private void ValidateDirectories()
+    [RelayCommand]
+    private async Task OpenProfileSelector()
     {
-        var config = ConfigurationService.LoadConfig();
-        
-        if (!ConfigurationService.ValidateDirectories())
-        {
-            IsSelector = true;
-            
-            var selectedDirs = SetupDialogViewModel.SelectedPaths.ToList();
-            if (selectedDirs.Count == 0)
-            {
-                return;
-            }
-
-            // Save new config
-            config.SolutionDirectories = selectedDirs.ToList();
-            ConfigurationService.SaveConfig();
-        }
-
-        IsSelector = false;
+        await OpenProfileSelectorAsync();
     }
 
     private async Task RunScanner()
@@ -111,13 +94,47 @@ public partial class MainViewModel : ObservableObject
             IsLoading = false;
         }
     }
-    
+
+    private async Task OpenProfileSelectorAsync()
+    {
+        var config = ConfigurationService.LoadConfig();
+        var activeProfileBefore = config.CurrentProfileName;
+
+        var dialog = new ProfileSelectorDialog();
+        var result = await _contentDialogService.ShowSimpleDialogAsync(
+            new SimpleContentDialogCreateOptions()
+            {
+                Title = "Выбор профиля",
+                Content = dialog,
+                PrimaryButtonText = "Ок",
+                CloseButtonText = "Ну, ок"
+            }
+        );
+
+        // if (result == ContentDialogResult.Primary)
+        {
+            var selectedProfileName = dialog.ViewModel.SelectedProfile?.Name;
+            var profileChanged = selectedProfileName != activeProfileBefore;
+            if (profileChanged)
+            {
+                ConfigurationService.SetActiveProfile(selectedProfileName);
+            }
+
+            if (dialog.ViewModel.HasChanges || profileChanged)
+            {
+                Process.Start(Process.GetCurrentProcess().MainModule.FileName);
+                Application.Current.Shutdown();
+            }
+        }
+    }
+
     public async Task InitializeAsync()
     {
-        ValidateDirectories();
-
-        if (IsSelector)
-            return;
+        var config = ConfigurationService.LoadConfig();
+        if (config.CurrentProfile == null || !config.ActiveProfile.Validate())
+        {
+            await OpenProfileSelectorAsync();
+        }
 
         await RunScanner();
     }
@@ -126,9 +143,9 @@ public partial class MainViewModel : ObservableObject
     {
         var config = ConfigurationService.LoadConfig();
         
-        var validPaths = config.SolutionDirectories.Where(Directory.Exists).ToList();
+        var validPaths = config.ActiveProfile.SolutionDirectories.Where(Directory.Exists).ToList();
         if (!validPaths.Any()) return;
         
-        await SolutionScanner.ScanAsync(validPaths, config.CSharpSolutionPrefixes, ct);
+        await SolutionScanner.ScanAsync(validPaths, [config.ActiveProfile.CSharpCorporateL1Prefix], ct);
     }
 }

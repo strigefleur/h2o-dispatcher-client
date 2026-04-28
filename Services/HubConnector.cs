@@ -17,7 +17,7 @@ public static class HubConnector
     public static async Task<string?> InitAsync(Action<byte[]> onFullState)
     {
         var config = ConfigurationService.LoadConfig();
-        var hubUrl = config.GetHubUrl();
+        var hubUrl = config.ActiveProfile.GetHubUrl();
 
         if (hubUrl == null)
             return "Отсутствует адрес подключения";

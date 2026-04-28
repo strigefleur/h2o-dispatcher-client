@@ -56,7 +56,41 @@
             
             <ui:TitleBar.TrailingContent>
                 <StackPanel VerticalAlignment="Top" 
+                            Orientation="Horizontal"
                             WindowChrome.IsHitTestVisibleInChrome="True">
+                    
+                    <ui:Button Appearance="Transparent"
+                               Content="{Binding ActiveProfileName}"
+                               Icon="{ui:SymbolIcon Person24}"
+                               Command="{Binding OpenProfileSelectorCommand}"
+                               Background="DarkSeaGreen"
+                               ToolTip="Сменить профиль"
+                               Padding="0"
+                               BorderThickness="0"
+                               CornerRadius="0,0,4,4"
+                               Focusable="False"
+                               HorizontalContentAlignment="Center"
+                               VerticalContentAlignment="Center"
+                               VerticalAlignment="Stretch"
+                               Cursor="Hand"
+                               OverridesDefaultStyle="True"
+                               Width="88"
+                               Height="32">
+                        <ui:Button.Template>
+                            <ControlTemplate TargetType="ui:Button">
+                                <Border Background="{TemplateBinding Background}"
+                                        Padding="0"
+                                        CornerRadius="0,0,4,4">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="Person24" 
+                                                       Margin="0,2,4,0" />
+                    
+                                        <ContentPresenter VerticalAlignment="Center" Margin="0"/>
+                                    </StackPanel>
+                                </Border>
+                            </ControlTemplate>
+                        </ui:Button.Template>
+                    </ui:Button>
                     
                     <ui:Button x:Name="ThemeToggleButton"
                                Appearance="Transparent"
@@ -65,7 +99,7 @@
                                ToolTip="Переключить тему"
                                Padding="0"
                                BorderThickness="0"
-                               CornerRadius="0"
+                               CornerRadius="0,0,4,4"
                                Focusable="False"
                                HorizontalContentAlignment="Center"
                                VerticalContentAlignment="Center"
@@ -85,8 +119,6 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            
-            <dialogs:SetupDialog DataContext="{Binding SetupDialogViewModel}" HorizontalAlignment="Stretch" />
             
             <Button Grid.Row="1" Content="Confirm" IsDefault="True"
                     Command="{Binding ConfirmSelectorCommand}"
@@ -202,7 +234,7 @@
                         VerticalAlignment="Stretch"
                         Content="Зависимости (Google Table)"
                         Icon="{ui:SymbolIcon Link24}"
-                        NavigateUri="https://docs.google.com/spreadsheets/d/1qGU-xha3lHp07vbx6qH-VSikyNL4yQ8LLCzqpGbWOtw" />
+                        NavigateUri="{Binding DepsGoogleTableUrl}" />
                 </ui:NavigationView.Header>
                 <ui:NavigationView.PaneFooter>
                     <Grid HorizontalAlignment="Stretch">

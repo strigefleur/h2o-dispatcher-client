@@ -39,7 +39,7 @@ public abstract record Solution
         _consumesDependencies.ToArray().AsReadOnly();
     
     public IReadOnlyCollection<ConsumedDependency> ConsumesCorpDependencies =>
-        _consumesDependencies.Where(x => x.IsCorporate).ToArray().AsReadOnly();
+        _consumesDependencies.Where(x => x.IsCorporate()).ToArray().AsReadOnly();
     
     public IReadOnlyCollection<Solution> ConsumedBy => _consumedBy.ToArray().AsReadOnly();
 

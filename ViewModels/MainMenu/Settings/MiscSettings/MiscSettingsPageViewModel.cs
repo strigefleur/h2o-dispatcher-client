@@ -30,8 +30,8 @@ public partial class MiscSettingsPageViewModel : ObservableObject
         MiscSettings.Add(new()
         {
             Name = "Адрес сервера",
-            Value = config.ServerUrl,
-            AppConfigPropName = nameof(config.ServerUrl),
+            Value = config.ActiveProfile.ServerUrl,
+            AppConfigPropName = nameof(config.ActiveProfile.ServerUrl),
             Id = 1,
         });
 

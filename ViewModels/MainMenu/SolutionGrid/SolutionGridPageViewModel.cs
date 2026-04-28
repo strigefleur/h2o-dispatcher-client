@@ -26,7 +26,7 @@ public partial class SolutionGridPageViewModel : ObservableObject
     {
         var config = ConfigurationService.LoadConfig();
         
-        solution?.Run([..config.CSharpSolutionPrefixes]);
+        solution?.Run(config.ActiveProfile.CSharpCorporateL1Prefix);
     }
 
     [RelayCommand]

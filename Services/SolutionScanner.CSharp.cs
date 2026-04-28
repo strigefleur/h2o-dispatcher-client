@@ -49,6 +49,7 @@ public static partial class SolutionScanner
 
     private static async Task<CSharpSolution> ParseCSharpSolutionAsync(string slnPath, CancellationToken ct = default)
     {
+        var config = ConfigurationService.LoadConfig();
         var produces = new List<string>();
         var dependencies = new List<ConsumedDependency>();
         var slnDir = Path.GetDirectoryName(slnPath);
@@ -75,7 +76,7 @@ public static partial class SolutionScanner
                 var doc = XDocument.Load(csproj);
                 var packageId = GetPackageId(doc);
 
-                isCorporate = packageId.StartsWith(Constants.PrefixConst.CSharpCorporateL0Prefix);
+                isCorporate = packageId.StartsWith(config.ActiveProfile.CSharpCorporateL0Prefix);
             }
         }
         
@@ -89,7 +90,7 @@ public static partial class SolutionScanner
         {
             Name = slnDir.Split(Path.DirectorySeparatorChar).Last(),
             Path = slnPath,
-            PackageId = $"{Constants.PrefixConst.CSharpCorporateL0Prefix}.{nugetPackageNamePart}",
+            PackageId = $"{config.ActiveProfile.CSharpCorporateL0Prefix}.{nugetPackageNamePart}",
             Type = GitlabConfigHelper.GetProjectType(Path.Combine(slnDir, ".gitlab-ci.yml")),
             GitOriginUrl = repo.GetRemoteUrl(),
             LatestSyncDate = GitHelper.GetLastGitSyncDate(slnDir),

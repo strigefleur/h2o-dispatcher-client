@@ -212,7 +212,7 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
 
                     using var repo = new Repository(solution.Path);
 
-                    var branch = config.ActiveBranch;
+                    var branch = config.ActiveProfile.ActiveBranch;
                     if (string.IsNullOrWhiteSpace(branch))
                     {
                         LogActualize("Ошибка при определении активной ветки\n\n");
@@ -231,8 +231,8 @@ public partial class FrontendDepActualizerPageVm : ObservableObject
                     }
 
                     LogActualize("Выполнение [npm-check-updates]...");
-                    const string angularDepPrefixRegex =
-                        @$"/^{PrefixConst.AngularCorporateL0Prefix}\.{PrefixConst.AngularCorporateL1Prefix}\//";
+                    var angularDepPrefixRegex =
+                        @$"/^{config.ActiveProfile.AngularCorporateL0Prefix}\.{config.ActiveProfile.AngularCorporateL1Prefix}\//";
 
                     if (!await TerminalHelper.RunCmd("npx",
                             "--strict-ssl=false -y npm-check-updates -p yarn " +

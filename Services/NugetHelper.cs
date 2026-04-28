@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Felweed.Constants;
 using Felweed.Models;
 using NuGet.Configuration;
 using Serilog;
@@ -25,7 +26,7 @@ public static class NugetHelper
 
         return Settings.LoadSpecificSettings(
             expandedPath,
-            Path.Combine(expandedPath, "NuGet.Config"));
+            Path.Combine(expandedPath, NameConstants.NugetConfigFileName));
     }
 
     private static bool ShouldRequestNugetData(string configPath, string feedName)
@@ -82,7 +83,7 @@ public static class NugetHelper
         {
             var solutionDir = Path.GetDirectoryName(solution.Path)!;
             foreach (var packageId in solution.ConsumesDependencies
-                         .Where(x => x.IsCorporate)
+                         .Where(x => x.IsCorporate())
                          .DistinctBy(x => x.Name)
                          .Select(x => x.Name))
             {

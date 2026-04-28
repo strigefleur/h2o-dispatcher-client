@@ -15,6 +15,8 @@ namespace Felweed.Views;
 
 public partial class MainWindow
 {
+    public MainViewModel ViewModel { get; }
+    
     private readonly IContentDialogService _contentDialogService;
     private readonly INavigationService _navigationService;
     
@@ -29,6 +31,7 @@ public partial class MainWindow
         
         InitializeComponent();
 
+        ViewModel = viewModel;
         DataContext = viewModel;
         
         RootNavigation.SetPageProviderService(pageProvider);
@@ -41,7 +44,7 @@ public partial class MainWindow
 
     private async void MainWindow_OnContentRendered(object? sender, EventArgs e)
     {
-        await (DataContext as MainViewModel).InitializeAsync();
+        await ViewModel.InitializeAsync();
         
         RootNavigation.Navigate(typeof(AboutPage));
     }

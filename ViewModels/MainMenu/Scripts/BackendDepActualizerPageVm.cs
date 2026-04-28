@@ -284,7 +284,7 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                     var dir = Guard.Against.Null(Path.GetDirectoryName(solution.Path));
                     using var repo = new Repository(dir);
                     
-                    var branch = config.ActiveBranch;
+                    var branch = config.ActiveProfile.ActiveBranch;
                     if (string.IsNullOrWhiteSpace(branch))
                     {
                         LogActualize("Ошибка при определении активной ветки\n\n");

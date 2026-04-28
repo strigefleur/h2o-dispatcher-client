@@ -34,7 +34,7 @@ public static partial class SolutionScanner
                 .Where(x => x.IsCorporate == true)
                 .ToArray();
             
-            foreach (var consumedDependency in solution.ConsumesDependencies.Where(x => x.IsCorporate))
+            foreach (var consumedDependency in solution.ConsumesDependencies.Where(x => x.IsCorporate()))
             {
                 // среди других решений (без текущего), у которых есть производимые зависимости, ищем нашу
                 foreach (var otherSolution in relatableSolutions)

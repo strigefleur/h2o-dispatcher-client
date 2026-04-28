@@ -33,10 +33,10 @@ public static class DependencyGraphBuilder
         {
             foreach (var cd in consumer.ConsumesDependencies)
             {
-                if (!cd.IsCorporate) continue;
-                if (!IsInternalCorporate(cd.Name)) continue; // ВАЖНО: внешнее/отсутствующее не включаем в граф уровней
+                if (!cd.IsCorporate()) continue;
 
-                var producerId = producedBy[cd.Name];
+                // ВАЖНО: внешнее/отсутствующее не включаем в граф уровней
+                if (!producedBy.TryGetValue(cd.Name, out var producerId)) continue;
 
                 // Самозависимость можно отфильтровать (на всякий случай)
                 if (producerId == consumer.Id) continue;
@@ -52,11 +52,11 @@ public static class DependencyGraphBuilder
 
         var outgoing = edges
             .GroupBy(e => e.FromId)
-            .ToDictionary(g => g.Key, g => (IReadOnlyList<Edge>)g.ToList());
+            .ToDictionary(g => g.Key, IReadOnlyList<Edge> (g) => g.ToList());
 
         var incoming = edges
             .GroupBy(e => e.ToId)
-            .ToDictionary(g => g.Key, g => (IReadOnlyList<Edge>)g.ToList());
+            .ToDictionary(g => g.Key, IReadOnlyList<Edge> (g) => g.ToList());
 
         return new DependencyGraph
         {
@@ -66,13 +66,5 @@ public static class DependencyGraphBuilder
             Incoming = incoming,
             Issues = issues
         };
-
-        // 2) Внутренние корпоративные пакеты = те, что:
-        //   - корпоративные по имени
-        //   - и реально "производятся" в текущем каталоге
-        bool IsInternalCorporate(string depName)
-            => (depName.StartsWith(Constants.PrefixConst.AngularCorporateL0Prefix, StringComparison.OrdinalIgnoreCase)
-                || depName.StartsWith(Constants.PrefixConst.CSharpCorporateL0Prefix, StringComparison.OrdinalIgnoreCase))
-               && producedBy.ContainsKey(depName);
     }
 }

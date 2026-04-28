@@ -131,10 +131,7 @@ public partial class App : Application
         var currentTheme = ApplicationThemeManager.GetAppTheme();
         var config = ConfigurationService.LoadConfig();
 
-        var configTheme = config.ThemeSwitchIcon == SymbolRegular.WeatherMoon24
-            ? ApplicationTheme.Light
-            : ApplicationTheme.Dark;
-
+        var configTheme = config.CurrentProfile?.Theme ?? ApplicationTheme.Light;
         if (configTheme == currentTheme)
             return;
 

@@ -48,6 +48,7 @@ public static partial class SolutionScanner
     private static async Task<AngularSolution> ParseAngularSolutionAsync(string angularDir,
         CancellationToken ct = default)
     {
+        var config = ConfigurationService.LoadConfig();
         var packageJson = Path.Combine(angularDir, "package.json");
         var (name, dependencies) = File.Exists(packageJson)
             ? ParsePackageJson(packageJson)
@@ -63,7 +64,7 @@ public static partial class SolutionScanner
             Type = GitlabConfigHelper.GetProjectType(Path.Combine(angularDir, ".gitlab-ci.yml")),
             GitOriginUrl = repo.GetRemoteUrl(),
             LatestSyncDate = GitHelper.GetLastGitSyncDate(angularDir),
-            IsCorporate = name.StartsWith(Constants.PrefixConst.AngularCorporateL0Prefix)
+            IsCorporate = name.StartsWith(config.ActiveProfile.AngularCorporateL0Prefix)
         };
         
         solution.UpdateTagVersionNumber(repo.GetLatestTagVersion());

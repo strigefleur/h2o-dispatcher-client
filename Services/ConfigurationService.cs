@@ -1,8 +1,11 @@
 ﻿using System.IO;
 using System.Text.Json;
 using Ardalis.GuardClauses;
+using Felweed.Extensions;
 using Felweed.Models;
+using Felweed.Models.AppConfig;
 using Serilog;
+using Wpf.Ui.Controls;
 
 namespace Felweed.Services;
 
@@ -50,12 +53,37 @@ public static class ConfigurationService
         var json = JsonSerializer.Serialize(_appConfig, Options);
         File.WriteAllText(ConfigPath, json);
     }
+    
+    public static void SetThemeBySymbol(SymbolRegular value)
+    {
+        if (_appConfig?.CurrentProfile != null)
+        {
+            _appConfig.ActiveProfile.Theme = value.GetTheme();
+            SaveConfig();
+        }
+    }
+    
+    public static void SetActiveProfile(string? profileName)
+    {
+        if (_appConfig == null)
+            return;
+        
+        if (profileName != null && !_appConfig.Profiles.ContainsKey(profileName))
+            return;
+        
+        _appConfig.CurrentProfileName = profileName;
+        
+        SaveConfig();
+    }
 
     public static bool ValidateDirectories()
     {
         Guard.Against.Null(_appConfig);
+
+        if (_appConfig.CurrentProfile == null)
+            return false;
         
-        return _appConfig.SolutionDirectories.Any(dir => 
+        return _appConfig.CurrentProfile.SolutionDirectories.Any(dir => 
             !string.IsNullOrWhiteSpace(dir) && 
             Directory.Exists(dir));
     }
@@ -70,5 +98,15 @@ public static class ConfigurationService
             Name = config.CorporateNexusSourceName,
             Url = config.CorporateNexusSourceUrl,
         };
+    }
+
+    public static void UpdateProfile(AppProfileConfig config)
+    {
+        var profile = _appConfig?.Profiles[config.Name];
+        if (profile == null)
+            return;
+
+        _appConfig?.Profiles[config.Name] = config;
+        SaveConfig();
     }
 }
