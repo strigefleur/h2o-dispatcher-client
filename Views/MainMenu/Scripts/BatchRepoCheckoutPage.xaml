@@ -93,7 +93,7 @@
                 </ui:ListView.ItemsPanel>
                 
                 <ui:ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
+                    <Style TargetType="ui:ListViewItem" BasedOn="{StaticResource ListViewItemStyle}">
                         <Setter Property="IsSelected" Value="{Binding IsChecked, Mode=TwoWay}" />
                         
                         <Setter Property="Width" Value="240" />
