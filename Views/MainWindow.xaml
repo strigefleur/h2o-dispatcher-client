@@ -267,7 +267,7 @@
                             FontWeight="Medium"
                             Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
                             HorizontalAlignment="Left"
-                            Text="0.17.0" />
+                            Text="0.17.1" />
                     
                         <ui:SymbolIcon 
                             Grid.Column="1"

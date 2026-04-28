@@ -70,8 +70,8 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void SwitchTheme()
     {
-        ThemeSwitchIcon = ThemeManager.SwitchTheme();
         ConfigurationService.SetThemeBySymbol(ThemeSwitchIcon);
+        ThemeSwitchIcon = ThemeManager.SwitchTheme();
     }
 
     [RelayCommand]
