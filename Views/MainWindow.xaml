@@ -63,7 +63,7 @@
                                Content="{Binding ActiveProfileName}"
                                Icon="{ui:SymbolIcon Person24}"
                                Command="{Binding OpenProfileSelectorCommand}"
-                               Background="DarkSeaGreen"
+                               Background="Thistle"
                                ToolTip="Сменить профиль"
                                Padding="0"
                                BorderThickness="0"
