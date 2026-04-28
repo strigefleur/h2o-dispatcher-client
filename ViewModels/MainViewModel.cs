@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using CliWrap;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Felweed.Extensions;
@@ -77,6 +78,15 @@ public partial class MainViewModel : ObservableObject
     private async Task OpenProfileSelector()
     {
         await OpenProfileSelectorAsync();
+    }
+    
+    [RelayCommand]
+    private async Task OpenLogDir()
+    {
+        await Cli.Wrap("explorer.exe")
+            .WithArguments(LogHelper.LogDirectory)
+            .WithValidation(CommandResultValidation.None)
+            .ExecuteAsync();
     }
 
     private async Task RunScanner()

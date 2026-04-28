@@ -35,19 +35,11 @@ public partial class App : Application
     
     public App()
     {
-        // Recommended path for logs
-        var logDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), 
-            "Felweed", 
-            "Logs"
-        );
-
-        // Create the directory if it doesn't exist
-        Directory.CreateDirectory(logDirectory);
+        Directory.CreateDirectory(LogHelper.LogDirectory);
         
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
-            .WriteTo.File($"{logDirectory}/felweed-.txt", rollingInterval: RollingInterval.Day)
+            .WriteTo.File(LogHelper.LogFileName, rollingInterval: RollingInterval.Day)
             .CreateLogger();
         
         DispatcherUnhandledException += (s, e) => {

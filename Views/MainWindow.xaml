@@ -92,6 +92,24 @@
                         </ui:Button.Template>
                     </ui:Button>
                     
+                    <ui:Button Appearance="Transparent"
+                               Icon="{ui:SymbolIcon TextDescription24}"
+                               Command="{Binding OpenLogDirCommand}"
+                               Background="Transparent"
+                               ToolTip="Открыть каталог логов"
+                               Padding="0"
+                               BorderThickness="0"
+                               CornerRadius="0,0,4,4"
+                               Focusable="False"
+                               HorizontalContentAlignment="Center"
+                               VerticalContentAlignment="Center"
+                               VerticalAlignment="Stretch"
+                               Cursor="Hand"
+
+                               Width="40"
+                               Height="32">
+                    </ui:Button>
+                    
                     <ui:Button x:Name="ThemeToggleButton"
                                Appearance="Transparent"
                                Icon="{Binding ThemeSwitchIcon}"
