@@ -155,6 +155,7 @@
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsIgnoredAsDep}" Value="True">
                                                         <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                        <Setter Property="FontStyle" Value="Italic"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
