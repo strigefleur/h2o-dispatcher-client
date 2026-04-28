@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System.Windows.Data;
+using System.Windows.Input;
 using Felweed.Models.Enumerators;
 using Felweed.Services;
 using Felweed.ViewModels;
@@ -9,7 +10,6 @@ using Serilog;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Controls;
-using Wpf.Ui.Extensions;
 
 namespace Felweed.Views;
 
@@ -65,13 +65,13 @@ public partial class MainWindow
         {
             case BackendDepActualizerPage:
             {
-                if (SecureStorage.LoadApiKey() == null)
+                if (!ConfigurationService.IsCredentialsValid())
                 {
                     // Stop the navigation
                     args.Cancel = true;
 
                     // Show prompt
-                    if (await ShowGitlabTokenDialogAsync())
+                    if (await ShowCredentialsDialogAsync())
                     {
                         _navigationService.Navigate(typeof(BackendDepActualizerPage));
                     }
@@ -81,13 +81,13 @@ public partial class MainWindow
             }
             case BatchRepoCheckoutPage:
             {
-                if (SecureStorage.LoadApiKey() == null)
+                if (!ConfigurationService.IsCredentialsValid())
                 {
                     // Stop the navigation
                     args.Cancel = true;
 
                     // Show prompt
-                    if (await ShowGitlabTokenDialogAsync())
+                    if (await ShowCredentialsDialogAsync())
                     {
                         _navigationService.Navigate(typeof(BatchRepoCheckoutPage));
                     }
@@ -97,13 +97,13 @@ public partial class MainWindow
             }
             case FrontendDepActualizerPage:
             {
-                if (SecureStorage.LoadApiKey() == null)
+                if (!ConfigurationService.IsCredentialsValid())
                 {
                     // Stop the navigation
                     args.Cancel = true;
 
                     // Show prompt
-                    if (await ShowGitlabTokenDialogAsync())
+                    if (await ShowCredentialsDialogAsync())
                     {
                         _navigationService.Navigate(typeof(FrontendDepActualizerPage));
                     }
@@ -114,40 +114,67 @@ public partial class MainWindow
         }
     }
     
-    private async Task<bool> ShowGitlabTokenDialogAsync(CancellationToken ct = default)
+    private async Task<bool> ShowCredentialsDialogAsync(CancellationToken ct = default)
     {
-        GitlabApiKeyDialog? dialog = null;
+        CredentialsDialog? credentialsDialog = null;
     
         try
         {
-            dialog = new GitlabApiKeyDialog();
+            credentialsDialog = new CredentialsDialog();
+            
+            var dialog = new ContentDialog(_contentDialogService.GetDialogHostEx())
+            {
+                Title = "Конфигурация доступа к внешним ресурсам",
+                Content = credentialsDialog,
+                PrimaryButtonText = "Применить",
+                CloseButtonText = "Уже не хочется",
+                IsPrimaryButtonEnabled = false
+            };
+
+            var vm = credentialsDialog.ViewModel;
+            
+            BindingOperations.SetBinding(dialog, 
+                ContentDialog.IsPrimaryButtonEnabledProperty, 
+                new Binding("IsValid") { Source = vm });
+            
+            credentialsDialog.NexusPasswordBox.PasswordChanged += (s, e) => 
+            {
+                vm.UpdatePassword(credentialsDialog.NexusPasswordBox.Password);
+            };
+
+            var result = await dialog.ShowAsync(ct);
     
-            var result = await _contentDialogService.ShowSimpleDialogAsync(
-                new SimpleContentDialogCreateOptions()
-                {
-                    Title = "API-ключ для Gitlab",
-                    Content = dialog,
-                    PrimaryButtonText = "Применить",
-                    CloseButtonText = "Уже не хочется",
-                }, cancellationToken: ct);
-    
-            if (result != ContentDialogResult.Primary || string.IsNullOrWhiteSpace(dialog.ViewModel.GitlabApiKey))
+            if (result != ContentDialogResult.Primary)
+                return false;
+            
+            var config = ConfigurationService.LoadConfig();
+            config.CorporateNexusSourceName = vm.NexusSourceName;
+            config.CorporateNexusSourceUrl = vm.NexusSourceUrl;
+            ConfigurationService.SaveConfig();
+
+            NugetHelper.SetNugetCredentials(vm.NexusSourceName, vm.NexusSourceUrl,
+                vm.NexusUsername, credentialsDialog.NexusPasswordBox.Password);
+
+            if (!SecureStorage.SaveApiKey(vm.GitlabApiKey))
                 return false;
 
-            if (SecureStorage.SaveApiKey(dialog.ViewModel.GitlabApiKey))
-                return true;
+            if (!ConfigurationService.IsCredentialsValid())
+                return false;
+
+            return true;
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Failed to use API key");
+            Log.Error(ex, "Failed to set credentials");
             return false;
         }
         finally
         {
-            dialog?.ViewModel.GitlabApiKey = null;
-            dialog?.GitlabApiKeyBox.Text = "";
+            credentialsDialog?.ViewModel.GitlabApiKey = null;
+            credentialsDialog?.GitlabApiKeyBox.Text = "";
+            
+            credentialsDialog?.ViewModel.NexusUsername = null;
+            credentialsDialog?.NexusPasswordBox.Password = "";
         }
-        
-        return false;
     }
 }

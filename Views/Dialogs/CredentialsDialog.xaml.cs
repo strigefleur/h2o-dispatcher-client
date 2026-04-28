@@ -3,15 +3,15 @@ using Felweed.ViewModels.Dialogs;
 
 namespace Felweed.Views.Dialogs;
 
-public partial class GitlabApiKeyDialog : UserControl
+public partial class CredentialsDialog : UserControl
 {
-    public GitlabApiKeyDialogVm ViewModel { get; }
+    public CredentialsDialogVm ViewModel { get; }
     
-    public GitlabApiKeyDialog()
+    public CredentialsDialog()
     {
         InitializeComponent();
         
-        ViewModel = new GitlabApiKeyDialogVm();
+        ViewModel = new CredentialsDialogVm();
         DataContext = ViewModel;
     }
 }

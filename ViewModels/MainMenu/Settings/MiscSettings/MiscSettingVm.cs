@@ -9,7 +9,6 @@ public partial class MiscSettingVm : ObservableObject
 
     [ObservableProperty]
     public partial string? Value { get; set; }
-    public int Id { get; init; }
     
     public required string AppConfigPropName { get; set; }
 }

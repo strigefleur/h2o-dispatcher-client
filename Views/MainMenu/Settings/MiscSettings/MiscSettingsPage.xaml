@@ -13,10 +13,8 @@
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
-        <!-- Table Section -->
         <ui:DataGrid ItemsSource="{Binding MiscSettings}"
                      AutoGenerateColumns="False"
                      CanUserAddRows="False"
@@ -68,14 +66,5 @@
                 </DataGridTemplateColumn>
             </ui:DataGrid.Columns>
         </ui:DataGrid>
-        
-        <StackPanel Grid.Row="1"  Margin="16">
-            <ui:Button Content="Задать пароль фида Nuget" 
-                       HorizontalAlignment="Right"
-                       IsEnabled="{Binding CanUpdateNexusPassword}"
-                       Command="{Binding ShowDialogCommand}"
-                       Cursor="Hand">
-            </ui:Button>
-        </StackPanel>
     </Grid>
 </Page>

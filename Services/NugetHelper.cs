@@ -48,9 +48,10 @@ public static class NugetHelper
             validAuthenticationTypesText: null);
     }
 
-    public static void SetNugetCredentials(string configPath, string name, string url, string user, string? pwd)
+    public static void SetNugetCredentials(string name, string url, string user, string? pwd)
     {
-        var settings = LoadNugetConfig(configPath);
+        var config = ConfigurationService.LoadConfig();
+        var settings = LoadNugetConfig(config.NugetConfigPath);
 
         var sourceProvider = new PackageSourceProvider(settings);
         var sources = sourceProvider.LoadPackageSources().ToList();

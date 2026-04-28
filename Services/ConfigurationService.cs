@@ -75,29 +75,29 @@ public static class ConfigurationService
         
         SaveConfig();
     }
-
-    public static bool ValidateDirectories()
-    {
-        Guard.Against.Null(_appConfig);
-
-        if (_appConfig.CurrentProfile == null)
-            return false;
-        
-        return _appConfig.CurrentProfile.SolutionDirectories.Any(dir => 
-            !string.IsNullOrWhiteSpace(dir) && 
-            Directory.Exists(dir));
-    }
     
     public static NugetFeedConfig ReadNugetFeedConfig()
     {
-        var config = LoadConfig();
-
         return new()
         {
-            ConfigPath = config.NugetConfigPath,
-            Name = config.CorporateNexusSourceName,
-            Url = config.CorporateNexusSourceUrl,
+            ConfigPath = _appConfig.NugetConfigPath,
+            Name = _appConfig.CorporateNexusSourceName,
+            Url = _appConfig.CorporateNexusSourceUrl,
         };
+    }
+
+    public static bool IsCredentialsValid()
+    {
+        if (_appConfig?.CorporateNexusSourceName == null)
+            return false;
+        
+        if (_appConfig.CorporateNexusSourceUrl == null)
+            return false;
+
+        if (SecureStorage.LoadApiKey() == null)
+            return false;
+
+        return true;
     }
 
     public static void UpdateProfile(AppProfileConfig config)
