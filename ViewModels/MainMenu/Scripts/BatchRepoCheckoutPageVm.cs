@@ -82,7 +82,7 @@ public partial class BatchRepoCheckoutPageVm : ObservableObject
                         }
                         else
                         {
-                            if (!await repo.FetchAsync(gitlabToken, solutionDir, token))
+                            if (await repo.FetchAsync(gitlabToken, solutionDir, token))
                             {
                                 var remoteBranch = repo.Branches[$"origin/{BranchName}"];
                                 if (remoteBranch != null)
