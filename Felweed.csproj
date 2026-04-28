@@ -92,10 +92,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Remove="Assets\Icons\h2o_logo.svg" />
-        <Resource Include="Assets\Icons\h2o_logo.svg" />
-        <None Remove="Assets\Icons\h2o_logo.ico" />
-        <Resource Include="Assets\Icons\h2o_logo.ico" />
         <None Remove="Assets\Icons\Gitlab\skipped.svg" />
         <Resource Include="Assets\Icons\Gitlab\skipped.svg" />
         <None Remove="Assets\Icons\Gitlab\canceled.svg" />
@@ -108,6 +104,10 @@
         <Resource Include="Assets\Icons\Gitlab\success.svg" />
         <None Remove="Assets\Icons\Gitlab\warning.svg" />
         <Resource Include="Assets\Icons\Gitlab\warning.svg" />
+        <None Remove="Assets\Icons\hibiscus_logo.ico" />
+        <Resource Include="Assets\Icons\hibiscus_logo.ico" />
+        <None Remove="Assets\Icons\hibiscus_logo.svg" />
+        <Resource Include="Assets\Icons\hibiscus_logo.svg" />
     </ItemGroup>
 
 </Project>

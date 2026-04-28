@@ -11,6 +11,9 @@ public partial class AboutPageViewModel : ObservableObject
 {
     [ObservableProperty]
     public partial string? Anecdote { get; set; }
+    
+    [ObservableProperty]
+    public partial string? WatermarkText { get; set; }
 
     [ObservableProperty]
     public partial string? AnecdoteSponsorText { get; set; }
@@ -29,6 +32,12 @@ public partial class AboutPageViewModel : ObservableObject
     };
 
     private static readonly HttpClient Client = new();
+
+    public AboutPageViewModel()
+    {
+        var config = ConfigurationService.LoadConfig();
+        WatermarkText = config.CurrentProfileName ?? "<3";
+    }
     
     public async Task GetAnecdoteAsync()
     {

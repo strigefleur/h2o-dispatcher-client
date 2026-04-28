@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
       xmlns:localConverters="clr-namespace:Felweed.ViewModels.Converters"
       xmlns:about="clr-namespace:Felweed.ViewModels.MainMenu.About"
       mc:Ignorable="d"
@@ -17,13 +18,19 @@
     </Page.Resources>
     
     <Grid Margin="32">
+        <Grid.Background>
+            <ImageBrush ImageSource="{svgc:SvgImage Source=/Assets/Icons/hibiscus_logo.svg}"
+                        Stretch="Uniform"
+                        Opacity="0.05" />
+        </Grid.Background>
+        
         <Grid Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="H2.0" 
+            <TextBlock Text="{Binding WatermarkText}" 
                        FontSize="340"
                        Padding="0"
                        Margin="0"
                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                       Opacity="0.05" 
+                       Opacity="0.1" 
                        FontWeight="Bold"
                        HorizontalAlignment="Center" 
                        VerticalAlignment="Center"
@@ -38,7 +45,7 @@
                           TextWrapping="Wrap"
                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                           HorizontalAlignment="Left" />
-            <ui:TextBlock Text="Перед тобой - менеджер для работы с зоопарком репозиториев, составляющих проект Н2.0." 
+            <ui:TextBlock Text="{Binding WatermarkText, StringFormat='{}Перед тобой - менеджер для работы с зоопарком репозиториев, составляющих проект {0}.'}"
                           Margin="0, 20, 0, 0"
                           TextWrapping="Wrap"
                           VerticalAlignment="Top"

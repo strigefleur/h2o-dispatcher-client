@@ -21,8 +21,8 @@
                  WindowStartupLocation="CenterScreen"
                  ExtendsContentIntoTitleBar="True"
                  ContentRendered="MainWindow_OnContentRendered"
-                 Title="H2.0: Диспетчер"
-                 Icon="/Assets/Icons/h2o_logo.ico"
+                 Title="Karkadeps"
+                 Icon="/Assets/Icons/hibiscus_logo.ico"
                  Height="808"
                  Width="1200">
     <Window.Resources>
@@ -40,13 +40,13 @@
             <ui:TitleBar.Header>
                 <Grid VerticalAlignment="Center" Margin="16,0,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="{svgc:SvgImage Source=/Assets/Icons/h2o_logo.svg}" 
+                        <Image Source="{svgc:SvgImage Source=/Assets/Icons/hibiscus_logo.svg}"
                                Width="16" 
                                Height="16" 
                                Margin="0,2,8,0"
                                VerticalAlignment="Center" />
                         
-                        <TextBlock Text="H2.0: Диспетчер" 
+                        <TextBlock Text="Karkadeps" 
                                    FontWeight="SemiBold" 
                                    FontSize="16"
                                    VerticalAlignment="Center"/>
