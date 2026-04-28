@@ -79,8 +79,38 @@ public partial class MainWindow
 
                 break;
             }
-            case FrontendDepActualizerPage:
+            case BatchRepoCheckoutPage:
+            {
+                if (SecureStorage.LoadApiKey() == null)
+                {
+                    // Stop the navigation
+                    args.Cancel = true;
+
+                    // Show prompt
+                    if (await ShowGitlabTokenDialogAsync())
+                    {
+                        _navigationService.Navigate(typeof(BatchRepoCheckoutPage));
+                    }
+                }
+
                 break;
+            }
+            case FrontendDepActualizerPage:
+            {
+                if (SecureStorage.LoadApiKey() == null)
+                {
+                    // Stop the navigation
+                    args.Cancel = true;
+
+                    // Show prompt
+                    if (await ShowGitlabTokenDialogAsync())
+                    {
+                        _navigationService.Navigate(typeof(FrontendDepActualizerPage));
+                    }
+                }
+
+                break;
+            }
         }
     }
     
