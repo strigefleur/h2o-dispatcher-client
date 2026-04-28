@@ -58,15 +58,28 @@
                     </StackPanel>
                 </ui:Card>
                 
-                <ui:Card Grid.Row="1" Padding="8">
+                <ui:Card Grid.Row="1" Padding="8" Margin="0,8,0,0" VerticalAlignment="Stretch"
+                         HorizontalContentAlignment="Stretch"
+                         VerticalContentAlignment="Stretch">
                     <ui:ListView ItemsSource="{Binding ActualizeSolutions}"
                                  SelectionMode="Multiple"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                 ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                 HorizontalAlignment="Stretch"
+                                 VerticalAlignment="Stretch"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                  IsEnabled="{Binding ActualizeViewEnabled}">
+                        <ui:ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel IsItemsHost="True" />
+                            </ItemsPanelTemplate>
+                        </ui:ListView.ItemsPanel>
+                        
                         <ui:ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="IsSelected" Value="{Binding IsChecked, Mode=TwoWay}" />
+                                
+                                <Setter Property="Width" Value="240" />
+                                <Setter Property="Margin" Value="2" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                 
                                 <EventSetter Event="PreviewMouseRightButtonDown" Handler="OnPreviewMouseRightButtonDown" />
                                 <Setter Property="ContextMenu">
@@ -94,13 +107,6 @@
                                 </Style.Triggers>
                             </Style>
                         </ui:ListView.ItemContainerStyle>
-                        
-                        <ui:ListView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Vertical" 
-                                           Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}" />
-                            </ItemsPanelTemplate>
-                        </ui:ListView.ItemsPanel>
                         
                         <ListView.ItemTemplate>
                             <DataTemplate DataType="{x:Type scripts:SolutionActualizeVm}">
