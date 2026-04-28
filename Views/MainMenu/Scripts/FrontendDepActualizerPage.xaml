@@ -26,7 +26,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
-        <GroupBox Header="Выбор зависимостей через DAG" Padding="8">
+        <ui:Card Padding="8">
             <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
                 <ComboBox x:Name="ActualizeSolutionFilter"
                           Width="320"
@@ -45,9 +45,9 @@
                         IsEnabled="{Binding ActualizeViewEnabled}"
                         Command="{Binding UseDagFilterSelectionCommand}"/>
             </StackPanel>
-        </GroupBox>
+        </ui:Card>
         
-        <GroupBox Grid.Row="1" Header="Выбор зависимостей вручную" Padding="8">
+        <ui:Card Grid.Row="1" Padding="8">
             <ui:ListView ItemsSource="{Binding ActualizeSolutions}"
                          SelectionMode="Multiple"
                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
@@ -146,9 +146,9 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ui:ListView>
-        </GroupBox>
+        </ui:Card>
         
-        <GroupBox Header="Управление" Grid.Row="2" Margin="0, 8, 0, 0">
+        <ui:Card Grid.Row="2" Margin="0, 8, 0, 0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
@@ -196,6 +196,6 @@
                     </ui:Button>
                 </StackPanel>
             </Grid>
-        </GroupBox>
+        </ui:Card>
     </Grid>
 </UserControl>

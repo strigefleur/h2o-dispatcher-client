@@ -31,7 +31,7 @@
             Переключение указанных репозиториев на выбранную ветку
         </ui:TextBlock>
         
-        <GroupBox Grid.Row="1" Header="Выбор ветки" Padding="8">
+        <ui:Card Grid.Row="1" Padding="8">
             <StackPanel>
                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
                     <ui:AutoSuggestBox Text="{Binding BranchName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -75,9 +75,9 @@
                         Value="{Binding MaxDegreeOfParallelism, Mode=TwoWay}" />
                 </StackPanel>
             </StackPanel>
-        </GroupBox>
+        </ui:Card>
         
-        <GroupBox Grid.Row="2" Header="Выбор репозиториев" Padding="8">
+        <ui:Card Grid.Row="2" Padding="8">
             <ui:ListView ItemsSource="{Binding Solutions}"
                          SelectionMode="Multiple"
                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
@@ -138,6 +138,6 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ui:ListView>
-        </GroupBox>
+        </ui:Card>
     </Grid>
 </Page>

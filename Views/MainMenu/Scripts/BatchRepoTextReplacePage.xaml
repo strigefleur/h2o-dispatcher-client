@@ -15,7 +15,7 @@
             Замена текста в указанном файле с искомого на целевой в каждом репозитории, где найдется совпадение
         </ui:TextBlock>
         
-        <GroupBox Header="Фильтр репозиториев" Padding="8" Margin="0,8,0,0">
+        <ui:Card Padding="8" Margin="0,8,0,0">
             <StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <RadioButton
@@ -38,9 +38,9 @@
                           IsChecked="{Binding ServiceOnly}"
                           Margin="0, 8, 0, 0"/>
             </StackPanel>
-        </GroupBox>
+        </ui:Card>
         
-        <GroupBox Header="Детализация замены" Padding="8">
+        <ui:Card Padding="8">
             <StackPanel>
                 <ui:TextBox Text="{Binding Filename}"
                             PlaceholderText="Название файла с расширением, например: package.json"/>
@@ -51,9 +51,9 @@
                 <ui:TextBox Text="{Binding ReplaceText}" PlaceholderText="На что заменить"
                             Margin="0, 8, 0, 0"/>
             </StackPanel>
-        </GroupBox>
+        </ui:Card>
         
-        <GroupBox Header="Пост-обработка" Padding="8">
+        <ui:Card Padding="8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -66,7 +66,7 @@
                             IsEnabled="{Binding WithCommit}"
                             PlaceholderText="Сообщение коммита"/>
             </Grid>
-        </GroupBox>
+        </ui:Card>
         
         <StackPanel Orientation="Horizontal" Margin="0, 16, 0, 0">
             <ui:Button Content="Выполнить замену" 
