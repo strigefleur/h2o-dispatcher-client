@@ -390,7 +390,7 @@ public partial class BackendDepActualizerPageVm : ObservableObject
 
                     const string defaultCommitMessage = "chore: bump deps";
                     var commitMessage = solution.IsPackable
-                        ? $"{defaultCommitMessage} to {nextVersion}\""
+                        ? $"{defaultCommitMessage} to {nextVersion}"
                         : defaultCommitMessage;
                     
                     if (!await repo.StageAndCommitAsync(dir, commitMessage, _actualizationCts.Token))
