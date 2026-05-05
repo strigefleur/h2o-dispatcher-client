@@ -13,6 +13,7 @@ using Felweed.Views.Dialogs;
 using LibGit2Sharp;
 using Serilog;
 using Wpf.Ui;
+using Wpf.Ui.Controls;
 using Wpf.Ui.Extensions;
 
 namespace Felweed.ViewModels.MainMenu.Scripts;
@@ -20,6 +21,7 @@ namespace Felweed.ViewModels.MainMenu.Scripts;
 public partial class BackendDepActualizerPageVm : ObservableObject
 {
     private readonly IContentDialogService _contentDialogService;
+    private readonly ISnackbarService _snackbarService;
     
     [ObservableProperty]
     public partial bool? IsInitialized { get; set; }
@@ -53,9 +55,10 @@ public partial class BackendDepActualizerPageVm : ObservableObject
 
     private CancellationTokenSource? _actualizationCts;
     
-    public BackendDepActualizerPageVm(IContentDialogService contentDialogService)
+    public BackendDepActualizerPageVm(IContentDialogService contentDialogService, ISnackbarService snackbarService)
     {
         _contentDialogService = contentDialogService;
+        _snackbarService = snackbarService;
         
         foreach (var csharpSolution in SolutionScanner.CsharpSolutions
                      .Where(x => x is { IsCorporate: true })
@@ -441,5 +444,29 @@ public partial class BackendDepActualizerPageVm : ObservableObject
                 CloseButtonText = "Ну, ок"
             }
         );
+    }
+
+    [RelayCommand]
+    private async Task ClearNugetCache(CancellationToken ct = default)
+    {
+        ActualizeViewEnabled = false;
+
+        try
+        {
+            var isOk = await TerminalHelper.NugetClearCacheAsync(AppDomain.CurrentDomain.BaseDirectory, ct);
+            var textResult = isOk ? "сброшен" : "не удалось сбросить";
+        
+            _snackbarService.Show(
+                "Nuget",
+                $"Локальный HTTP-кэш Nuget {textResult}",
+                ControlAppearance.Secondary,
+                new SymbolIcon(SymbolRegular.Fluent24),
+                TimeSpan.FromSeconds(3)
+            );
+        }
+        finally
+        {
+            ActualizeViewEnabled = true;
+        }
     }
 }

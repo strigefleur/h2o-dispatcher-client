@@ -55,6 +55,12 @@
                                 VerticalAlignment="Stretch"
                                 IsEnabled="{Binding ActualizeViewEnabled}"
                                 Command="{Binding UseDagFilterSelectionCommand}"/>
+                        
+                        <Button Content="Сбросить HTTP-кэш Nuget" Margin="16,0,0,0"
+                                VerticalContentAlignment="Center"
+                                VerticalAlignment="Stretch"
+                                IsEnabled="{Binding ActualizeViewEnabled}"
+                                Command="{Binding ClearNugetCacheCommand}" />
                     </StackPanel>
                 </ui:Card>
                 

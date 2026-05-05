@@ -121,6 +121,23 @@ public static class TerminalHelper
         }
     }
     
+    public static async Task<bool> NugetClearCacheAsync(string solutionDir, CancellationToken ct = default)
+    {
+        var stageResult = await Cli.Wrap("dotnet")
+            .WithArguments("nuget locals http-cache --clear")
+            .WithWorkingDirectory(solutionDir)
+            .WithValidation(CommandResultValidation.None)
+            .ExecuteBufferedAsync(ct);
+
+        if (!stageResult.IsSuccess)
+        {
+            Log.Error(stageResult.StandardError);
+            return false;
+        }
+
+        return true;
+    }
+    
     public static async Task<bool> DotnetRestoreAsync(string solutionDir, CancellationToken ct = default)
     {
         var stageResult = await Cli.Wrap("dotnet")

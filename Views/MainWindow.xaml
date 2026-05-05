@@ -289,5 +289,10 @@
         <ui:ContentDialogHost x:Name="RootContentDialogHost"
                               Grid.Row="0" 
                               Grid.RowSpan="2"/>
+        
+        <ui:SnackbarPresenter x:Name="SnackbarPresenter"
+                              Grid.Row="0" 
+                              Grid.RowSpan="2"/>
+
     </Grid>
 </ui:FluentWindow>

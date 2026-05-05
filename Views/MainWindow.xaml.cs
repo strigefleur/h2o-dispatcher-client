@@ -24,7 +24,8 @@ public partial class MainWindow
         MainViewModel viewModel,
         INavigationViewPageProvider pageProvider, 
         INavigationService navigationService,
-        IContentDialogService contentDialogService)
+        IContentDialogService contentDialogService,
+        ISnackbarService snackbarService)
     {
         _contentDialogService = contentDialogService;
         _navigationService = navigationService;
@@ -38,6 +39,7 @@ public partial class MainWindow
         navigationService.SetNavigationControl(RootNavigation);
         
         contentDialogService.SetDialogHost(RootContentDialogHost);
+        snackbarService.SetSnackbarPresenter(SnackbarPresenter);
         
         RootNavigation.Navigating += OnRootNavigationNavigating;
     }

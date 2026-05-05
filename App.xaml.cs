@@ -96,6 +96,7 @@ public partial class App : Application
         services.AddSingleton<INavigationService, NavigationService>();
         
         services.AddSingleton<IContentDialogService, ContentDialogService>();
+        services.AddSingleton<ISnackbarService, SnackbarService>();
         
         services.AddHttpClient();
 
