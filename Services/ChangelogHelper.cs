@@ -38,7 +38,7 @@ public static class ChangelogHelper
             "", // Spacing before the header
             $"## Версия {version}",
             "",
-            "### Изменения текущей версии",
+            $"### Изменения версии {version}",
             ""
         };
         
