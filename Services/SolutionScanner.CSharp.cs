@@ -29,8 +29,8 @@ public static partial class SolutionScanner
                 {
                     foreach (var file in dir.EnumerateFilesWithExclusions(allowedPrefixes, "*.sln"))
                     {
-                        var slnDir = Path.GetDirectoryName(file);
-                        if (File.Exists(Path.Combine(slnDir, ".gitlab-ci.yml")))
+                        var slnDir = Guard.Against.Null(Path.GetDirectoryName(file));
+                        if (File.Exists(Path.Combine(slnDir, ".gitlab-ci.yml")) && Repository.IsValid(slnDir))
                         {
                             await channel.Writer.WriteAsync(file, ct);
                         }

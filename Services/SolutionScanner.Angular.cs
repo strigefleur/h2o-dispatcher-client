@@ -28,7 +28,11 @@ public static partial class SolutionScanner
                 {
                     foreach (var file in dir.EnumerateFilesWithExclusions(null, "angular.json"))
                     {
-                        await channel.Writer.WriteAsync(Guard.Against.Null(Path.GetDirectoryName(file)), ct);
+                        var slnDir = Guard.Against.Null(Path.GetDirectoryName(file));
+                        if (File.Exists(Path.Combine(slnDir, ".gitlab-ci.yml")) && Repository.IsValid(slnDir))
+                        {
+                            await channel.Writer.WriteAsync(slnDir, ct);
+                        }
                     }
                 }
             }
