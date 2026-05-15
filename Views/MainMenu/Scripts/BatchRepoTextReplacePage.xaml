@@ -33,10 +33,22 @@
                         GroupName="radio_group_one"
                         IsChecked="{Binding FrontendOnly}" />
                 </StackPanel>
-        
-                <CheckBox Content="Только сервисы"
-                          IsChecked="{Binding ServiceOnly}"
-                          Margin="0, 8, 0, 0"/>
+                
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox Content="Только сервисы"
+                              IsChecked="{Binding ServiceOnly}"
+                              Margin="0, 8, 0, 0"/>
+                
+                    <ui:NumberBox 
+                        Value="{Binding SearchDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Minimum="0"
+                        Maximum="8"
+                        SmallChange="1"
+                        LargeChange="1"
+                        Margin="0, 8, 0, 0"
+                        ToolTip="Максимальная глубина поиска" />
+                </StackPanel>
+
             </StackPanel>
         </ui:Card>
         

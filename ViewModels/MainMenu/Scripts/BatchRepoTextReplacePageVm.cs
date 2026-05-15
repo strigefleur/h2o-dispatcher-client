@@ -21,6 +21,8 @@ public partial class BatchRepoTextReplacePageVm : ObservableObject
     [ObservableProperty]
     public partial bool ServiceOnly { get; set; }
 
+    [ObservableProperty] public partial byte SearchDepth { get; set; } = 0;
+
     [ObservableProperty]
     public partial bool WithCommit { get; set; }
 
@@ -107,7 +109,7 @@ public partial class BatchRepoTextReplacePageVm : ObservableObject
         if (dir == null)
             return null;
 
-        var filename = Path.Combine(dir, Filename);
+        var filename = FindFileWithDepth(dir, Filename, SearchDepth);
         if (!File.Exists(filename))
             return null;
 
@@ -134,9 +136,9 @@ public partial class BatchRepoTextReplacePageVm : ObservableObject
 
             var content = File.ReadAllText(checkInfo.Value.Filename);
 
-            if (content.Contains((string)LookupText))
+            if (content.Contains(LookupText))
             {
-                var updatedContent = content.Replace((string)LookupText, ReplaceText);
+                var updatedContent = content.Replace(LookupText, ReplaceText);
                 File.WriteAllText(checkInfo.Value.Filename, updatedContent);
 
                 ReplaceResult += $"\n{++replaceCount}: выполнена замена в {checkInfo.Value.Filename}";
@@ -147,7 +149,7 @@ public partial class BatchRepoTextReplacePageVm : ObservableObject
                     {
                         var defaultSignature = repo.Config.BuildSignature(DateTimeOffset.Now);
 
-                        Commands.Stage((IRepository)repo, (string)Filename);
+                        Commands.Stage(repo, (string)Filename);
                         if (repo.RetrieveStatus().IsDirty)
                         {
                             repo.Commit(CommitMessage, defaultSignature, defaultSignature);
@@ -175,10 +177,38 @@ public partial class BatchRepoTextReplacePageVm : ObservableObject
 
             var content = File.ReadAllText(checkInfo.Value.Filename);
 
-            if (content.Contains((string)LookupText))
+            if (content.Contains(LookupText))
             {
                 ReplaceResult += $"\n{++replaceCount}: выполнилась бы замена в {checkInfo.Value.Filename}";
             }
         }
+    }
+    
+    private static string? FindFileWithDepth(string currentDir, string targetName, int maxDepth, int currentDepth = 0)
+    {
+        if (currentDepth > maxDepth || !Directory.Exists(currentDir))
+            return null;
+
+        try
+        {
+            // 1. Check current directory for exact match (Case-insensitive by default on Windows)
+            var matchedFile = Directory.EnumerateFiles(currentDir, targetName).FirstOrDefault();
+            if (matchedFile != null)
+                return matchedFile;
+
+            // 2. If not found and depth remains, check subdirectories
+            if (currentDepth < maxDepth)
+            {
+                foreach (var subDir in Directory.EnumerateDirectories(currentDir))
+                {
+                    var result = FindFileWithDepth(subDir, targetName, maxDepth, currentDepth + 1);
+                    if (result != null)
+                        return result; // Return immediately on first match
+                }
+            }
+        }
+        catch (UnauthorizedAccessException) { /* Skip locked system folders */ }
+    
+        return null;
     }
 }
