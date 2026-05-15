@@ -7,7 +7,7 @@ public record AngularSolution : Solution
 {
     public override SolutionKind Kind => SolutionKind.Angular;
 
-    public override void Run(params string[] args)
+    public override void Run()
     {
         if (Type == SolutionType.Library)
             throw new InvalidOperationException();

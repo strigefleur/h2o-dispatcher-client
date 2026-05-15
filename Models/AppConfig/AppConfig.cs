@@ -31,6 +31,7 @@ public sealed record AppConfig
                 AngularCorporateL0Prefix = "@rshbgroup",
                 AngularCorporateL1Prefix = "cfo",
                 ActiveBranch = "feature/dev",
+                SessionPrefix = "h2o_",
                 DepsGoogleTableUrl = new Uri("https://docs.google.com/spreadsheets/d/1qGU-xha3lHp07vbx6qH-VSikyNL4yQ8LLCzqpGbWOtw")
             }
         },
@@ -45,6 +46,7 @@ public sealed record AppConfig
                 AngularCorporateL0Prefix = "@rshbgroup",
                 AngularCorporateL1Prefix = "rnk",
                 ActiveBranch = "feature/dev",
+                SessionPrefix = "rnk_",
                 DepsGoogleTableUrl = new Uri("https://docs.google.com/spreadsheets/d/1hJnYFgCeYbgHm0D82HwgXy8hnajAdEfzxo9F9hf5r2o")
             }
         }

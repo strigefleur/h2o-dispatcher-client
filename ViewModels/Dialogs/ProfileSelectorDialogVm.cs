@@ -28,6 +28,7 @@ public partial class ProfileSelectorDialogVm : ObservableObject
                 AngularCorporateL0Prefix = profile.AngularCorporateL0Prefix,
                 AngularCorporateL1Prefix = profile.AngularCorporateL1Prefix,
                 ActiveBranch = profile.ActiveBranch,
+                SessionPrefix = profile.SessionPrefix,
                 DepsGoogleTableUrl = profile.DepsGoogleTableUrl?.AbsoluteUri,
             };
 

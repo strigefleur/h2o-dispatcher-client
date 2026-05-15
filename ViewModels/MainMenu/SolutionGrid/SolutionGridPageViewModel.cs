@@ -24,9 +24,7 @@ public partial class SolutionGridPageViewModel : ObservableObject
     [RelayCommand]
     private void RunSolution(Solution? solution)
     {
-        var config = ConfigurationService.LoadConfig();
-        
-        solution?.Run(config.ActiveProfile.CSharpCorporateL1Prefix);
+        solution?.Run();
     }
 
     [RelayCommand]

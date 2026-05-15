@@ -8,22 +8,23 @@ namespace Felweed.Services;
 public static class TerminalHelper
 {
     private static readonly Lock Lock = new();
-    
-    private const string SessionPrefix = "h2o_";
 
     public static void Run(string directory, string command, string title)
     {
+        var config = ConfigurationService.LoadConfig();
+        var sessionPrefix = config.ActiveProfile.SessionPrefix ?? "app_";
+        
         lock (Lock)
         {
             if (!IsOurTerminalWindowOpen())
             {
                 // First run - open new Windows Terminal window
-                StartNewTerminalWindow(directory, command, title, SessionPrefix);
+                StartNewTerminalWindow(directory, command, title, sessionPrefix);
             }
             else
             {
                 // Subsequent runs - open in new tab
-                OpenInNewTab(directory, command, title, SessionPrefix);
+                OpenInNewTab(directory, command, title, sessionPrefix);
             }
         }
     }
@@ -71,7 +72,10 @@ public static class TerminalHelper
     
     private static bool IsOurTerminalWindowOpen()
     {
-        return FindWindowsTerminalProcessWithTitle(SessionPrefix) != null;
+        var config = ConfigurationService.LoadConfig();
+        var sessionPrefix = config.ActiveProfile.SessionPrefix ?? "app_";
+        
+        return FindWindowsTerminalProcessWithTitle(sessionPrefix) != null;
     }
 
     private static Process? FindWindowsTerminalProcessWithTitle(string titleStartsWith)

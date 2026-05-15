@@ -78,7 +78,7 @@ public abstract record Solution
         CobwebProject = cobwebProject;
     }
 
-    public abstract void Run(params string[] args);
+    public abstract void Run();
     public abstract void Pack();
     public abstract void InvalidateCache();
     

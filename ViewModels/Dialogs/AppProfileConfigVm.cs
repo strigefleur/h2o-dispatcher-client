@@ -22,6 +22,7 @@ public partial class AppProfileConfigVm : ObservableObject
     [ObservableProperty] public partial string? AngularCorporateL1Prefix { get; set; }
     
     [ObservableProperty] public partial string? ActiveBranch { get; set; }
+    [ObservableProperty] public partial string? SessionPrefix { get; set; }
     
     [ObservableProperty] public partial string? DepsGoogleTableUrl { get; set; }
     
@@ -68,6 +69,7 @@ public partial class AppProfileConfigVm : ObservableObject
             AngularCorporateL0Prefix = AngularCorporateL0Prefix,
             AngularCorporateL1Prefix = AngularCorporateL1Prefix,
             ActiveBranch = ActiveBranch,
+            SessionPrefix = SessionPrefix,
             DepsGoogleTableUrl = DepsGoogleTableUrl == null ? null : new Uri(DepsGoogleTableUrl),
             SolutionDirectories = SolutionDirectories.ToList()
         };

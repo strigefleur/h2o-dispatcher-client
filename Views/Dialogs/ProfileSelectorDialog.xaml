@@ -63,6 +63,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1*" />
@@ -114,11 +115,20 @@
                                   VerticalAlignment="Center"
                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     
-                    <ui:TextBlock Grid.Row="5" Grid.Column="0" Text="DepsGoogleTableUrl"
+                    <ui:TextBlock Grid.Row="5" Grid.Column="0" Text="SessionPrefix"
                                   Margin="0,0,8,0"
                                   VerticalAlignment="Center"
                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    <ui:TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding DepsGoogleTableUrl}"
+                    <ui:TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SessionPrefix}"
+                                  Margin="0,0,8,0"
+                                  VerticalAlignment="Center"
+                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    
+                    <ui:TextBlock Grid.Row="6" Grid.Column="0" Text="DepsGoogleTableUrl"
+                                  Margin="0,0,8,0"
+                                  VerticalAlignment="Center"
+                                  Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <ui:TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding DepsGoogleTableUrl}"
                                   Margin="0,0,8,0"
                                   VerticalAlignment="Center"
                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>

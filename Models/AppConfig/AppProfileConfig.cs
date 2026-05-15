@@ -18,6 +18,7 @@ public sealed record AppProfileConfig
     public required string? AngularCorporateL1Prefix { get; init; }
     
     public required Uri? DepsGoogleTableUrl { get; init; }
+    public required string? SessionPrefix { get; init; }
 
     public ApplicationTheme Theme { get; set; } = ApplicationTheme.Light;
     public string? ServerUrl { get; set; }

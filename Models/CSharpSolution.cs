@@ -10,12 +10,12 @@ public record CSharpSolution : Solution
 {
     public override SolutionKind Kind => SolutionKind.CSharp;
     
-    public override void Run(params string[] args)
+    public override void Run()
     {
         if (Type == SolutionType.Library)
             throw new InvalidOperationException();
         
-        var workingDirectory = GetWorkingDirectory(args);
+        var workingDirectory = GetWorkingDirectory(Path);
         
         TerminalHelper.Run(workingDirectory, "dotnet run", Name);
     }
@@ -51,28 +51,20 @@ public record CSharpSolution : Solution
         }
     }
 
-    private string GetWorkingDirectory(ICollection<string> prefixes)
+    private static string GetWorkingDirectory(string slnPath)
     {
-        var solutionDir = System.IO.Path.GetDirectoryName(Path);
+        var solutionDir = System.IO.Path.GetDirectoryName(slnPath);
         var srcPath = System.IO.Path.Combine(solutionDir, "src");
-        var escapedName = Name.Replace("-", "");
 
-        foreach (var prefix in prefixes)
+        string? runnableDir = null;
+        foreach (var directory in Directory.GetDirectories(srcPath))
         {
-            var oldRunPath = System.IO.Path.Combine(srcPath, $"{prefix}.Services.{escapedName}");
-            var newRunPath = System.IO.Path.Combine(srcPath, $"{prefix}.Services.{escapedName}.Web");
-            
-            if (Directory.Exists(newRunPath))
+            if (File.Exists(System.IO.Path.Combine(directory, "Program.cs")))
             {
-                return newRunPath;
-            }
-
-            if (Directory.Exists(oldRunPath))
-            {
-                return oldRunPath;
+                runnableDir = directory;
             }
         }
-
-        throw new InvalidOperationException();
+        
+        return runnableDir ?? throw new InvalidOperationException();
     }
 }
