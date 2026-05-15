@@ -38,24 +38,32 @@
                     <CheckBox Content="Только сервисы"
                               IsChecked="{Binding ServiceOnly}"
                               Margin="0, 8, 0, 0"/>
-                
-                    <ui:NumberBox 
-                        Value="{Binding SearchDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Minimum="0"
-                        Maximum="8"
-                        SmallChange="1"
-                        LargeChange="1"
-                        Margin="0, 8, 0, 0"
-                        ToolTip="Максимальная глубина поиска" />
                 </StackPanel>
 
             </StackPanel>
         </ui:Card>
         
         <ui:Card Padding="8" Margin="0, 8, 0, 0">
-            <StackPanel>
-                <ui:TextBox Text="{Binding Filename}"
-                            PlaceholderText="Название файла с расширением, например: package.json"/>
+            <StackPanel Width="Auto">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="160" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <ui:TextBox Text="{Binding Filename}"
+                                PlaceholderText="Название файла с расширением, например: package.json"/>
+                    
+                    <ui:NumberBox 
+                        Grid.Column="1"
+                        Value="{Binding SearchDepth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Minimum="1"
+                        Maximum="12"
+                        SmallChange="1"
+                        LargeChange="3"
+                        Margin="8, 0, 0, 0"
+                        ToolTip="Максимальная глубина поиска" />
+                </Grid>
         
                 <ui:TextBox Text="{Binding LookupText}" PlaceholderText="Что заменить"
                             Margin="0, 8, 0, 0"/>

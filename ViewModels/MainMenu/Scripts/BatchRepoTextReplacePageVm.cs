@@ -21,7 +21,7 @@ public partial class BatchRepoTextReplacePageVm : ObservableObject
     [ObservableProperty]
     public partial bool ServiceOnly { get; set; }
 
-    [ObservableProperty] public partial byte SearchDepth { get; set; } = 0;
+    [ObservableProperty] public partial byte SearchDepth { get; set; } = 1;
 
     [ObservableProperty]
     public partial bool WithCommit { get; set; }
